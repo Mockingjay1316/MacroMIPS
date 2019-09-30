@@ -80,18 +80,26 @@ module thinpad_top(
     output wire video_de           //行数据有效信号，用于区分消隐区
 );
 
-assign leds = 16'b0000111100001111;
-assign dpy0 = 8'b00001111;
-assign dpy1 = 8'b00001111;
+cpu_core cpu (
+    .clk_50M         (clk_50M),
+    .leds           (leds),
+    .dpy0           (dpy0),
+    .dpy1           (dpy1),
 
-// 不使用内存、串口时，禁用其使能信号
-assign base_ram_ce_n = 1'b1;
-assign base_ram_oe_n = 1'b1;
-assign base_ram_we_n = 1'b1;
+    .base_ram_data  (base_ram_data),
+    .base_ram_addr  (base_ram_addr),
+    .base_ram_be_n  (base_ram_be_n),
+    .base_ram_ce_n  (base_ram_ce_n),
+    .base_ram_oe_n  (base_ram_oe_n),
+    .base_ram_we_n  (base_ram_we_n),
 
-assign ext_ram_ce_n = 1'b1;
-assign ext_ram_oe_n = 1'b1;
-assign ext_ram_we_n = 1'b1;
+    .ext_ram_data   (ext_ram_data),
+    .ext_ram_addr   (ext_ram_addr),
+    .ext_ram_be_n   (ext_ram_be_n),
+    .ext_ram_ce_n   (ext_ram_ce_n),
+    .ext_ram_oe_n   (ext_ram_oe_n),
+    .ext_ram_we_n   (ext_ram_we_n)
+);
 
 assign uart_rdn = 1'b1;
 assign uart_wrn = 1'b1;
