@@ -6,15 +6,15 @@ module register_file (
     input   wire[31:0]      wdata                       //写的数据
 );
 
-reg [31:0] regs [31:0];
+reg [31:0] regs [31:0];                     //内部的寄存器堆信号
 
 always @(posedge clk) begin
-    if (write_en) begin
-        regs[waddr1] <= wdata;
+    if (write_en) begin                     //如果写使能
+        regs[waddr1] <= wdata;              //写入寄存器
     end
 end
 
-assign rdata1 = (raddr1 == 0) ? 0 : regs[raddr1];
-assign rdata2 = (raddr2 == 0) ? 0 : regs[raddr2];
+assign rdata1 = (raddr1 == 0) ? 0 : regs[raddr1];   //0号寄存器直接返回0
+assign rdata2 = (raddr2 == 0) ? 0 : regs[raddr2];   //否则返回对应的寄存器的值
 
 endmodule
