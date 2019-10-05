@@ -8,6 +8,8 @@ stages:
 bitstream:
   stage: build
   image: vivado2018:2018.3
+  tags:
+    - vivado
   script:
     - env
     - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/build.tcl cpu/thinpad_top.xpr
@@ -17,4 +19,14 @@ bitstream:
       - cpu/thinpad_top.runs/impl_1/thinpad_top.bit
       - cpu/thinpad_top.runs/impl_1/runme.log
       - cpu/thinpad_top.runs/synth_1/runme.log
+
+sonar-scanner:
+  stage: test
+  image: harryleafchen/debian-curl-tar
+  tags:
+    - secoder
+  script:
+    - curl -s "http://10.0.0.11/sonar-scanner.tar.gz" -o "/tmp/sonar-scanner.tar.gz"
+    - tar -xf "/tmp/sonar-scanner.tar.gz" -C /tmp
+    - /tmp/sonar-scanner/bin/sonar-scanner
 
