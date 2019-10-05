@@ -18,3 +18,10 @@ bitstream:
       - cpu/thinpad_top.runs/impl_1/runme.log
       - cpu/thinpad_top.runs/synth_1/runme.log
 
+sonar-scanner:
+  image: harryleafchen/debian-curl-tar
+  stage: test
+  script:
+    - curl -s "http://10.0.0.11/sonar-scanner.tar.gz" -o "/tmp/sonar-scanner.tar.gz"
+    - tar -xf "/tmp/sonar-scanner.tar.gz" -C /tmp
+    - /tmp/sonar-scanner/bin/sonar-scanner
