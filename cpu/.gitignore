@@ -22,6 +22,7 @@
 !*.v
 !*.sv
 !*.vh
+!*.svh
 !*.bd
 !*.edif
 #IP files
