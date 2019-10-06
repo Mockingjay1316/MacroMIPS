@@ -88,7 +88,14 @@ control_unit control_unit_r (
     .operand2(id_operand2),
     .reg_waddr(id_reg_waddr),
     .reg_write_en(id_reg_write_en),
-    .alu_op(id_alu_op)
+    .alu_op(id_alu_op),
+
+    .ex_alu_result(ex_alu_result),
+    .ex_reg_waddr(ex_reg_waddr),
+    .ex_reg_write_en(ex_reg_write_en),
+    .mem_reg_waddr(mem_reg_waddr),
+    .mem_reg_wdata(mem_alu_result),
+    .mem_reg_write_en(mem_reg_write_en)
 );
 
 id_ex_reg id_ex_reg_r (

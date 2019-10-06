@@ -4,6 +4,13 @@ module control_unit (
     input   logic[`INST_WIDTH-1:0]      instr,
     input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //为了进行分支判断
 
+    input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,
+    input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
+    input   logic                       ex_reg_write_en,
+    input   logic[`REGID_WIDTH-1:0]     mem_reg_waddr,
+    input   logic[`DATA_WIDTH-1:0]      mem_reg_wdata,
+    input   logic                       mem_reg_write_en,
+
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
     output  logic                       reg_write_en,
@@ -18,11 +25,35 @@ assign imm_unext = instr[15:0];
 assign funct = instr[31:26];
 assign op = instr[5:0];
 
+logic[`DATA_WIDTH-1:0] rdata1, rdata2;
+
+always @(*) begin
+    if ((reg_raddr1 === ex_reg_waddr)
+        && (ex_reg_write_en === 1'b1)) begin
+        rdata1 <= ex_alu_result;
+    end else if ((reg_raddr1 === mem_reg_waddr)
+        && (mem_reg_write_en === 1'b1)) begin
+        rdata1 <= mem_reg_wdata;
+    end else begin
+        rdata1 <= reg_rdata1;
+    end
+
+    if ((reg_raddr2 === ex_reg_waddr)
+        && (ex_reg_write_en === 1'b1)) begin
+        rdata2 <= ex_alu_result;
+    end else if ((reg_raddr2 === mem_reg_waddr)
+        && (mem_reg_write_en === 1'b1)) begin
+        rdata2 <= mem_reg_wdata;
+    end else begin
+        rdata2 <= reg_rdata2;
+    end
+end
+
 always @(*) begin
     case(funct)
         `FUNCT_ORI: begin
             alu_op <= ALU_OR;                               //alu进行OR的操作
-            operand1 <= reg_rdata1;                         //第一个操作数是寄存器
+            operand1 <= rdata1;                             //第一个操作数是寄存器
             operand2 <= {16'h0, imm_unext[15:0]};           //ORI对立即数进行的是0拓展
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;                           //这个指令需要写寄存器
