@@ -36,10 +36,11 @@ initial begin
 end
 
 initial begin
-    instr = {`FUNCT_LUI, 5'b00000, 5'b00001, 16'h0002}; #100;
-    instr = {`FUNCT_LUI, 5'b00000, 5'b00010, 16'hFFFF}; #100;
-    instr = {`FUNCT_LUI, 5'b00000, 5'b00011, 16'hFFFF}; #100;
-    instr = {`FUNCT_LUI, 5'b00000, 5'b00101, 16'h7FFF}; #100;
+    instr = {`FUNCT_ADDIU, 5'b00000, 5'b00001, 16'h0002}; #100;
+    instr = {`FUNCT_ADDIU, 5'b00000, 5'b00010, 16'hFFFF}; #100;
+    instr = {`FUNCT_ADDIU, 5'b00000, 5'b00011, 16'hFFFF}; #100;
+    instr = {`FUNCT_ADDIU, 5'b00000, 5'b00101, 16'h7FFF}; #100;
+    instr = {`FUNCT_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `OP_ADDU}; #100;
 end
 
 cpu_core cpu (
