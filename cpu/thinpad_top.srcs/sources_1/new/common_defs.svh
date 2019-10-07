@@ -32,6 +32,7 @@ typedef enum logic[3:0] {
 `define OP_SRAV         6'b000111
 `define OP_ADDU         6'b100001
 `define OP_SLT          6'b101010
+`define OP_SLTU         6'b101011
 `define OP_SUBU         6'b100011
 `define OP_MULTU        6'b011001
 `define OP_AND          6'b100100
