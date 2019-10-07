@@ -19,9 +19,9 @@ always @(*) begin
         ALU_NOR:    alu_result <= ~(operand1 | operand2);
         ALU_OR:     alu_result <= operand1 | operand2;
         ALU_XOR:    alu_result <= operand1 ^ operand2;
-        ALU_SLL:    alu_result <= operand1 << operand2[4:0];                //逻辑左移
-        ALU_SRL:    alu_result <= operand1 >> operand2[4:0];                //逻辑右移
-        ALU_SRA:    alu_result <= $signed(operand1) >>> operand2[4:0];      //算术右移
+        ALU_SLL:    alu_result <= operand2 << operand1[4:0];                //逻辑左移
+        ALU_SRL:    alu_result <= operand2 >> operand1[4:0];                //逻辑右移
+        ALU_SRA:    alu_result <= $signed(operand2) >>> operand1[4:0];      //算术右移
         ALU_SLT:    alu_result <= (operand1[`DATA_WIDTH-1] != operand2[`DATA_WIDTH-1]) ?
                                     operand1[`DATA_WIDTH-1] : res_sub[`DATA_WIDTH-1];
         ALU_SLTU:   alu_result <= (operand1 < operand2) ? 1 : 0;
