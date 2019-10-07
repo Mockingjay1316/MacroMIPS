@@ -29,17 +29,17 @@ logic clk_10M;
 logic[`INST_WIDTH-1:0] instr;
 
 initial begin
-    clk_10M = 1'b0; # 50;
+    clk_10M = 1'b0; # 10;
     forever begin
-        clk_10M = ~clk_10M; # 50;
+        clk_10M = ~clk_10M; # 10;
     end
 end
 
 initial begin
-    instr = 32'b00110100000000010000000000001010; #100;
-    instr = 32'b00110100001000100000000000000101; #100;
-    instr = 32'b00110100010000110000000000010000; #100;
-    instr = 32'b00110100000001000000000001010101; #100;
+    instr = {`FUNCT_LUI, 5'b00000, 5'b00001, 16'h0002}; #100;
+    instr = {`FUNCT_LUI, 5'b00000, 5'b00010, 16'hFFFF}; #100;
+    instr = {`FUNCT_LUI, 5'b00000, 5'b00011, 16'hFFFF}; #100;
+    instr = {`FUNCT_LUI, 5'b00000, 5'b00101, 16'h7FFF}; #100;
 end
 
 cpu_core cpu (
