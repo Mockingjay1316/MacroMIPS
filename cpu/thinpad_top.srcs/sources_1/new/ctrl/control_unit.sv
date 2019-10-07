@@ -51,12 +51,54 @@ end
 
 always @(*) begin
     case(funct)
+        `FUNCT_ADDIU: begin                                 //ADDIU
+            alu_op <= ALU_ADD;
+            operand1 <= rdata1;
+            operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
+        end
+        `FUNCT_SLTI: begin                                  //SLTI
+            alu_op <= ALU_SLT;
+            operand1 <= rdata1;
+            operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
+        end
+        `FUNCT_SLTIU: begin                                 //SLTIU
+            alu_op <= ALU_SLTU;
+            operand1 <= rdata1;
+            operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
+        end
+        `FUNCT_ANDI: begin                                  //ANDI
+            alu_op <= ALU_AND;
+            operand1 <= rdata1;
+            operand2 <= {16'h0, imm_unext[15:0]};           //ANDI是0扩展
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
+        end
         `FUNCT_ORI: begin
             alu_op <= ALU_OR;                               //alu进行OR的操作
             operand1 <= rdata1;                             //第一个操作数是寄存器
             operand2 <= {16'h0, imm_unext[15:0]};           //ORI对立即数进行的是0拓展
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;                           //这个指令需要写寄存器
+        end
+        `FUNCT_XORI: begin                                  //XORI
+            alu_op <= ALU_XOR;
+            operand1 <= rdata1;
+            operand2 <= {16'h0, imm_unext[15:0]};           //XORI是0扩展
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
+        end
+        `FUNCT_LUI: begin                                   //LUI
+            alu_op <= ALU_OR;                               //等价操作
+            operand1 <= 32'h00000000;                       //LUI的rs字段为00000，所以rdata1为32'b0
+            operand2 <= {imm_unext[15:0], 16'h0};           //LUI操作低位补0
+            reg_waddr <= reg_raddr2;
+            reg_write_en <= 1'b1;
         end
         default: begin
             
