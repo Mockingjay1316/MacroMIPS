@@ -2,19 +2,23 @@
 
 module control_unit (
     input   logic[`INST_WIDTH-1:0]      instr,
-    input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //为了进行分支判断
+    input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //从寄存器堆的输入，并非真的操作数（可能数据旁通）
 
-    input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,
+    input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,               //数据旁通返回的结果，ex段
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
     input   logic                       ex_reg_write_en,
-    input   logic[`REGID_WIDTH-1:0]     mem_reg_waddr,
+    input   logic[`REGID_WIDTH-1:0]     mem_reg_waddr,              //数据旁通返回的结果，mem段
     input   logic[`DATA_WIDTH-1:0]      mem_reg_wdata,
     input   logic                       mem_reg_write_en,
 
-    output  logic[`DATA_WIDTH-1:0]      operand1, operand2,
+    output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
     output  logic                       reg_write_en,
-    output  alu_op_t                    alu_op                      //解析出来的alu指令
+    output  alu_op_t                    alu_op,                     //解析出来的alu指令
+
+    input   logic[`ADDR_WIDTH-1:0]      old_pc,
+    output  logic                       is_branch,                  //是否执行分支转移
+    output  logic[`ADDR_WIDTH-1:0]      new_pc                      //转移到的新的PC
 );
 
 logic[5:0]  funct, op;
@@ -27,7 +31,10 @@ assign funct = instr[31:26];
 assign op = instr[5:0];
 assign sa = instr[10:6];
 
+logic[`ADDR_WIDTH-1:0] branch_new_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
+
+assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + old_pc + 3'b100;
 
 always @(*) begin
     if ((reg_raddr1 === ex_reg_waddr)
@@ -51,7 +58,18 @@ always @(*) begin
     end
 end
 
+logic branch_result;
+branch_op_t branch_op;
+branch_res branch_res_r (
+    .branch_op(branch_op),
+    .operand1(rdata1),
+    .operand2(rdata2),
+    .branch_result(branch_result)
+);
+
 always @(*) begin
+    reg_write_en <= 1'b0;
+    is_branch <= 1'b0;
     case(funct)
         /****************   Immediate   ********************/
         `FUNCT_ADDIU: begin                                 //ADDIU
@@ -82,7 +100,7 @@ always @(*) begin
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `FUNCT_ORI: begin
+        `FUNCT_ORI: begin                                   //ORI
             alu_op <= ALU_OR;                               //alu进行OR的操作
             operand1 <= rdata1;                             //第一个操作数是寄存器
             operand2 <= {16'h0, imm_unext[15:0]};           //ORI对立即数进行的是0拓展
@@ -173,6 +191,50 @@ always @(*) begin
                     
                     end
             endcase
+            end
+        /************   Register & Immediate   ************/
+        `FUNCT_REGIMM: begin
+            reg_write_en <= 1'b0;
+            case(reg_raddr2)
+                `BRANCH_BLTZ: begin                         //BLTZ
+                    branch_op <= BRA_BLTZ;
+                    is_branch <= branch_result;
+                    new_pc <= branch_new_pc;
+                    end
+                `BRANCH_BGEZ: begin                         //BGEZ
+                    branch_op <= BRA_BGEZ;
+                    is_branch <= branch_result;
+                    new_pc <= branch_new_pc;
+                    end
+                default: begin
+                    
+                    end
+            endcase
+            end
+        /******************   Branch   ********************/
+        `FUNCT_BEQ: begin                                   //BEQ
+            reg_write_en <= 1'b0;
+            branch_op <= BRA_BEQ;
+            is_branch <= branch_result;
+            new_pc <= branch_new_pc;
+            end
+        `FUNCT_BNE: begin                                   //BNE
+            reg_write_en <= 1'b0;
+            branch_op <= BRA_BNE;
+            is_branch <= branch_result;
+            new_pc <= branch_new_pc;
+            end
+        `FUNCT_BLEZ: begin                                  //BLEZ
+            reg_write_en <= 1'b0;
+            branch_op <= BRA_BLEZ;
+            is_branch <= branch_result;
+            new_pc <= branch_new_pc;
+            end
+        `FUNCT_BGTZ: begin                                  //BGTZ
+            reg_write_en <= 1'b0;
+            branch_op <= BRA_BLEZ;
+            is_branch <= branch_result;
+            new_pc <= branch_new_pc;
             end
         default: begin
             

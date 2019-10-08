@@ -35,7 +35,7 @@ assign leds = 16'b0101010101010101;
 logic cpu_clk;
 assign cpu_clk = clk_50M;
 
-logic[`ADDR_WIDTH-1:0] if_pc, id_pc;
+logic[`ADDR_WIDTH-1:0] if_pc, id_pc, new_pc;
 logic[`INST_WIDTH-1:0] if_inst, id_inst;
 logic[`REGID_WIDTH-1:0] raddr1, raddr2;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
@@ -45,6 +45,7 @@ logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
 logic[`REGID_WIDTH-1:0] id_reg_waddr, ex_reg_waddr, mem_reg_waddr, wb_reg_waddr;
 logic id_reg_write_en, ex_reg_write_en, mem_reg_write_en, wb_reg_write_en;
+logic pc_write_en;
 
 logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
 
@@ -54,7 +55,9 @@ logic[`DATA_WIDTH-1:0] wb_reg_wdata;
 pc_reg pc_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
-    .pc_out(if_pc)
+    .pc_out(if_pc),
+    .write_en(pc_write_en),
+    .pc_in(new_pc)
 );
 
 if_id_reg if_id_reg_r (
@@ -95,7 +98,11 @@ control_unit control_unit_r (
     .ex_reg_write_en(ex_reg_write_en),
     .mem_reg_waddr(mem_reg_waddr),
     .mem_reg_wdata(mem_alu_result),
-    .mem_reg_write_en(mem_reg_write_en)
+    .mem_reg_write_en(mem_reg_write_en),
+
+    .old_pc(id_pc),
+    .is_branch(pc_write_en),
+    .new_pc(new_pc)
 );
 
 id_ex_reg id_ex_reg_r (
