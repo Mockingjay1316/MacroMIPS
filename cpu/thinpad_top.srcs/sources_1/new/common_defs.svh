@@ -15,7 +15,22 @@ typedef enum logic[3:0] {
     ALU_NOP
 } alu_op_t;             //alu的各个操作，相当于指令的简化版
 
+typedef enum logic[3:0] {
+    BRA_BEQ, BRA_BGEZ, BRA_BGTZ, BRA_BLEZ, BRA_BLTZ,
+    BRA_BNE,
+    BRA_NOP
+} branch_op_t;
+
+//NOTE:
+//我似乎把FUNCT字段和OP字段写反了。。。
+//不重要了。。。
+
 `define FUNCT_SPECIAL   6'b000000
+`define FUNCT_REGIMM    6'b000001
+`define FUNCT_BEQ       6'b000100
+`define FUNCT_BNE       6'b000101
+`define FUNCT_BLEZ      6'b000110
+`define FUNCT_BGTZ      6'b000111
 `define FUNCT_ADDIU     6'b001001
 `define FUNCT_SLTI      6'b001010
 `define FUNCT_SLTIU     6'b001011
@@ -39,5 +54,8 @@ typedef enum logic[3:0] {
 `define OP_NOR          6'b100111
 `define OP_OR           6'b100101
 `define OP_XOR          6'b100110
+
+`define BRANCH_BLTZ     5'b00000
+`define BRANCH_BGEZ     5'b00001
 
 `endif
