@@ -10,11 +10,17 @@ module reg_file (
     output  logic[`DATA_WIDTH-1:0]      rdata1, rdata2              //读出来的地址
 );
 
-logic[`DATA_WIDTH-1:0] regs[`REGISTER_NUM:0];
+logic[`DATA_WIDTH-1:0] regs[`REGISTER_NUM-1:0];
+logic[`REGID_WIDTH-1:0] iter;
 
 always @(posedge clk) begin
     if (write_en) begin
         regs[waddr] <= wdata;
+    end
+    if (rst) begin                                                  //寄存器堆同步清零
+        for (iter = 1; iter <= 31; iter = iter + 1) begin
+            regs[iter] <= 32'h00000000;
+        end
     end
 end
 
