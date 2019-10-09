@@ -31,10 +31,12 @@ assign funct = instr[31:26];
 assign op = instr[5:0];
 assign sa = instr[10:6];
 
-logic[`ADDR_WIDTH-1:0] branch_new_pc;
+logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
 
-assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + old_pc + 3'b100;
+assign delay_slot_pc = old_pc + 3'b100;
+assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;
+assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};
 
 always @(*) begin
     if ((reg_raddr1 === ex_reg_waddr)
@@ -187,6 +189,11 @@ always @(*) begin
                     alu_op <= ALU_XOR;
                     reg_write_en <= 1'b1;
                     end
+                `FUNCT_JR: begin                            //JR
+                    reg_write_en <= 1'b0;
+                    is_branch    <= 1'b1;
+                    new_pc       <= rdata1;
+                    end
                 default: begin
                     
                     end
@@ -199,12 +206,12 @@ always @(*) begin
                 `BRANCH_BLTZ: begin                         //BLTZ
                     branch_op <= BRA_BLTZ;
                     is_branch <= branch_result;
-                    new_pc <= branch_new_pc;
+                    new_pc    <= branch_new_pc;
                     end
                 `BRANCH_BGEZ: begin                         //BGEZ
                     branch_op <= BRA_BGEZ;
                     is_branch <= branch_result;
-                    new_pc <= branch_new_pc;
+                    new_pc    <= branch_new_pc;
                     end
                 default: begin
                     
@@ -214,27 +221,41 @@ always @(*) begin
         /******************   Branch   ********************/
         `OP_BEQ: begin                                      //BEQ
             reg_write_en <= 1'b0;
-            branch_op <= BRA_BEQ;
-            is_branch <= branch_result;
-            new_pc <= branch_new_pc;
+            branch_op    <= BRA_BEQ;
+            is_branch    <= branch_result;
+            new_pc       <= branch_new_pc;
             end
         `OP_BNE: begin                                      //BNE
             reg_write_en <= 1'b0;
-            branch_op <= BRA_BNE;
-            is_branch <= branch_result;
-            new_pc <= branch_new_pc;
+            branch_op    <= BRA_BNE;
+            is_branch    <= branch_result;
+            new_pc       <= branch_new_pc;
             end
         `OP_BLEZ: begin                                     //BLEZ
             reg_write_en <= 1'b0;
-            branch_op <= BRA_BLEZ;
-            is_branch <= branch_result;
-            new_pc <= branch_new_pc;
+            branch_op    <= BRA_BLEZ;
+            is_branch    <= branch_result;
+            new_pc       <= branch_new_pc;
             end
         `OP_BGTZ: begin                                     //BGTZ
             reg_write_en <= 1'b0;
-            branch_op <= BRA_BLEZ;
-            is_branch <= branch_result;
-            new_pc <= branch_new_pc;
+            branch_op    <= BRA_BLEZ;
+            is_branch    <= branch_result;
+            new_pc       <= branch_new_pc;
+            end
+        /*******************   Jump   *********************/
+        `OP_J: begin                                        //J(ump)
+            reg_write_en <= 1'b0;
+            is_branch    <= 1'b1;
+            new_pc       <= jump_new_pc;
+            end
+        `OP_JAL: begin                                      //JAL
+            reg_write_en <= 1'b1;
+            reg_waddr    <= 5'b11111;                       //需要把返回地址写进31号寄存器
+            operand1     <= old_pc + 4'b1000;               //返回地址
+            alu_op       <= ALU_NOP;                        //ALU无需操作
+            is_branch    <= 1'b1;
+            new_pc       <= jump_new_pc;
             end
         default: begin
             
