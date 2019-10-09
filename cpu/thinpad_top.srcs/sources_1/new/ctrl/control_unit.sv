@@ -194,6 +194,13 @@ always @(*) begin
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
                     end
+                `FUNCT_JALR: begin                          //JALR
+                    reg_write_en <= 1'b1;
+                    operand1     <= old_pc + 4'b1000;       //返回地址
+                    alu_op       <= ALU_NOP;                //ALU无需操作
+                    is_branch    <= 1'b1;
+                    new_pc       <= rdata1;
+                    end
                 default: begin
                     
                     end

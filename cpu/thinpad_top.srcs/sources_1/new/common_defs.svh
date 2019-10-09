@@ -46,6 +46,7 @@ typedef enum logic[3:0] {
 `define FUNCT_SRA       6'b000011
 `define FUNCT_SRAV      6'b000111
 `define FUNCT_JR        6'b001000
+`define FUNCT_JALR      6'b001001
 `define FUNCT_ADDU      6'b100001
 `define FUNCT_SLT       6'b101010
 `define FUNCT_SLTU      6'b101011
