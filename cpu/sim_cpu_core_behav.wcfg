@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="sim_cpu_core_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_alu_core_sv " />
+            <top_module name="glbl" />
+            <top_module name="sim_cpu_core" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="238600001fs"></ZoomEndTime>
+      <Cursor1Time time="1000000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="204"></NameColumnWidth>
+      <ValueColumnWidth column_width="145"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="19" />
+   <wvobject fp_name="/sim_cpu_core/clk_10M" type="logic">
+      <obj_property name="ElementShortName">clk_10M</obj_property>
+      <obj_property name="ObjectShortName">clk_10M</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/instr" type="array">
+      <obj_property name="ElementShortName">instr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">instr[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/pc_reg_r/write_en" type="logic">
+      <obj_property name="ElementShortName">write_en</obj_property>
+      <obj_property name="ObjectShortName">write_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/pc_reg_r/pc_in" type="array">
+      <obj_property name="ElementShortName">pc_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_in[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/pc_reg_r/pc_out" type="array">
+      <obj_property name="ElementShortName">pc_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_out[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/alu_op" type="array">
+      <obj_property name="ElementShortName">alu_op[3:0]</obj_property>
+      <obj_property name="ObjectShortName">alu_op[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/reg_raddr1" type="array">
+      <obj_property name="ElementShortName">reg_raddr1[4:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_raddr1[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/reg_rdata1" type="array">
+      <obj_property name="ElementShortName">reg_rdata1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_rdata1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/rdata1" type="array">
+      <obj_property name="ElementShortName">rdata1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rdata1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/operand1" type="array">
+      <obj_property name="ElementShortName">operand1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">operand1[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/operand2" type="array">
+      <obj_property name="ElementShortName">operand2[31:0]</obj_property>
+      <obj_property name="ObjectShortName">operand2[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/alu_result" type="array">
+      <obj_property name="ElementShortName">alu_result[31:0]</obj_property>
+      <obj_property name="ObjectShortName">alu_result[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/wdata" type="array">
+      <obj_property name="ElementShortName">wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/waddr" type="array">
+      <obj_property name="ElementShortName">waddr[4:0]</obj_property>
+      <obj_property name="ObjectShortName">waddr[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/write_en" type="logic">
+      <obj_property name="ElementShortName">write_en</obj_property>
+      <obj_property name="ObjectShortName">write_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/branch_result" type="logic">
+      <obj_property name="ElementShortName">branch_result</obj_property>
+      <obj_property name="ObjectShortName">branch_result</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/new_pc" type="array">
+      <obj_property name="ElementShortName">new_pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">new_pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/regs[31]" type="array">
+      <obj_property name="ElementShortName">[31][31:0]</obj_property>
+      <obj_property name="ObjectShortName">[31][31:0]</obj_property>
+   </wvobject>
+</wave_config>
