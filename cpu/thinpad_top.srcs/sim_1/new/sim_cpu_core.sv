@@ -40,11 +40,11 @@ end
 
 initial begin
     #30;
-    instr = {`FUNCT_ADDIU, 5'b00000, 5'b00001, 16'h0002}; #20;
-    instr = {`FUNCT_BNE, 5'b00000, 5'b00001, 16'hFF0F}; #20;
-    instr = {`FUNCT_XORI, 5'b00000, 5'b00011, 16'hFFFF}; #20;
-    instr = {`FUNCT_ANDI, 5'b00000, 5'b00101, 16'h7FFF}; #20;
-    instr = {`FUNCT_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `OP_ADDU}; #20;
+    instr = {`OP_ADDIU, 5'b00000, 5'b00001, 16'h0002}; #20;
+    instr = {`OP_BNE, 5'b00000, 5'b00001, 16'hFF0F}; #20;
+    instr = {`OP_XORI, 5'b00000, 5'b00011, 16'hFFFF}; #20;
+    instr = {`OP_ANDI, 5'b00000, 5'b00101, 16'h7FFF}; #20;
+    instr = {`OP_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `FUNCT_ADDU}; #20;
 end
 
 cpu_core cpu (
