@@ -72,49 +72,49 @@ always @(*) begin
     is_branch <= 1'b0;
     case(funct)
         /****************   Immediate   ********************/
-        `OP_ADDIU: begin                                 //ADDIU
+        `OP_ADDIU: begin                                    //ADDIU
             alu_op <= ALU_ADD;
             operand1 <= rdata1;
             operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `OP_SLTI: begin                                  //SLTI
+        `OP_SLTI: begin                                     //SLTI
             alu_op <= ALU_SLT;
             operand1 <= rdata1;
             operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `OP_SLTIU: begin                                 //SLTIU
+        `OP_SLTIU: begin                                    //SLTIU
             alu_op <= ALU_SLTU;
             operand1 <= rdata1;
             operand2 <= {{16{imm_unext[15]}}, imm_unext[15:0]};
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `OP_ANDI: begin                                  //ANDI
+        `OP_ANDI: begin                                     //ANDI
             alu_op <= ALU_AND;
             operand1 <= rdata1;
             operand2 <= {16'h0, imm_unext[15:0]};           //ANDI是0扩展
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `OP_ORI: begin                                   //ORI
+        `OP_ORI: begin                                      //ORI
             alu_op <= ALU_OR;                               //alu进行OR的操作
             operand1 <= rdata1;                             //第一个操作数是寄存器
             operand2 <= {16'h0, imm_unext[15:0]};           //ORI对立即数进行的是0拓展
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;                           //这个指令需要写寄存器
             end
-        `OP_XORI: begin                                  //XORI
+        `OP_XORI: begin                                     //XORI
             alu_op <= ALU_XOR;
             operand1 <= rdata1;
             operand2 <= {16'h0, imm_unext[15:0]};           //XORI是0扩展
             reg_waddr <= reg_raddr2;
             reg_write_en <= 1'b1;
             end
-        `OP_LUI: begin                                   //LUI
+        `OP_LUI: begin                                      //LUI
             alu_op <= ALU_OR;                               //等价操作
             operand1 <= 32'h00000000;                       //LUI的rs字段为00000，所以rdata1为32'b0
             operand2 <= {imm_unext[15:0], 16'h0};           //LUI操作低位补0
@@ -128,62 +128,62 @@ always @(*) begin
             reg_waddr <= instr[15:11];
             reg_write_en <= 1'b0;
             case (op)
-                `FUNCT_SLL: begin                              //SLL
+                `FUNCT_SLL: begin                           //SLL
                     alu_op <= ALU_SLL;
                     operand1 <= {27'b0, sa};
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SLLV: begin                             //SLLV
+                `FUNCT_SLLV: begin                          //SLLV
                     alu_op <= ALU_SLL;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SRL: begin                              //SRL
+                `FUNCT_SRL: begin                           //SRL
                     alu_op <= ALU_SRL;
                     operand1 <= {27'b0, sa};
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SRLV: begin                             //SRLV
+                `FUNCT_SRLV: begin                          //SRLV
                     alu_op <= ALU_SRL;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SRA: begin                              //SRA
+                `FUNCT_SRA: begin                           //SRA
                     alu_op <= ALU_SRA;
                     operand1 <= {27'b0, sa};
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SRAV: begin                             //SRAV
+                `FUNCT_SRAV: begin                          //SRAV
                     alu_op <= ALU_SRA;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_ADDU: begin                             //ADDU
+                `FUNCT_ADDU: begin                          //ADDU
                     alu_op <= ALU_ADD;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SLT: begin                              //SLT
+                `FUNCT_SLT: begin                           //SLT
                     alu_op <= ALU_SLT;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SLTU: begin                             //SLTU
+                `FUNCT_SLTU: begin                          //SLTU
                     alu_op <= ALU_SLTU;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_SUBU: begin                             //SUBU
+                `FUNCT_SUBU: begin                          //SUBU
                     alu_op <= ALU_SUB;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_AND: begin                              //AND
+                `FUNCT_AND: begin                           //AND
                     alu_op <= ALU_AND;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_NOR: begin                              //NOR
+                `FUNCT_NOR: begin                           //NOR
                     alu_op <= ALU_NOR;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_OR: begin                               //OR
+                `FUNCT_OR: begin                            //OR
                     alu_op <= ALU_OR;
                     reg_write_en <= 1'b1;
                     end
-                `FUNCT_XOR: begin                              //XOR
+                `FUNCT_XOR: begin                           //XOR
                     alu_op <= ALU_XOR;
                     reg_write_en <= 1'b1;
                     end
@@ -212,25 +212,25 @@ always @(*) begin
             endcase
             end
         /******************   Branch   ********************/
-        `OP_BEQ: begin                                   //BEQ
+        `OP_BEQ: begin                                      //BEQ
             reg_write_en <= 1'b0;
             branch_op <= BRA_BEQ;
             is_branch <= branch_result;
             new_pc <= branch_new_pc;
             end
-        `OP_BNE: begin                                   //BNE
+        `OP_BNE: begin                                      //BNE
             reg_write_en <= 1'b0;
             branch_op <= BRA_BNE;
             is_branch <= branch_result;
             new_pc <= branch_new_pc;
             end
-        `OP_BLEZ: begin                                  //BLEZ
+        `OP_BLEZ: begin                                     //BLEZ
             reg_write_en <= 1'b0;
             branch_op <= BRA_BLEZ;
             is_branch <= branch_result;
             new_pc <= branch_new_pc;
             end
-        `OP_BGTZ: begin                                  //BGTZ
+        `OP_BGTZ: begin                                     //BGTZ
             reg_write_en <= 1'b0;
             branch_op <= BRA_BLEZ;
             is_branch <= branch_result;
