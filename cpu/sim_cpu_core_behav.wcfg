@@ -12,19 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="238600001fs"></ZoomEndTime>
-      <Cursor1Time time="1000000000fs"></Cursor1Time>
+      <ZoomStartTime time="1480080000fs"></ZoomStartTime>
+      <ZoomEndTime time="1873080001fs"></ZoomEndTime>
+      <Cursor1Time time="21000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="204"></NameColumnWidth>
-      <ValueColumnWidth column_width="145"></ValueColumnWidth>
+      <ValueColumnWidth column_width="140"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="19" />
-   <wvobject fp_name="/sim_cpu_core/clk_10M" type="logic">
-      <obj_property name="ElementShortName">clk_10M</obj_property>
-      <obj_property name="ObjectShortName">clk_10M</obj_property>
-   </wvobject>
+   <WVObjectSize size="22" />
    <wvobject fp_name="/sim_cpu_core/rst" type="logic">
       <obj_property name="ElementShortName">rst</obj_property>
       <obj_property name="ObjectShortName">rst</obj_property>
@@ -97,5 +93,21 @@
    <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/regs[31]" type="array">
       <obj_property name="ElementShortName">[31][31:0]</obj_property>
       <obj_property name="ObjectShortName">[31][31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/pll/clk_in1" type="logic">
+      <obj_property name="ElementShortName">clk_in1</obj_property>
+      <obj_property name="ObjectShortName">clk_in1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/pll/clk_out1" type="logic">
+      <obj_property name="ElementShortName">clk_out1</obj_property>
+      <obj_property name="ObjectShortName">clk_out1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/pll/clk_out2" type="logic">
+      <obj_property name="ElementShortName">clk_out2</obj_property>
+      <obj_property name="ObjectShortName">clk_out2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/pll/locked" type="logic">
+      <obj_property name="ElementShortName">locked</obj_property>
+      <obj_property name="ObjectShortName">locked</obj_property>
    </wvobject>
 </wave_config>
