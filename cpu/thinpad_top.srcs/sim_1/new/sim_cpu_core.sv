@@ -29,17 +29,17 @@ logic clk_50M, rst;
 logic[`INST_WIDTH-1:0] instr;
 
 initial begin
-    rst = 1'b1;
+    //rst = 1'b1;
     clk_50M = 1'b0; # 10;
     clk_50M = 1'b1; # 10;
-    rst = 1'b0;
+    //rst = 1'b0;
     forever begin
         clk_50M = ~clk_50M; # 10;
     end
 end
 
 initial begin
-    #30;
+    #1530;
     instr = {`OP_ADDIU, 5'b00000, 5'b00001, 16'h0002}; #20;
     instr = {`OP_BNE, 5'b00000, 5'b00001, 16'hFF0F}; #20;
     instr = {`OP_XORI, 5'b00000, 5'b00011, 16'hFFFF}; #20;
@@ -50,13 +50,14 @@ initial begin
 end
 
 main_pll pll (
-    .clk_in1(clk_50M)
+    .clk_in1(clk_50M),
+    .locked(rst)
 );
 
 cpu_core cpu (
     .instruction(instr),
     .clk_50M(clk_50M),
-    .reset_btn(rst)
+    .reset_btn(~rst)
 );
 
 endmodule
