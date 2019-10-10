@@ -25,16 +25,16 @@ module sim_cpu_core(
 
 );
 
-logic clk_10M, rst;
+logic clk_50M, rst;
 logic[`INST_WIDTH-1:0] instr;
 
 initial begin
     rst = 1'b1;
-    clk_10M = 1'b0; # 10;
-    clk_10M = 1'b1; # 10;
+    clk_50M = 1'b0; # 10;
+    clk_50M = 1'b1; # 10;
     rst = 1'b0;
     forever begin
-        clk_10M = ~clk_10M; # 10;
+        clk_50M = ~clk_50M; # 10;
     end
 end
 
@@ -49,9 +49,13 @@ initial begin
     instr = {`OP_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `FUNCT_ADDU}; #20;
 end
 
+main_pll pll (
+    .clk_in1(clk_50M)
+);
+
 cpu_core cpu (
     .instruction(instr),
-    .clk_50M(clk_10M),
+    .clk_50M(clk_50M),
     .reset_btn(rst)
 );
 
