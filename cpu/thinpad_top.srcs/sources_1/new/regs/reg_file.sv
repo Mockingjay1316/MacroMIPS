@@ -18,7 +18,7 @@ always @(posedge clk) begin
         regs[waddr] <= wdata;
     end
     if (rst) begin                                                  //寄存器堆同步清零
-        for (iter = 1; iter <= 31; iter = iter + 1) begin
+        for (iter = 5'h1; iter <= 5'h31; iter = iter + 5'h1) begin
             regs[iter] <= 32'h00000000;
         end
     end
