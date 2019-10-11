@@ -11,14 +11,14 @@ module reg_file (
 );
 
 logic[`DATA_WIDTH-1:0] regs[`REGISTER_NUM-1:0];
-logic[`REGID_WIDTH-1:0] iter;
+integer iter;
 
 always @(posedge clk) begin
     if (write_en) begin
         regs[waddr] <= wdata;
     end
     if (rst) begin                                                  //寄存器堆同步清零
-        for (iter = 5'h1; iter <= 5'h31; iter = iter + 5'h1) begin
+        for (iter = 1; iter <= 31; iter = iter + 1) begin
             regs[iter] <= 32'h00000000;
         end
     end
