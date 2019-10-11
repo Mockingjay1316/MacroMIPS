@@ -1,3 +1,5 @@
+`include "common_defs.svh"
+
 module thinpad_top(
     input   logic       clk_50M,            //50MHz 时钟输入
     input   logic       clk_11M0592,        //11.0592MHz 时钟输入
@@ -78,16 +80,37 @@ module thinpad_top(
     output  logic       video_de            //行数据有效信号，用于区分消隐区
 );
 
+logic rst, peri_clk;
+logic[`INST_WIDTH-1:0] instr;
+logic[`ADDR_WIDTH-1:0] pc;
+
+main_pll pll (
+    .clk_in1(clk_50M),
+    .clk_out2(peri_clk),
+    .locked(rst)
+);
+
 cpu_core cpu (
     .clk_50M(clk_50M),
     .clk_11M0592(clk_11M0592),
 
     .clock_btn(clock_btn),
-    .reset_btn(reset_btn),
+    .reset_btn(reset_btn | ~rst),
 
     .leds(leds),
     .dpy0(dpy0),
     .dpy1(dpy1),
+
+    .pc_out(pc),
+    .instruction(instr)
+);
+
+sram_controller sram_ctrl (
+    .main_clk(clk_50M),
+    .peri_clk(peri_clk),
+    .rst(~rst),
+    .pc(pc),
+    .instr_read(instr),
 
     .base_ram_data(base_ram_data),
     .base_ram_addr(base_ram_addr),
