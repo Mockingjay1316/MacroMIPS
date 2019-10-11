@@ -17,7 +17,7 @@ always @(posedge clk) begin
         id_inst <= 32'h00000000;
     end else if (stall) begin
         id_pc <= id_pc;
-        id_inst <= 32'h00000000;
+        id_inst <= id_inst;
     end else begin                      //否则将上一级的信号传递下去
         id_pc <= if_pc;
         id_inst <= if_inst;
