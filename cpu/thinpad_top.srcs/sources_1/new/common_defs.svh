@@ -60,4 +60,10 @@ typedef enum logic[3:0] {
 `define BRANCH_BLTZ     5'b00000
 `define BRANCH_BGEZ     5'b00001
 
+`define STALL_BEF_IF    5'b10000
+`define STALL_BEF_ID    5'b11000
+`define STALL_BEF_EX    5'b11100
+`define STALL_BEF_MEM   5'b11110
+`define STALL_BEF_WB    5'b11111
+
 `endif
