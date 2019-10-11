@@ -25,8 +25,9 @@ module sim_cpu_core(
 
 );
 
-logic clk_50M, rst;
+logic clk_50M, rst, peri_clk;
 logic[`INST_WIDTH-1:0] instr;
+logic[`ADDR_WIDTH-1:0] pc;
 
 initial begin
     //rst = 1'b1;
@@ -51,13 +52,22 @@ end
 
 main_pll pll (
     .clk_in1(clk_50M),
+    .clk_out2(peri_clk),
     .locked(rst)
 );
 
 cpu_core cpu (
     .instruction(instr),
     .clk_50M(clk_50M),
-    .reset_btn(~rst)
+    .reset_btn(~rst),
+    .pc_out(pc)
+);
+
+sram_controller sram_ctrl (
+    .main_clk(clk_50M),
+    .peri_clk(peri_clk),
+    .rst(~rst),
+    .pc(pc)
 );
 
 endmodule
