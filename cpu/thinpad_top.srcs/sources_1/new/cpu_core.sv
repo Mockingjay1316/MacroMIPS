@@ -27,6 +27,7 @@ module cpu_core (
     output  logic       ext_ram_oe_n,       //ExtRAM读使能，低有效
     output  logic       ext_ram_we_n,       //ExtRAM写使能，低有效
 
+    output  logic[`ADDR_WIDTH-1:0]      pc_out,
     input   logic[`INST_WIDTH-1:0]      instruction     //调试信号，用来在不实现访存模块时输入指令
 );
 
@@ -40,6 +41,7 @@ logic[`INST_WIDTH-1:0] if_inst, id_inst;
 logic[`REGID_WIDTH-1:0] raddr1, raddr2;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
 assign if_inst = instruction;
+assign pc_out = if_pc;
 
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
