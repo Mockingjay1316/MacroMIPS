@@ -12,18 +12,22 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1480080000fs"></ZoomStartTime>
-      <ZoomEndTime time="1873080001fs"></ZoomEndTime>
-      <Cursor1Time time="21000000000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="233400001fs"></ZoomEndTime>
+      <Cursor1Time time="1000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="204"></NameColumnWidth>
-      <ValueColumnWidth column_width="140"></ValueColumnWidth>
+      <ValueColumnWidth column_width="135"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="22" />
+   <WVObjectSize size="38" />
    <wvobject fp_name="/sim_cpu_core/rst" type="logic">
       <obj_property name="ElementShortName">rst</obj_property>
       <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/reset_btn" type="logic">
+      <obj_property name="ElementShortName">reset_btn</obj_property>
+      <obj_property name="ObjectShortName">reset_btn</obj_property>
    </wvobject>
    <wvobject fp_name="/sim_cpu_core/instr" type="array">
       <obj_property name="ElementShortName">instr[31:0]</obj_property>
@@ -44,6 +48,38 @@
    <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/alu_op" type="array">
       <obj_property name="ElementShortName">alu_op[3:0]</obj_property>
       <obj_property name="ObjectShortName">alu_op[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/reg_write_en" type="logic">
+      <obj_property name="ElementShortName">reg_write_en</obj_property>
+      <obj_property name="ObjectShortName">reg_write_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/reg_waddr" type="array">
+      <obj_property name="ElementShortName">reg_waddr[4:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_waddr[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/id_ex_reg_r/ex_reg_waddr" type="array">
+      <obj_property name="ElementShortName">ex_reg_waddr[4:0]</obj_property>
+      <obj_property name="ObjectShortName">ex_reg_waddr[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/ex_mem_reg_r/mem_reg_waddr" type="array">
+      <obj_property name="ElementShortName">mem_reg_waddr[4:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_reg_waddr[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/mem_wb_reg_r/mem_reg_wdata" type="array">
+      <obj_property name="ElementShortName">mem_reg_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_reg_wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/mem_wb_reg_r/mem_reg_write_en" type="logic">
+      <obj_property name="ElementShortName">mem_reg_write_en</obj_property>
+      <obj_property name="ObjectShortName">mem_reg_write_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/is_branch" type="logic">
+      <obj_property name="ElementShortName">is_branch</obj_property>
+      <obj_property name="ObjectShortName">is_branch</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/operand1" type="array">
+      <obj_property name="ElementShortName">operand1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">operand1[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/reg_raddr1" type="array">
       <obj_property name="ElementShortName">reg_raddr1[4:0]</obj_property>
@@ -109,5 +145,33 @@
    <wvobject fp_name="/sim_cpu_core/pll/locked" type="logic">
       <obj_property name="ElementShortName">locked</obj_property>
       <obj_property name="ObjectShortName">locked</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_data" type="array">
+      <obj_property name="ElementShortName">ext_ram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_addr" type="array">
+      <obj_property name="ElementShortName">ext_ram_addr[19:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_addr[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_be_n" type="array">
+      <obj_property name="ElementShortName">ext_ram_be_n[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_be_n[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_ce_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_ce_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_oe_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_oe_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/sram_ctrl/ext_ram_we_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/sim_cpu_core/cpu/mem_addr" type="array">
+      <obj_property name="ElementShortName">mem_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[31:0]</obj_property>
    </wvobject>
 </wave_config>
