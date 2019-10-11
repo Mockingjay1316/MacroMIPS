@@ -3,6 +3,7 @@
 module id_ex_reg (
     input   logic                       clk,            //时钟信号
     input   logic                       rst,            //复位信号
+    input   logic                       stall,
     input   alu_op_t                    id_alu_op,
     input   logic[`DATA_WIDTH-1:0]      id_operand1, id_operand2,
     input   logic[`REGID_WIDTH-1:0]     id_reg_waddr,
@@ -16,6 +17,12 @@ module id_ex_reg (
 
 always @(posedge clk) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
+        ex_alu_op <= ALU_NOP;
+        ex_operand1 <= `DATA_WIDTH'h00000000;
+        ex_operand2 <= `DATA_WIDTH'h00000000;
+        ex_reg_write_en <= 1'b0;
+        ex_reg_waddr <= `REGID_WIDTH'h0;
+    end else if (stall) begin
         ex_alu_op <= ALU_NOP;
         ex_operand1 <= `DATA_WIDTH'h00000000;
         ex_operand2 <= `DATA_WIDTH'h00000000;

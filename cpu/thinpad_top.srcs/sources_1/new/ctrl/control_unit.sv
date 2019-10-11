@@ -18,7 +18,9 @@ module control_unit (
 
     input   logic[`ADDR_WIDTH-1:0]      old_pc,
     output  logic                       is_branch,                  //是否执行分支转移
-    output  logic[`ADDR_WIDTH-1:0]      new_pc                      //转移到的新的PC
+    output  logic[`ADDR_WIDTH-1:0]      new_pc,                     //转移到的新的PC
+
+    output  logic[4:0]                  stall
 );
 
 logic[5:0]  funct, op;
@@ -30,6 +32,8 @@ assign imm_unext = instr[15:0];
 assign funct = instr[31:26];
 assign op = instr[5:0];
 assign sa = instr[10:6];
+
+assign stall = 5'b00000;
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;

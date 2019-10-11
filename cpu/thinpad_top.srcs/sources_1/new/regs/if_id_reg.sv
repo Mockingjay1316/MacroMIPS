@@ -3,6 +3,7 @@
 module if_id_reg (
     input   logic                       clk,            //时钟信号
     input   logic                       rst,            //复位信号
+    input   logic                       stall,
     input   logic[`ADDR_WIDTH-1:0]      if_pc,          //if段的pc
     input   logic[`INST_WIDTH-1:0]      if_inst,        //if段取到的指令
 
@@ -13,6 +14,9 @@ module if_id_reg (
 always @(posedge clk) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
         id_pc <= 32'h00000000;
+        id_inst <= 32'h00000000;
+    end else if (stall) begin
+        id_pc <= id_pc;
         id_inst <= 32'h00000000;
     end else begin                      //否则将上一级的信号传递下去
         id_pc <= if_pc;

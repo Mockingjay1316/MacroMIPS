@@ -53,10 +53,12 @@ logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
 
 logic[`REGID_WIDTH-1:0] wb_waddr;
 logic[`DATA_WIDTH-1:0] wb_reg_wdata;
+logic[4:0] stall;
 
 pc_reg pc_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
+    .stall(stall[4]),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
@@ -65,6 +67,7 @@ pc_reg pc_reg_r (
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
+    .stall(stall[3]),
     .if_pc(if_pc),
     .id_pc(id_pc),
     .if_inst(if_inst),
@@ -104,12 +107,14 @@ control_unit control_unit_r (
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
-    .new_pc(new_pc)
+    .new_pc(new_pc),
+    .stall(stall)
 );
 
 id_ex_reg id_ex_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
+    .stall(stall[2]),
     .id_alu_op(id_alu_op),
     .id_operand1(id_operand1),
     .id_operand2(id_operand2),
@@ -132,6 +137,7 @@ alu_core alu_core_r (
 ex_mem_reg ex_mem_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
+    .stall(stall[1]),
     .ex_alu_result(ex_alu_result),
     .ex_reg_waddr(ex_reg_waddr),
     .ex_reg_write_en(ex_reg_write_en),
@@ -143,6 +149,7 @@ ex_mem_reg ex_mem_reg_r (
 mem_wb_reg mem_wb_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
+    .stall(stall[0]),
     .mem_reg_waddr(mem_reg_waddr),
     .mem_reg_wdata(mem_alu_result),
     .mem_reg_write_en(mem_reg_write_en),
