@@ -82,7 +82,9 @@ module thinpad_top(
 
 logic rst, peri_clk;
 logic[`INST_WIDTH-1:0] instr;
-logic[`ADDR_WIDTH-1:0] pc;
+logic[`ADDR_WIDTH-1:0] pc, mem_addr;
+logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
+logic[4:0] mem_ctrl_signal;
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -102,6 +104,10 @@ cpu_core cpu (
     .dpy1(dpy1),
 
     .pc_out(pc),
+    .mem_addr(mem_addr),
+    .mem_wdata(mem_wdata),
+    .mem_rdata(mem_rdata),
+    .mem_ctrl_signal(mem_ctrl_signal),
     .instruction(instr)
 );
 
@@ -111,6 +117,13 @@ sram_controller sram_ctrl (
     .rst(~rst),
     .pc(pc),
     .instr_read(instr),
+    .data_write_en(mem_ctrl_signal[3]),
+    .is_data_read(mem_ctrl_signal[2]),
+    .mem_byte_en(mem_ctrl_signal[1]),
+    .mem_sign_ext(mem_ctrl_signal[0]),
+    .data_addr(mem_addr),
+    .data_write(mem_wdata),
+    .data_read(mem_rdata),
 
     .base_ram_data(base_ram_data),
     .base_ram_addr(base_ram_addr),
