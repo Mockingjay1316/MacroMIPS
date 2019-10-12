@@ -132,7 +132,7 @@ control_unit control_unit_r (
 id_ex_reg id_ex_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
-    .stall(stall[2]),
+    .stall(stall),
     .id_alu_op(id_alu_op),
     .id_operand1(id_operand1),
     .id_operand2(id_operand2),
