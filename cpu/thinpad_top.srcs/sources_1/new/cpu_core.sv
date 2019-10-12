@@ -30,6 +30,7 @@ module cpu_core (
     output  logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr,
     output  logic[`DATA_WIDTH-1:0]      mem_wdata,
     output  logic[4:0]                  mem_ctrl_signal,
+    output  logic                       is_uart,
     input   logic[`DATA_WIDTH-1:0]      mem_rdata,
     input   logic[`INST_WIDTH-1:0]      instruction     //调试信号，用来在不实现访存模块时输入指令
 );
@@ -110,9 +111,11 @@ control_unit control_unit_r (
     .ex_alu_result(ex_alu_result),
     .ex_reg_waddr(ex_reg_waddr),
     .ex_reg_write_en(ex_reg_write_en),
+    .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .mem_reg_waddr(mem_reg_waddr),
     .mem_reg_wdata(mem_alu_result),
     .mem_reg_write_en(mem_reg_write_en),
+    .mem_mem_ctrl_signal(mem_mem_ctrl_signal),
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
@@ -173,6 +176,14 @@ assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
 assign mem_addr = mem_alu_result;
 assign mem_ctrl_signal = mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
+
+always @(*) begin
+    if (mem_addr >= 32'hbfd003f8) begin
+        is_uart <= 1'b1;
+    end else begin
+        is_uart <= 1'b0;
+    end
+end
 
 mem_wb_reg mem_wb_reg_r (
     .clk(cpu_clk),

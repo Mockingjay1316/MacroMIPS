@@ -80,20 +80,23 @@ module thinpad_top(
     output  logic       video_de            //行数据有效信号，用于区分消隐区
 );
 
-logic rst, peri_clk;
+logic rst, peri_clk, bus_clk, main_clk;
 logic[`INST_WIDTH-1:0] instr;
 logic[`ADDR_WIDTH-1:0] pc, mem_addr;
-logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
+logic[`DATA_WIDTH-1:0] mem_wdata, sram_rdata, uart_rdata;
 logic[4:0] mem_ctrl_signal;
+logic is_uart;
 
 main_pll pll (
     .clk_in1(clk_50M),
+    .clk_out1(bus_clk),
     .clk_out2(peri_clk),
+    .clk_out3(main_clk),
     .locked(rst)
 );
 
 cpu_core cpu (
-    .clk_50M(clk_50M),
+    .clk_50M(main_clk),
     .clk_11M0592(clk_11M0592),
 
     .clock_btn(clock_btn),
@@ -108,11 +111,12 @@ cpu_core cpu (
     .mem_wdata(mem_wdata),
     .mem_rdata(mem_rdata),
     .mem_ctrl_signal(mem_ctrl_signal),
+    .is_uart(is_uart),
     .instruction(instr)
 );
 
 sram_controller sram_ctrl (
-    .main_clk(clk_50M),
+    .main_clk(main_clk),
     .peri_clk(peri_clk),
     .rst(~rst),
     .pc(pc),
@@ -123,7 +127,7 @@ sram_controller sram_ctrl (
     .mem_sign_ext(mem_ctrl_signal[0]),
     .data_addr(mem_addr),
     .data_write(mem_wdata),
-    .data_read(mem_rdata),
+    .data_read(sram_rdata),
 
     .base_ram_data(base_ram_data),
     .base_ram_addr(base_ram_addr),
@@ -139,5 +143,72 @@ sram_controller sram_ctrl (
     .ext_ram_oe_n(ext_ram_oe_n),
     .ext_ram_we_n(ext_ram_we_n)
 );
+
+ila_0 ila (
+    .clk(main_clk),
+    .probe0(is_uart),
+    .probe1(ext_uart_busy),
+    .probe2(mem_rdata),
+    .probe3(uart_rdata)
+);
+assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
+
+//直连串口接收发送演示，从直连串口收到的数据再发送出去
+logic[7:0] ext_uart_rx;
+logic[7:0] ext_uart_buffer, ext_uart_tx;
+logic ext_uart_ready, ext_uart_busy;
+logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
+
+async_receiver #(.ClkFrequency(30000000),.Baud(9600))   //接收模块，9600无检验位
+    ext_uart_r(
+        .clk(main_clk),                                 //外部时钟信号
+        .RxD(rxd),                                      //外部串行信号输入
+        .RxD_data_ready(ext_uart_ready),                //数据接收到标志
+        .RxD_clear(ext_uart_ready),                     //清除接收标志
+        .RxD_data(ext_uart_rx)                          //接收到的一字节数据
+    );
+
+//assign ext_uart_wavai = mem_ctrl_signal[3] & is_uart;
+logic[1:0] counter;
+
+always @(posedge ext_uart_ready) begin                         //接收到缓冲区ext_uart_buffer
+    if (reset_btn) begin
+        ext_uart_read_status <= 1'b0;
+    end else begin
+        ext_uart_read_status <= ~ext_uart_read_status;
+        ext_uart_buffer <= ext_uart_rx;
+    end
+end
+
+always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发送出去
+    if (!ext_uart_busy && ext_uart_wavai) begin
+        ext_uart_start <= 1;
+    end else begin
+        ext_uart_start <= 0;
+    end
+end
+
+always @(*) begin
+    if (mem_addr[3:0] == 4'hc) begin
+        uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
+    end else if (mem_addr[3:0] == 4'h8) begin
+        if (mem_ctrl_signal[3] & is_uart) begin
+            ext_uart_wavai <= 1;
+            ext_uart_tx <= mem_wdata[7:0];
+        end else begin
+            ext_uart_already_read_status <= ext_uart_read_status;
+            uart_rdata <= {24'b0, ext_uart_buffer};
+        end
+    end
+end
+
+async_transmitter #(.ClkFrequency(30000000),.Baud(9600)) //发送模块，9600无检验位
+    ext_uart_t(
+        .clk(main_clk),                                 //外部时钟信号
+        .TxD(txd),                                      //串行信号输出
+        .TxD_busy(ext_uart_busy),                       //发送器忙状态指示
+        .TxD_start(ext_uart_start),                     //开始发送信号
+        .TxD_data(ext_uart_tx)                          //待发送的数据
+    );
 
 endmodule
