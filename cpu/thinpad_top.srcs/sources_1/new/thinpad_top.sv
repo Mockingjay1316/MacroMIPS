@@ -143,7 +143,7 @@ sram_controller sram_ctrl (
     .ext_ram_oe_n(ext_ram_oe_n),
     .ext_ram_we_n(ext_ram_we_n)
 );
-
+/*
 ila_0 ila (
     .clk(main_clk),
     .probe0(is_uart),
@@ -151,6 +151,7 @@ ila_0 ila (
     .probe2(mem_rdata),
     .probe3(uart_rdata)
 );
+*/
 assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
 
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
