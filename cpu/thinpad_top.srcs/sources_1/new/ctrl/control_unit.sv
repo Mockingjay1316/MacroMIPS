@@ -7,9 +7,11 @@ module control_unit (
     input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,               //数据旁通返回的结果，ex段
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
     input   logic                       ex_reg_write_en,
+    input   logic[4:0]                  ex_mem_ctrl_signal,
     input   logic[`REGID_WIDTH-1:0]     mem_reg_waddr,              //数据旁通返回的结果，mem段
     input   logic[`DATA_WIDTH-1:0]      mem_reg_wdata,
     input   logic                       mem_reg_write_en,
+    input   logic[4:0]                  mem_mem_ctrl_signal,
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
@@ -37,8 +39,6 @@ assign funct = instr[31:26];
 assign op = instr[5:0];
 assign sa = instr[10:6];
 
-assign stall = 5'b00000;
-
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
 
@@ -48,12 +48,19 @@ assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slo
 assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};
 
 always @(*) begin
+    stall <= 5'b00000;
     if ((reg_raddr1 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
         rdata1 <= ex_alu_result;
+        if (ex_mem_ctrl_signal[4]) begin
+            stall <= `STALL_BEF_ID;
+        end
     end else if ((reg_raddr1 == mem_reg_waddr)
         && (mem_reg_write_en == 1'b1)) begin
         rdata1 <= mem_reg_wdata;
+        if (mem_mem_ctrl_signal[4]) begin
+            stall <= `STALL_BEF_ID;
+        end
     end else begin
         rdata1 <= reg_rdata1;
     end
@@ -61,9 +68,15 @@ always @(*) begin
     if ((reg_raddr2 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
         rdata2 <= ex_alu_result;
+        if (ex_mem_ctrl_signal[4]) begin
+            stall <= `STALL_BEF_ID;
+        end
     end else if ((reg_raddr2 == mem_reg_waddr)
         && (mem_reg_write_en == 1'b1)) begin
         rdata2 <= mem_reg_wdata;
+        if (mem_mem_ctrl_signal[4]) begin
+            stall <= `STALL_BEF_ID;
+        end
     end else begin
         rdata2 <= reg_rdata2;
     end
