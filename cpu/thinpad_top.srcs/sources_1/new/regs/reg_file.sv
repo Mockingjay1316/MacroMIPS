@@ -7,11 +7,14 @@ module reg_file (
     input   logic[`REGID_WIDTH-1:0]     raddr1, raddr2, waddr,      //读和写的地址
     input   logic[`DATA_WIDTH-1:0]      wdata,
 
+    output  logic[`DATA_WIDTH-1:0]      reg_out,
     output  logic[`DATA_WIDTH-1:0]      rdata1, rdata2              //读出来的地址
 );
 
 logic[`DATA_WIDTH-1:0] regs[`REGISTER_NUM-1:0];
 integer iter;
+
+assign reg_out = regs[16];
 
 always @(posedge clk) begin
     if (write_en) begin
