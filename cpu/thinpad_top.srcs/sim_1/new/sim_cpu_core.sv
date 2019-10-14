@@ -25,7 +25,7 @@ module sim_cpu_core(
 
 );
 
-logic clk_50M, rst, peri_clk;
+logic clk_50M, rst, peri_clk, mem_stall;
 logic[`INST_WIDTH-1:0] instr;
 logic[`ADDR_WIDTH-1:0] pc, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
@@ -43,9 +43,20 @@ end
 
 initial begin
     #1530;
-    instr = {`OP_ORI, 5'b00000, 5'b00001, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00001, 5'b00010, 16'h0042}; #20;
-    instr = {`OP_LW, 5'b00000, 5'b00001, 16'h0002}; #20;
+    //instr = {`OP_ORI, 5'b00000, 5'b00001, 16'h0002}; #20;
+    //instr = {`OP_LW, 5'b00000, 5'b00001, 16'h0002}; #20;
+    //instr = {`OP_ORI, 5'b00001, 5'b00010, 16'h0042}; #20;
+    instr = 32'h3c108000; #20;
+    instr = 32'h26101280; #20;
+    instr = 32'h82040000; #20;
+    instr = 32'h00000000; #20;
+    instr = 32'h26100001; #20;
+    instr = 32'h135b0005; #20;
+    instr = 32'h00000000; #20;
+    instr = 32'haf400000; #20;
+    instr = 32'h275a0004; #20;
+    instr = 32'h1000fffb; #20;
+    instr = 32'h00000000; #20;
     instr = {`OP_LB, 5'b00000, 5'b00001, 16'hFF0F}; #20;
     instr = {`OP_LBU, 5'b00000, 5'b00011, 16'hFFFF}; #20;
     instr = {`OP_JAL, 5'b00000, 5'b00101, 16'h7FFF}; #20;
@@ -69,7 +80,8 @@ cpu_core cpu (
     .mem_addr(mem_addr),
     .mem_wdata(mem_wdata),
     .mem_rdata(mem_rdata),
-    .mem_ctrl_signal(mem_ctrl_signal)
+    .mem_ctrl_signal(mem_ctrl_signal),
+    .mem_stall(mem_stall)
 );
 
 sram_controller sram_ctrl (
@@ -84,7 +96,8 @@ sram_controller sram_ctrl (
     .mem_sign_ext(mem_ctrl_signal[0]),
     .data_addr(mem_addr),
     .data_write(mem_wdata),
-    .data_read(mem_rdata)
+    .data_read(mem_rdata),
+    .mem_stall(mem_stall)
 );
 
 endmodule
