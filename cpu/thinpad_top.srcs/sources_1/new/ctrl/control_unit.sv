@@ -13,6 +13,8 @@ module control_unit (
     input   logic                       mem_reg_write_en,
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
+    input   logic                       mem_stall,
+
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
     output  logic                       reg_write_en,
