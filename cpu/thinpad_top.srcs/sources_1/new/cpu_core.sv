@@ -6,6 +6,7 @@ module cpu_core (
 
     input   logic       clock_btn,          //BTN5手动时钟按钮开关，带消抖电路，按下时为1
     input   logic       reset_btn,          //BTN6手动复位按钮开关，带消抖电路，按下时为1
+    input   logic       mem_stall,
 
     output  logic[15:0] leds,               //16位LED，输出时1点亮
     output  logic[7:0]  dpy0,               //数码管低位信号，包括小数点，输出1点亮
@@ -28,7 +29,7 @@ module cpu_core (
     output  logic       ext_ram_we_n,       //ExtRAM写使能，低有效
 
     output  logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr,
-    output  logic[`DATA_WIDTH-1:0]      mem_wdata,
+    output  logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out,
     output  logic[4:0]                  mem_ctrl_signal,
     output  logic                       is_uart,
     input   logic[`DATA_WIDTH-1:0]      mem_rdata,
@@ -69,6 +70,7 @@ pc_reg pc_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
     .stall(stall[4]),
+    .mem_stall(mem_stall),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
@@ -91,6 +93,7 @@ reg_file reg_file_r (
     .raddr1(raddr1),
     .raddr2(raddr2),
     .waddr(wb_reg_waddr),
+    .reg_out(reg_out),
     .rdata1(rdata1),
     .rdata2(rdata2),
     .wdata(wb_reg_wdata)
@@ -116,6 +119,8 @@ control_unit control_unit_r (
     .mem_reg_wdata(mem_alu_result),
     .mem_reg_write_en(mem_reg_write_en),
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal),
+
+    .mem_stall(mem_stall),
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
