@@ -360,7 +360,6 @@ always @(*) begin
             end
         /********************   CP0   *********************/
         `OP_COP0: begin
-            cp0_wsel <= instr[2:0];
             case(instr[25:21])
                 5'b00000: begin                             //MFC0
                     alu_op <= ALU_NOP;                      //空操作
