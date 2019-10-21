@@ -3,6 +3,7 @@
 module control_unit (
     input   logic[`INST_WIDTH-1:0]      instr,
     input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //从寄存器堆的输入，并非真的操作数（可能数据旁通）
+    input   logic[`DATA_WIDTH-1:0]      cp0_rdata,
 
     input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,               //数据旁通返回的结果，ex段
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
@@ -19,6 +20,10 @@ module control_unit (
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
     output  logic                       reg_write_en,
     output  alu_op_t                    alu_op,                     //解析出来的alu指令
+
+    output  logic[`REGID_WIDTH-1:0]     cp0_raddr, cp0_waddr,
+    output  logic                       cp0_write_en,
+    output  logic[2:0]                  cp0_rsel, cp0_wsel,
 
     input   logic[`ADDR_WIDTH-1:0]      old_pc,
     output  logic                       is_branch,                  //是否执行分支转移
@@ -37,9 +42,13 @@ logic[4:0]  sa;
 assign reg_raddr1 = instr[25:21];
 assign reg_raddr2 = instr[20:16];
 assign imm_unext = instr[15:0];
-assign funct = instr[31:26];
-assign op = instr[5:0];
+assign op = instr[31:26];
+assign funct = instr[5:0];
 assign sa = instr[10:6];
+assign cp0_raddr = instr[15:11];
+assign cp0_waddr = instr[15:11];
+assign cp0_rsel = instr[2:0];
+assign cp0_wsel = instr[2:0];
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
@@ -101,7 +110,8 @@ always @(*) begin
     mem_sign_ext <= 1'b0;
     mem_data_write_en <= 1'b0;
     is_mem_data_read <= 1'b0;
-    case(funct)
+    cp0_write_en <= 1'b0;
+    case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
             alu_op <= ALU_ADD;
@@ -158,7 +168,7 @@ always @(*) begin
             operand2 <= rdata2;
             reg_waddr <= instr[15:11];
             reg_write_en <= 1'b0;
-            case (op)
+            case (funct)
                 `FUNCT_SLL: begin                           //SLL
                     alu_op <= ALU_SLL;
                     operand1 <= {27'b0, sa};
@@ -347,6 +357,34 @@ always @(*) begin
             mem_data_write_en <= 1'b1;                      //内存写使能置1
             is_mem_data_read <= 1'b0;                       //数据写操作
             mem_byte_en <= 1'b1;                            //需要字节使能
+            end
+        /********************   CP0   *********************/
+        `OP_COP0: begin
+            cp0_wsel <= instr[2:0];
+            case(instr[25:21])
+                5'b00000: begin                             //MFC0
+                    alu_op <= ALU_NOP;                      //空操作
+                    operand1 <= cp0_rdata;                  //读出来cp0的内容
+                    reg_write_en <= 1'b1;
+                    reg_waddr <= reg_raddr2;                //写寄存器的地址
+                    end
+                5'b00100: begin                             //MTC0
+                    alu_op <= ALU_NOP;                      //空操作
+                    operand1 <= reg_rdata2;                 //读出来通用寄存器的内容
+                    cp0_write_en <= 1'b1;
+                    end
+                default: begin
+
+                    end
+            endcase
+            case(funct)
+                `FUNCT_ERET: begin                          //ERET
+                    //TODO: finish ERET
+                    end
+                default: begin
+                    
+                    end
+            endcase
             end
         default: begin
             
