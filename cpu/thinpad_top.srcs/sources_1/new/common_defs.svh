@@ -38,6 +38,7 @@ typedef enum logic[3:0] {
 `define OP_ORI          6'b001101
 `define OP_XORI         6'b001110
 `define OP_LUI          6'b001111
+`define OP_COP0         6'b010000
 `define OP_LB           6'b100000
 `define OP_LW           6'b100011
 `define OP_LBU          6'b100100
@@ -52,6 +53,7 @@ typedef enum logic[3:0] {
 `define FUNCT_SRAV      6'b000111
 `define FUNCT_JR        6'b001000
 `define FUNCT_JALR      6'b001001
+`define FUNCT_ERET      6'b011000
 `define FUNCT_ADDU      6'b100001
 `define FUNCT_SLT       6'b101010
 `define FUNCT_SLTU      6'b101011
@@ -70,5 +72,17 @@ typedef enum logic[3:0] {
 `define STALL_BEF_EX    5'b11100
 `define STALL_BEF_MEM   5'b11110
 `define STALL_BEF_WB    5'b11111
+
+typedef struct packed {
+    logic[4:0]      reg_waddr;
+    logic[31:0]     reg_wval;
+    logic           reg_write_en;
+} reg_op_t;
+
+
+typedef enum logic[6:0] {
+    CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
+    CP0_UNKNOW
+} cp0_name_t;
 
 `endif
