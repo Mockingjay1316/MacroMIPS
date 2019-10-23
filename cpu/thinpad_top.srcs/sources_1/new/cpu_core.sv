@@ -33,6 +33,8 @@ logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
 assign if_inst = instruction;
 assign pc_out = if_pc;
 
+logic if_after_branch, id_after_branch;
+
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
 logic[`REGID_WIDTH-1:0] id_reg_waddr, ex_reg_waddr, mem_reg_waddr, wb_reg_waddr;
@@ -70,6 +72,8 @@ if_id_reg if_id_reg_r (
     .stall(stall[3]),
     .if_pc(if_pc),
     .id_pc(id_pc),
+    .if_after_branch,
+    .id_after_branch,
     .if_inst(if_inst),
     .id_inst(id_inst)
 );
@@ -128,6 +132,8 @@ control_unit control_unit_r (
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
+    .after_branch(id_after_branch),
+    .is_branch_op(if_after_branch),
     .new_pc(new_pc),
     .load_from_mem(id_mem_ctrl_signal[4]),
     .mem_data_write_en(id_mem_ctrl_signal[3]),
