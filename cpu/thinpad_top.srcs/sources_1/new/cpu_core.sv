@@ -33,7 +33,7 @@ logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
 assign if_inst = instruction;
 assign pc_out = if_pc;
 
-logic if_after_branch, id_after_branch;
+logic if_after_branch, id_after_branch, is_excep;
 
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
@@ -61,6 +61,7 @@ pc_reg pc_reg_r (
     .rst(reset_btn),
     .stall(stall[4]),
     .mem_stall(mem_stall),
+    .is_excep,
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
@@ -197,6 +198,10 @@ ex_mem_reg ex_mem_reg_r (
     .mem_cp0_write_en,
     .mem_cp0_wsel,
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal)
+);
+
+excep_handler excep_handler_r (
+    .is_excep
 );
 
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
