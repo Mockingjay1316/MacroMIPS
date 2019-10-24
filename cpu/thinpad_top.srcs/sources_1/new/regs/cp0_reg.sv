@@ -9,6 +9,9 @@ module cp0_reg (
     input   logic[5:0]                  hardware_int,               //硬件中断
     input   logic[`DATA_WIDTH-1:0]      wdata,
 
+    input   logic                       syscall_int,                //control发来是否发生系统调用中断
+    output  logic                       hw_int_o,                   //发给control是否发生硬件中断
+
     output  logic[`DATA_WIDTH-1:0]      reg_out,
     output  logic[`DATA_WIDTH-1:0]      rdata                       //读出来的数据
 );
@@ -52,6 +55,11 @@ end
 
 always @(posedge clk) begin
     Cause[15:10] <= hardware_int;
+    if (syscall_int) begin
+        Cause[7:0] <= 8'd8                      //系统调用中断号
+    end else if (hardware_int != 6'b000000) begin
+        Cause[7:0] <= 8'd0                      //硬件中断号
+    end
     if (write_en) begin
         case(wname)
             CP0_STATUS:     Status  <= wdata;   //写Status寄存器

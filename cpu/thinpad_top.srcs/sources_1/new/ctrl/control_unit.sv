@@ -26,8 +26,12 @@ module control_unit (
     output  logic[2:0]                  cp0_rsel, cp0_wsel,
 
     input   logic[`ADDR_WIDTH-1:0]      old_pc,
+    input   logic                       after_branch,               //是否是延迟槽里的指令
+    output  logic                       is_branch_op,               //是否是分支指令(和is_branch区别)
     output  logic                       is_branch,                  //是否执行分支转移
     output  logic[`ADDR_WIDTH-1:0]      new_pc,                     //转移到的新的PC
+
+    output  excep_info_t                id_excep_info,
 
     output  logic                       load_from_mem, mem_data_write_en,
     output  logic                       is_mem_data_read, mem_byte_en,
@@ -53,10 +57,11 @@ assign cp0_wsel = instr[2:0];
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2;
 
-assign delay_slot_pc = old_pc + 3'b100;
-assign ret_pc = old_pc + 4'b1000;
-assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;
-assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};
+assign delay_slot_pc = old_pc + 3'b100;                                                 //延迟槽内指令的pc
+assign ret_pc = old_pc + 4'b1000;                                                       //返回应该返回到跳转指令的pc+8
+assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;   //branch指令的新pc
+assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};                     //Jump指令的新pc
+assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
 
 always @(*) begin
     stall <= 5'b00000;
@@ -111,6 +116,8 @@ always @(*) begin
     mem_data_write_en <= 1'b0;
     is_mem_data_read <= 1'b0;
     cp0_write_en <= 1'b0;
+    id_excep_info.is_excep <= 1'b0;
+    is_branch_op <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -232,6 +239,7 @@ always @(*) begin
                     reg_write_en <= 1'b0;
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
+                    is_branch_op <= 1'b1;
                     end
                 `FUNCT_JALR: begin                          //JALR
                     reg_write_en <= 1'b1;
@@ -239,6 +247,13 @@ always @(*) begin
                     alu_op       <= ALU_NOP;                //ALU无需操作
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
+                    is_branch_op <= 1'b1;
+                    end
+                `FUNCT_SYSCALL: begin                       //SYSCALL
+                    is_branch    <= 1'b1;
+                    new_pc       <= 32'h80001180;           //异常入口
+                    id_excep_info.is_excep <= 1'b1;
+                    id_excep_info.excep_code <= 8'd8;
                     end
                 default: begin
                     
@@ -253,11 +268,13 @@ always @(*) begin
                     branch_op <= BRA_BLTZ;
                     is_branch <= branch_result;
                     new_pc    <= branch_new_pc;
+                    is_branch_op <= 1'b1;
                     end
                 `BRANCH_BGEZ: begin                         //BGEZ
                     branch_op <= BRA_BGEZ;
                     is_branch <= branch_result;
                     new_pc    <= branch_new_pc;
+                    is_branch_op <= 1'b1;
                     end
                 default: begin
                     
@@ -270,30 +287,35 @@ always @(*) begin
             branch_op    <= BRA_BEQ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BNE: begin                                      //BNE
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BNE;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BLEZ: begin                                     //BLEZ
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BLEZ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BGTZ: begin                                     //BGTZ
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BLEZ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         /*******************   Jump   *********************/
         `OP_J: begin                                        //J(ump)
             reg_write_en <= 1'b0;
             is_branch    <= 1'b1;
             new_pc       <= jump_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_JAL: begin                                      //JAL
             reg_write_en <= 1'b1;
@@ -302,6 +324,7 @@ always @(*) begin
             alu_op       <= ALU_NOP;                        //ALU无需操作
             is_branch    <= 1'b1;
             new_pc       <= jump_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_LB: begin                                       //LB
             alu_op <= ALU_ADD;                              //需要计算出访存的地址
