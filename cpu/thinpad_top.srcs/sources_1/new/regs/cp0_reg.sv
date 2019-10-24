@@ -4,12 +4,13 @@ module cp0_reg (
     input   logic                       clk,                        //cp0寄存器的时钟信号
     input   logic                       rst,                        //寄存器复位信号
     input   logic                       write_en,                   //写使能
+    input   logic                       EPC_write_en,               //EPC写使能，同时也指示是否发生中断
     input   logic[`REGID_WIDTH-1:0]     raddr, waddr,               //读和写的地址
     input   logic[2:0]                  wsel, rsel,                 //select字段
     input   logic[5:0]                  hardware_int,               //硬件中断
-    input   logic[`DATA_WIDTH-1:0]      wdata,
+    input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in,
 
-    input   logic                       syscall_int,                //control发来是否发生系统调用中断
+    input   logic[7:0]                  excep_code,                 //exception handler告知异常码
     output  logic                       hw_int_o,                   //发给control是否发生硬件中断
 
     output  logic[`DATA_WIDTH-1:0]      reg_out,
@@ -55,10 +56,12 @@ end
 
 always @(posedge clk) begin
     Cause[15:10] <= hardware_int;
-    if (syscall_int) begin
-        Cause[7:0] <= 8'd8                      //系统调用中断号
-    end else if (hardware_int != 6'b000000) begin
-        Cause[7:0] <= 8'd0                      //硬件中断号
+    if (EPC_write_en) begin
+        Cause[7:0] <= excep_code;               //保存中断号,中断号统一由handler管理
+    end
+    if (Cause[15:10] & Status[15:10] != 6'b000000) begin
+        hw_int_o <= 1'b1;
+        //Cause[7:0] <= 8'd0;                     //硬件中断号
     end
     if (write_en) begin
         case(wname)
@@ -74,6 +77,9 @@ always @(posedge clk) begin
                 
             end
         endcase
+    end
+    if (EPC_write_en) begin                     //在发生异常的时候写EPC
+        EPC <= EPC_in;
     end
     if (rst) begin                                                  //cp0寄存器同步清零
         Status <= 32'h00000000;

@@ -250,8 +250,6 @@ always @(*) begin
                     is_branch_op <= 1'b1;
                     end
                 `FUNCT_SYSCALL: begin                       //SYSCALL
-                    is_branch    <= 1'b1;
-                    new_pc       <= 32'h80001180;           //异常入口
                     id_excep_info.is_excep <= 1'b1;
                     id_excep_info.excep_code <= 8'd8;
                     end
