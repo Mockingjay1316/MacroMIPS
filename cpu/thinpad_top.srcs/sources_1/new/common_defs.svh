@@ -86,9 +86,9 @@ typedef enum logic[6:0] {
 } cp0_name_t;
 
 typedef struct packed {
-    logic[31:0]     EPC,
-    logic           is_excep,
-    logic[7:0]      excep_code
+    logic[31:0]     EPC;
+    logic           is_excep;
+    logic[7:0]      excep_code;
 } excep_info_t;
 
 `endif
