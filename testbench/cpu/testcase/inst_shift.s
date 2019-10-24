@@ -1,5 +1,5 @@
 .org 0x0
-.glocal _start
+.global _start
 .set noat
 
 _start:

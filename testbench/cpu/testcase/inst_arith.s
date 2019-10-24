@@ -1,5 +1,5 @@
 .org 0x0
-.glocal _start
+.global _start
 .set noat
 
 _start:
@@ -8,7 +8,7 @@ _start:
 	ori   $7,  $0,  0x1
 	ori   $9,  $0,  0x1
 	ori   $10, $0,  0x1
-	lui   $31, $0,  0x1
+	lui   $31, 0x8000
 	addu  $1,  $31, $0
 	ori   $3,  $0,  0xFFFF
 	sltiu $4,  $3,  -1
