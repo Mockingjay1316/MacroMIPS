@@ -99,6 +99,17 @@ always_comb begin
             rdata   <= 32'h00000000;
         end
     endcase
+    if (rname == wname) begin
+        case (rname)
+            CP0_STATUS:     rdata   <= wdata;   //Status寄存器
+            CP0_CAUSE:      rdata   <= {Cause[31:24], wdata[23:22], Cause[21:10], wdata[9:8], Cause[7:0]};   //Cause
+            CP0_EPC:        rdata   <= wdata;   //EPC
+            CP0_EBASE:      rdata   <= wdata;   //EBse
+            default: begin
+                rdata   <= 32'h00000000;
+            end
+        endcase
+    end
 end
 
 endmodule

@@ -14,6 +14,8 @@ module control_unit (
     input   logic                       mem_reg_write_en,
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
+    input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
+
     input   logic                       mem_stall,
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
@@ -55,7 +57,7 @@ assign cp0_rsel = instr[2:0];
 assign cp0_wsel = instr[2:0];
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
-logic[`DATA_WIDTH-1:0] rdata1, rdata2;
+logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata_r;
 
 assign delay_slot_pc = old_pc + 3'b100;                                                 //延迟槽内指令的pc
 assign ret_pc = old_pc + 4'b1000;                                                       //返回应该返回到跳转指令的pc+8
@@ -95,6 +97,18 @@ always @(*) begin
         end
     end else begin
         rdata2 <= reg_rdata2;
+    end
+
+    if ((cp0_raddr == ex_cp0_op.cp0_waddr)
+        && (cp0_rsel == ex_cp0_op.cp0_sel)
+        && (ex_cp0_op.cp0_write_en == 1'b1)) begin
+        cp0_rdata_r <= ex_cp0_op.cp0_wval;
+    end else if ((cp0_raddr == mem_cp0_op.cp0_waddr)
+        && (cp0_rsel == mem_cp0_op.cp0_sel)
+        && (mem_cp0_op.cp0_write_en == 1'b1)) begin
+        cp0_rdata_r <= mem_cp0_op.cp0_wval;
+    end else begin
+        cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
     end
 end
 
@@ -384,7 +398,7 @@ always @(*) begin
             case(instr[25:21])
                 5'b00000: begin                             //MFC0
                     alu_op <= ALU_NOP;                      //空操作
-                    operand1 <= cp0_rdata;                  //读出来cp0的内容
+                    operand1 <= cp0_rdata_r;                //读出来cp0的内容(或来自旁通)(加了个r区别...)
                     reg_write_en <= 1'b1;
                     reg_waddr <= reg_raddr2;                //写寄存器的地址
                     end
