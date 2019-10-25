@@ -2,7 +2,7 @@
 
 module if_id_reg (
     input   logic                       clk,            //时钟信号
-    input   logic                       rst,            //复位信号
+    input   logic                       rst,            //复位信号,也接受flush信号
     input   logic                       stall,
     input   logic[`ADDR_WIDTH-1:0]      if_pc,          //if段的pc
     input   logic[`INST_WIDTH-1:0]      if_inst,        //if段取到的指令
