@@ -80,6 +80,13 @@ typedef struct packed {
     logic           reg_write_en;
 } reg_op_t;
 
+typedef struct packed {
+    logic[4:0]      cp0_waddr;
+    logic[2:0]      cp0_sel;
+    logic           cp0_write_en;
+    logic[31:0]     cp0_wval;
+} cp0_op_t;
+
 typedef enum logic[6:0] {
     CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
     CP0_UNKNOW
