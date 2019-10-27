@@ -52,7 +52,7 @@ initial begin
     instr = {`OP_ORI, 5'b00000, 5'b00001, 16'h0002}; #20;
     instr = {`OP_ORI, 5'b00000, 5'b00010, 16'h0002}; #20;
     instr = {`OP_ORI, 5'b00000, 5'b00011, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00100, 16'h0002}; #20;
+    instr = {`OP_COP0, 1'b1, 19'd0, `FUNCT_ERET}; #20;
     instr = {`OP_ORI, 5'b00000, 5'b00101, 16'h0002}; #20;
     instr = {`OP_ORI, 5'b00000, 5'b00110, 16'h0002}; #20;
     //instr = {`OP_LB, 5'b00000, 5'b00001, 16'hFF0F}; #20;
