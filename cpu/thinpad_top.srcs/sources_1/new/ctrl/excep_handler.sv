@@ -18,6 +18,7 @@ assign EPC_out = mem_excep_info.EPC;
 always_comb begin
     is_excep <= 1'b0;
     flush <= 5'b00000;
+    excep_code <= 8'b00000000;
     if (mem_excep_info.is_excep) begin
         is_excep <= 1'b1;
         flush <= 5'b01110;
