@@ -9,6 +9,8 @@ module cp0_reg (
     input   logic[2:0]                  wsel, rsel,                 //select字段
     input   logic[5:0]                  hardware_int,               //硬件中断
     input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in,
+    input   logic                       is_eret,                    //收到eret时需要进行一系列原子操作
+    output  logic[`DATA_WIDTH-1:0]      EPC_out,
 
     input   logic[7:0]                  excep_code,                 //exception handler告知异常码
     output  logic                       hw_int_o,                   //发给control是否发生硬件中断
@@ -20,6 +22,8 @@ module cp0_reg (
 logic[`DATA_WIDTH-1:0] Status, EBase, Cause, EPC;
 integer iter;
 cp0_name_t wname, rname;
+
+assign EPC_out = EPC;                                              //这里单纯读出EPC，是否EPC旁通在control处理
 
 //assign reg_out = regs[16];
 
@@ -80,6 +84,9 @@ always @(posedge clk) begin
     end
     if (EPC_write_en) begin                     //在发生异常的时候写EPC
         EPC <= EPC_in;
+    end
+    if (is_eret) begin
+        // TODO: eret logic
     end
     if (rst) begin                                                  //cp0寄存器同步清零
         Status <= 32'h00000000;
