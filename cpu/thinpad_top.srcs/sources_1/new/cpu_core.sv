@@ -34,7 +34,7 @@ logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
 assign if_inst = instruction;
 assign pc_out = if_pc;
 
-logic if_after_branch, id_after_branch, is_excep;
+logic if_after_branch, id_after_branch, is_excep, is_eret;
 
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
@@ -44,7 +44,7 @@ logic[`REGID_WIDTH-1:0] id_cp0_waddr, ex_cp0_waddr, mem_cp0_waddr, wb_cp0_waddr;
 logic[2:0] id_cp0_wsel, ex_cp0_wsel, mem_cp0_wsel, wb_cp0_wsel;
 logic id_cp0_write_en, ex_cp0_write_en, mem_cp0_write_en, wb_cp0_write_en;
 logic pc_write_en, EPC_write_en, hw_int_o;
-logic[`DATA_WIDTH-1:0] EPC_in;
+logic[`DATA_WIDTH-1:0] EPC_in, EPC_out;
 
 cp0_op_t ex_cp0_op, mem_cp0_op, wb_cp0_op;
 assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
@@ -82,7 +82,7 @@ pc_reg pc_reg_r (
 
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
-    .rst(reset_btn | flush[3]),
+    .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
     .stall(stall[3]),
     .if_pc(if_pc),
     .id_pc(id_pc),
@@ -113,6 +113,7 @@ cp0_reg cp0_reg_r (
     .rdata(cp0_rdata),
     .EPC_write_en(is_excep),
     .EPC_in,
+    .EPC_out,
     .excep_code,
     .hw_int_o,
     .write_en(wb_cp0_write_en),
@@ -136,6 +137,10 @@ control_unit control_unit_r (
     .cp0_waddr(id_cp0_waddr),
     .cp0_write_en(id_cp0_write_en),
     .cp0_wsel(id_cp0_wsel),
+    .cp0_raddr,
+    .cp0_rsel,
+    .cp0_rdata,
+    .cp0_EPC(EPC_out),
 
     .ex_alu_result(ex_alu_result),
     .ex_reg_waddr(ex_reg_waddr),
@@ -147,6 +152,9 @@ control_unit control_unit_r (
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal),
 
     .mem_stall(mem_stall),
+    .is_eret,                                       //指示是否遇到eret指令
+    .ex_cp0_op,
+    .mem_cp0_op,                                    //cp0旁通
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),

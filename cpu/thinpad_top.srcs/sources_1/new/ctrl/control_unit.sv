@@ -3,7 +3,7 @@
 module control_unit (
     input   logic[`INST_WIDTH-1:0]      instr,
     input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //从寄存器堆的输入，并非真的操作数（可能数据旁通）
-    input   logic[`DATA_WIDTH-1:0]      cp0_rdata,
+    input   logic[`DATA_WIDTH-1:0]      cp0_rdata, cp0_EPC,
 
     input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,               //数据旁通返回的结果，ex段
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
@@ -17,6 +17,7 @@ module control_unit (
     input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
 
     input   logic                       mem_stall,
+    output  logic                       is_eret,                    //eret没有延迟槽，需要刷掉if-id寄存器
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
@@ -57,7 +58,7 @@ assign cp0_rsel = instr[2:0];
 assign cp0_wsel = instr[2:0];
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
-logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata_r;
+logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata_r, real_EPC;
 
 assign delay_slot_pc = old_pc + 3'b100;                                                 //延迟槽内指令的pc
 assign ret_pc = old_pc + 4'b1000;                                                       //返回应该返回到跳转指令的pc+8
@@ -66,6 +67,7 @@ assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};             
 assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
 
 always @(*) begin
+    real_EPC <= cp0_EPC;
     stall <= 5'b00000;
     if ((reg_raddr1 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
@@ -103,10 +105,16 @@ always @(*) begin
         && (cp0_rsel == ex_cp0_op.cp0_sel)
         && (ex_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= ex_cp0_op.cp0_wval;
+        if (ex_cp0_op.cp0_waddr == 5'd14) begin
+            real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
+        end
     end else if ((cp0_raddr == mem_cp0_op.cp0_waddr)
         && (cp0_rsel == mem_cp0_op.cp0_sel)
         && (mem_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= mem_cp0_op.cp0_wval;
+        if (mem_cp0_op.cp0_waddr == 5'd14) begin
+            real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
+        end
     end else begin
         cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
     end
@@ -132,6 +140,7 @@ always @(*) begin
     cp0_write_en <= 1'b0;
     id_excep_info.is_excep <= 1'b0;
     is_branch_op <= 1'b0;
+    is_eret <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -413,7 +422,9 @@ always @(*) begin
             endcase
             case(funct)
                 `FUNCT_ERET: begin                          //ERET
-                    //TODO: finish ERET
+                    is_eret <= 1'b1;
+                    is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
+                    new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
                     end
                 default: begin
                     
