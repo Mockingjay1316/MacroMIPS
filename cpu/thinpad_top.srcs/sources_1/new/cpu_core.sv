@@ -16,6 +16,7 @@ module cpu_core (
     output  logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out,
     output  logic[4:0]                  mem_ctrl_signal,
     output  logic                       is_uart,
+    input   logic[5:0]                  hardware_int,               //硬件中断
     input   logic[`DATA_WIDTH-1:0]      mem_rdata,
     input   logic[`INST_WIDTH-1:0]      instruction     //调试信号，用来在不实现访存模块时输入指令
 );
@@ -116,6 +117,7 @@ cp0_reg cp0_reg_r (
     .EPC_out,
     .excep_code,
     .hw_int_o,
+    .hardware_int,
     .write_en(wb_cp0_write_en),
     .waddr(wb_cp0_waddr),
     .wsel(wb_cp0_wsel),

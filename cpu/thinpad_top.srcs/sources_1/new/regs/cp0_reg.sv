@@ -63,7 +63,7 @@ always @(posedge clk) begin
     if (EPC_write_en) begin
         Cause[7:0] <= excep_code;               //保存中断号,中断号统一由handler管理
     end
-    if (Cause[15:10] & Status[15:10] != 6'b000000) begin
+    if ((Cause[15:10] & Status[15:10]) != 6'b000000) begin
         hw_int_o <= 1'b1;
         //Cause[7:0] <= 8'd0;                     //硬件中断号
     end

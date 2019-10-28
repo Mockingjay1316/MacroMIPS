@@ -86,6 +86,9 @@ logic[`ADDR_WIDTH-1:0] pc, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, sram_rdata, uart_rdata, reg_out, mem_rdata;
 logic[4:0] mem_ctrl_signal;
 logic is_uart, mem_stall;
+logic[5:0] hardware_int;
+
+assign hardware_int = 6'b000000;        //禁用掉了硬件中断
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -107,6 +110,7 @@ cpu_core cpu (
     .dpy0(dpy0),
     .dpy1(dpy1),
 
+    .hardware_int,
     .pc_out(pc),
     .mem_addr(mem_addr),
     .mem_wdata(mem_wdata),
