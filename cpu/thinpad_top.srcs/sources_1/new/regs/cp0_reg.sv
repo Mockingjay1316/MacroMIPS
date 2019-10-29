@@ -60,6 +60,7 @@ end
 
 always @(posedge clk) begin
     Cause[15:10] <= hardware_int;
+    hw_int_o <= 1'b0;
     if (EPC_write_en) begin
         Cause[7:0] <= excep_code;               //保存中断号,中断号统一由handler管理
     end
@@ -93,6 +94,7 @@ always @(posedge clk) begin
         Cause <= 32'h00000000;
         EPC <= 32'h00000000;
         EBase <= 32'h00000000;
+        hw_int_o <= 1'b0;
     end
 end
 

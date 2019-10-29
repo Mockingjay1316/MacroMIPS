@@ -23,8 +23,7 @@ always_comb begin
         is_excep <= 1'b1;
         flush <= 5'b01110;
         excep_code <= 8'd8;
-    end
-    if (hardware_int) begin
+    end else if (hardware_int) begin
         is_excep <= 1'b1;
         flush <= 5'b01110;
         excep_code <= 8'd0;
