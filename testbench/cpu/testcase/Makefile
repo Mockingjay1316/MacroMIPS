@@ -1,35 +1,54 @@
+RM	:= rm -f
+ifeq ($(OS),Windows_NT)
+# Windows Host
+GCCPREFIX	?= mips-mti-elf-
+else
+#GCCPREFIX	:= mipsel-linux-gnu-
+GCCPREFIX	?= mips-mti-elf-
+endif
+QEMU := qemu-system-mipsel
+LD	:= $(GCCPREFIX)ld
+CC	:= $(GCCPREFIX)gcc
+MODULE	:= init
+OBJDIR	:= obj
+INCLUDE	:= include
+SRCDIR	:= kern
+LDSCRIPT	:= kern/kernel.ld
+SRC	:= $(foreach sdir, $(SRCDIR), $(wildcard $(sdir)/*.S))
+OBJ	:= $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(SRC))
+TARGET	:= kernel.elf
+ASFLAG	:= -D__ASSEMBLY__ -EL -g -mips32r2 -mno-abicalls -mno-shared
 
-GCCPREFIX	?=mipsel-linux-musl-
+CONFIG_FILE := .config_$(ON_FPGA)_$(EN_INT)_$(EN_TLB)
 
-override CFLAGS	+= -fno-builtin -nostdlib  -nostdinc -g  -EL -G0 -Wformat
-override LDFLAGS	+= -nostdlib -EL -n -G0
+.PHONY: all clean show-utest
 
-CC :=$(GCCPREFIX)gcc
-LD      := $(GCCPREFIX)ld
-AS      := $(GCCPREFIX)as -EL -g -mips32
-AR      := $(GCCPREFIX)ar
-OBJCOPY := $(GCCPREFIX)objcopy
-OBJDUMP := $(GCCPREFIX)objdump
+all: $(TARGET) kernel.bin
 
-SRC   := $(wildcard *.s)
-COES  := $(patsubst %.s, %.coe, $(SRC))
-MIFS  := $(patsubst %.s, %.mif, $(SRC))
-BINS  := $(patsubst %.s, %.bin, $(SRC))
-MEMS  := $(patsubst %.s, %.mem, $(SRC))
+$(CONFIG_FILE):
+	@rm -f .config_*
+	touch $@
 
-all: $(BINS)
+$(TARGET): checkdirs $(OBJ) $(LDSCRIPT)
+	$(LD) $(OBJ) -T$(LDSCRIPT)
 
-%.rom.bin: %.rom.elf
-	$(OBJCOPY) -j .text -O binary  -S $^ $@
+$(OBJ): $(OBJDIR)/%.o : $(SRCDIR)/%.S $(CONFIG_FILE)
+	$(CC) -o $@ $< -c -I$(INCLUDE) $(ASFLAG)
 
-%.rom.elf: %.o
-	$(LD) $(LDFLAGS) -Ttext 0xbfc00000 -o $@ $^
 
-%.bin: %.elf
-	$(OBJCOPY) -j .text -O binary $^ $@
+checkdirs: $(OBJDIR)
 
-%.elf: %.o
-	$(LD) $(LDFLAGS) -Ttext 0x80000000 -o $@ $^
+$(OBJDIR):
+	test -d $@ || mkdir $@
 
-%.o: %.s
-	$(CC) $(CFLAGS) -x assembler-with-cpp -g -c -o $@ $^
+kernel.bin: $(TARGET)
+	@$(GCCPREFIX)objcopy -j .text -j .text.* -O binary -v $< kernel.bin
+
+
+.PHONY: commits-num show-utest sim clean
+
+commits-num:
+	@git log --pretty=format:"commit %H" | grep -c 'commit'
+
+clean:
+	-$(RM) -r $(OBJDIR)
