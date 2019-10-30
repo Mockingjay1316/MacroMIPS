@@ -174,35 +174,55 @@ assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
 logic[7:0] ext_uart_rx;
 logic[7:0] ext_uart_buffer, ext_uart_tx;
-logic ext_uart_ready, ext_uart_busy;
+logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
+uart_rstate_t uart_rstate;
 
 async_receiver #(.ClkFrequency(60000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
         .clk(peri_clk),                                 //外部时钟信号
         .RxD(rxd),                                      //外部串行信号输入
         .RxD_data_ready(ext_uart_ready),                //数据接收到标志
-        .RxD_clear(ext_uart_ready),                     //清除接收标志
+        .RxD_clear(ext_uart_clear),                     //清除接收标志
         .RxD_data(ext_uart_rx)                          //接收到的一字节数据
     );
 
 assign ext_uart_wavai = mem_ctrl_signal[3] & is_uart;
 logic[1:0] counter;
 
-always @(posedge ext_uart_ready) begin                         //接收到缓冲区ext_uart_buffer
+always @(posedge peri_clk) begin
     if (reset_btn) begin
-        ext_uart_read_status <= 1'b0;
+        uart_rstate <= UART_RWAIT;
+        ext_uart_read_status <= ext_uart_already_read_status;
     end else begin
-        ext_uart_read_status <= ~ext_uart_read_status;
-        ext_uart_buffer <= ext_uart_rx;
+        case(uart_rstate)
+            UART_RWAIT: begin
+                ext_uart_clear <= 1'b0;
+                if (ext_uart_ready) begin
+                    uart_rstate <= UART_RREAD;
+                end
+                end
+            UART_RREAD: begin
+                uart_rstate <= UART_RACK;
+                ext_uart_buffer <= ext_uart_rx;         //读入数据
+                ext_uart_read_status <= ~ext_uart_read_status;
+                end
+            UART_RACK: begin
+                uart_rstate <= UART_RWAIT;
+                ext_uart_clear <= 1'b1;
+                end
+            default: begin
+                
+                end
+        endcase
     end
 end
 
 always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发送出去
     if (!ext_uart_busy && ext_uart_wavai) begin
-        ext_uart_start <= 1;
+        ext_uart_start <= 1'b1;
     end else begin
-        ext_uart_start <= 0;
+        ext_uart_start <= 1'b0;
     end
 end
 
@@ -217,6 +237,9 @@ always @(*) begin
             ext_uart_already_read_status <= ext_uart_read_status;
             uart_rdata <= {24'b0, ext_uart_buffer};
         end
+    end
+    if (rst) begin
+        ext_uart_already_read_status <= 1'b0;
     end
 end
 
