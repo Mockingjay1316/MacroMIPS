@@ -98,4 +98,8 @@ typedef struct packed {
     logic[7:0]      excep_code;
 } excep_info_t;
 
+typedef enum logic[2:0] {
+    UART_RWAIT, UART_RREAD, UART_RACK
+} uart_rstate_t;
+
 `endif
