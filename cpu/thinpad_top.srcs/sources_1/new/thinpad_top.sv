@@ -89,6 +89,8 @@ logic is_uart, mem_stall;
 logic[5:0] hardware_int;
 
 assign hardware_int = 6'b000000;        //禁用掉了硬件中断
+assign uart_rdn = 1'b1;
+assign uart_wrn = 1'b1;
 
 main_pll pll (
     .clk_in1(clk_50M),
