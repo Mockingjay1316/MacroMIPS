@@ -16,7 +16,7 @@ integer iter;
 
 assign reg_out = regs[16];
 
-always @(posedge clk) begin
+always @(posedge clk or posedge rst) begin
     if (write_en) begin
         regs[waddr] <= wdata;
     end

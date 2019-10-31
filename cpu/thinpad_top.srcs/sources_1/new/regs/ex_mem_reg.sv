@@ -19,7 +19,7 @@ module ex_mem_reg (
     output  excep_info_t                mem_excep_info
 );
 
-always @(posedge clk) begin
+always @(posedge clk or posedge rst) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
         mem_alu_result <= `DATA_WIDTH'h00000000;
         mem_reg_write_en <= 1'b0;

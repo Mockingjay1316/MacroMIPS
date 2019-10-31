@@ -65,7 +65,7 @@ always @(*) begin
     end
 end
 
-always @(posedge peri_clk) begin
+always @(posedge peri_clk or posedge rst) begin
     if (rst) begin
         base_ram_ce_n <= 1'b1;
         base_ram_oe_n <= 1'b1;
