@@ -34,7 +34,14 @@ logic[31:0] base_wdata, ext_wdata, rdata;
 assign ext_ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 assign rdata = is_data_read ? (data_addr[22] ? ext_ram_data : base_ram_data) : 32'h00000000;
-assign mem_stall = ~data_addr[22] & (load_from_mem | data_write_en);
+
+always_comb begin
+    if (data_addr >= 32'h80000000 && data_addr <= 32'h80800000) begin
+        mem_stall <= ~data_addr[22] & (load_from_mem | data_write_en);
+    end else begin
+        mem_stall <= 1'b0;
+    end
+end
 
 always @(*) begin
     if (~mem_byte_en | ~data_write_en) begin
