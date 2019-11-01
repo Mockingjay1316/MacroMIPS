@@ -193,14 +193,14 @@ assign ext_uart_wavai = mem_ctrl_signal[3] & is_uart;
 logic[1:0] counter;
 
 always @(posedge peri_clk) begin
-    if (reset_btn) begin
+    if (reset_btn | ~rst) begin
         uart_rstate <= UART_RWAIT;
         ext_uart_read_status <= ext_uart_already_read_status;
     end else begin
         case(uart_rstate)
             UART_RWAIT: begin
                 ext_uart_clear <= 1'b0;
-                if (ext_uart_ready) begin
+                if (ext_uart_ready & ~ext_uart_clear) begin
                     uart_rstate <= UART_RREAD;
                 end
                 end
@@ -243,7 +243,7 @@ always @(*) begin
 end
 
 always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发送出去
-    if (reset_btn) begin
+    if (reset_btn | ~rst) begin
         ext_uart_already_read_status <= 1'b0;
     end else if (is_uart & mem_ctrl_signal[2] && mem_addr[3:0] == 4'h8) begin
         ext_uart_already_read_status <= ext_uart_read_status;
