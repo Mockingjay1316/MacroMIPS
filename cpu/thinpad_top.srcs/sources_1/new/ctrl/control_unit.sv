@@ -139,8 +139,10 @@ always @(*) begin
     is_mem_data_read <= 1'b0;
     cp0_write_en <= 1'b0;
     id_excep_info.is_excep <= 1'b0;
+    id_excep_info.excep_code <= 8'd0;
     is_branch_op <= 1'b0;
     is_eret <= 1'b0;
+    mem_data <= 32'h00000000;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
