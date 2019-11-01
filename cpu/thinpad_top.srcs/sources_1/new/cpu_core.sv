@@ -84,7 +84,7 @@ pc_reg pc_reg_r (
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
-    .stall(stall[3]),
+    .stall(stall[3] | mem_stall),
     .if_pc(if_pc),
     .id_pc(id_pc),
     .if_after_branch,

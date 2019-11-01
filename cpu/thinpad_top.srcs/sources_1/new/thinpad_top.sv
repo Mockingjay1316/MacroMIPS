@@ -222,7 +222,9 @@ end
 
 always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发送出去
     if (!ext_uart_busy && ext_uart_wavai) begin
-        ext_uart_start <= 1'b1;
+        if (mem_addr[3:0] == 4'h8) begin
+            ext_uart_start <= 1'b1;
+        end
     end else begin
         ext_uart_start <= 1'b0;
     end
@@ -233,15 +235,18 @@ always @(*) begin
         uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
     end else if (mem_addr[3:0] == 4'h8) begin
         if (mem_ctrl_signal[3] & is_uart) begin
-            //ext_uart_wavai <= 1;
             ext_uart_tx <= mem_wdata[7:0];
-        end else begin
-            ext_uart_already_read_status <= ext_uart_read_status;
+        end else if (is_uart) begin
             uart_rdata <= {24'b0, ext_uart_buffer};
         end
     end
-    if (rst) begin
+end
+
+always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发送出去
+    if (reset_btn) begin
         ext_uart_already_read_status <= 1'b0;
+    end else if (is_uart & mem_ctrl_signal[2] && mem_addr[3:0] == 4'h8) begin
+        ext_uart_already_read_status <= ext_uart_read_status;
     end
 end
 

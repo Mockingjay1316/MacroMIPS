@@ -437,6 +437,22 @@ always @(*) begin
             
             end
     endcase
+
+    if (mem_stall) begin
+        reg_write_en <= 1'b0;
+        is_branch <= 1'b0;
+        load_from_mem <= 1'b0;
+        mem_byte_en <= 1'b0;
+        mem_sign_ext <= 1'b0;
+        mem_data_write_en <= 1'b0;
+        is_mem_data_read <= 1'b0;
+        cp0_write_en <= 1'b0;
+        id_excep_info.is_excep <= 1'b0;
+        id_excep_info.excep_code <= 8'd0;
+        is_branch_op <= 1'b0;
+        is_eret <= 1'b0;
+        mem_data <= 32'h00000000;
+    end
 end
 
 endmodule
