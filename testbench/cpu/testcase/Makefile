@@ -21,8 +21,8 @@ all: $(MEMS)
 	$(AS) -o $@ $^
 
 %.mem: %.o
-	$(OBJCOPY) -O binary -j.text $^ $@
+	$(OBJCOPY) --dump-section .text=/dev/stdout $< | xxd -c 4 -g 32 | cut -f 2 -d " " > $@
 
 clean:
-	rm *.mem *.bin
+	rm *.mem
 
