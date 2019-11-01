@@ -13,7 +13,7 @@ module if_id_reg (
     output  logic                       id_after_branch
 );
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
         id_pc <= 32'h00000000;
         id_inst <= 32'h00000000;

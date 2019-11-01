@@ -12,8 +12,19 @@ module pc_reg (
     output  logic[`ADDR_WIDTH-1:0]      pc_out          //下一条指令的pc
 );
 
-always @(posedge clk or posedge rst) begin
+logic [1:0] cnt;
+
+always @(posedge clk) begin
     if (rst) begin
+        cnt <= 2'b11;
+    end else begin
+        if (cnt >= 1) begin
+            cnt <= cnt - 1;
+        end
+    end
+    if (rst) begin
+        pc_out <= 32'h80000000;                         //程序入口
+    end else if (cnt > 0) begin
         pc_out <= 32'h80000000;                         //程序入口
     end else if (is_excep) begin
         pc_out <= 32'h80001180;                         //异常入口

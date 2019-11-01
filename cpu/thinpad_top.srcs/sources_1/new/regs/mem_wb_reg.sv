@@ -15,7 +15,7 @@ module mem_wb_reg (
     output  logic                       wb_reg_write_en, wb_cp0_write_en
 );
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
         wb_reg_wdata <= `DATA_WIDTH'h00000000;
         wb_reg_write_en <= 1'b0;

@@ -21,7 +21,7 @@ module id_ex_reg (
     output  excep_info_t                ex_excep_info
 );
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin                      //若复位信号，则将下一级的输出置0
         ex_alu_op <= ALU_NOP;
         ex_operand1 <= `DATA_WIDTH'h00000000;
