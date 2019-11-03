@@ -74,6 +74,10 @@ always @(posedge peri_clk) begin
         ext_ram_ce_n  <= 1'b1;
         ext_ram_oe_n  <= 1'b1;
         ext_ram_we_n  <= 1'b1;
+    end else if (data_addr >= 32'hbfd003f8) begin
+        ext_ram_ce_n  <= 1'b1;
+        ext_ram_oe_n  <= 1'b1;
+        ext_ram_we_n  <= 1'b1;
     end else if (main_clk == 1'b1) begin
         base_ram_ce_n <= 1'b0;
         base_ram_oe_n <= 1'b0;
