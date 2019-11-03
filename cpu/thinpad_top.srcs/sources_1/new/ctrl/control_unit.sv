@@ -3,6 +3,7 @@
 module control_unit (
     input   logic[`INST_WIDTH-1:0]      instr,
     input   logic[`DATA_WIDTH-1:0]      reg_rdata1, reg_rdata2,     //从寄存器堆的输入，并非真的操作数（可能数据旁通）
+    input   logic[`DATA_WIDTH-1:0]      cp0_rdata, cp0_EPC,
 
     input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr,               //数据旁通返回的结果，ex段
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result,
@@ -13,16 +14,27 @@ module control_unit (
     input   logic                       mem_reg_write_en,
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
+    input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
+
     input   logic                       mem_stall,
+    output  logic                       is_eret,                    //eret没有延迟槽，需要刷掉if-id寄存器
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
     output  logic                       reg_write_en,
     output  alu_op_t                    alu_op,                     //解析出来的alu指令
 
+    output  logic[`REGID_WIDTH-1:0]     cp0_raddr, cp0_waddr,
+    output  logic                       cp0_write_en,
+    output  logic[2:0]                  cp0_rsel, cp0_wsel,
+
     input   logic[`ADDR_WIDTH-1:0]      old_pc,
+    input   logic                       after_branch,               //是否是延迟槽里的指令
+    output  logic                       is_branch_op,               //是否是分支指令(和is_branch区别)
     output  logic                       is_branch,                  //是否执行分支转移
     output  logic[`ADDR_WIDTH-1:0]      new_pc,                     //转移到的新的PC
+
+    output  excep_info_t                id_excep_info,
 
     output  logic                       load_from_mem, mem_data_write_en,
     output  logic                       is_mem_data_read, mem_byte_en,
@@ -37,19 +49,25 @@ logic[4:0]  sa;
 assign reg_raddr1 = instr[25:21];
 assign reg_raddr2 = instr[20:16];
 assign imm_unext = instr[15:0];
-assign funct = instr[31:26];
-assign op = instr[5:0];
+assign op = instr[31:26];
+assign funct = instr[5:0];
 assign sa = instr[10:6];
+assign cp0_raddr = instr[15:11];
+assign cp0_waddr = instr[15:11];
+assign cp0_rsel = instr[2:0];
+assign cp0_wsel = instr[2:0];
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
-logic[`DATA_WIDTH-1:0] rdata1, rdata2;
+logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata_r, real_EPC;
 
-assign delay_slot_pc = old_pc + 3'b100;
-assign ret_pc = old_pc + 4'b1000;
-assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;
-assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};
+assign delay_slot_pc = old_pc + 3'b100;                                                 //延迟槽内指令的pc
+assign ret_pc = old_pc + 4'b1000;                                                       //返回应该返回到跳转指令的pc+8
+assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;   //branch指令的新pc
+assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};                     //Jump指令的新pc
+assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
 
 always @(*) begin
+    real_EPC <= cp0_EPC;
     stall <= 5'b00000;
     if ((reg_raddr1 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
@@ -82,6 +100,24 @@ always @(*) begin
     end else begin
         rdata2 <= reg_rdata2;
     end
+
+    if ((cp0_raddr == ex_cp0_op.cp0_waddr)
+        && (cp0_rsel == ex_cp0_op.cp0_sel)
+        && (ex_cp0_op.cp0_write_en == 1'b1)) begin
+        cp0_rdata_r <= ex_cp0_op.cp0_wval;
+        if (ex_cp0_op.cp0_waddr == 5'd14) begin
+            real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
+        end
+    end else if ((cp0_raddr == mem_cp0_op.cp0_waddr)
+        && (cp0_rsel == mem_cp0_op.cp0_sel)
+        && (mem_cp0_op.cp0_write_en == 1'b1)) begin
+        cp0_rdata_r <= mem_cp0_op.cp0_wval;
+        if (mem_cp0_op.cp0_waddr == 5'd14) begin
+            real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
+        end
+    end else begin
+        cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
+    end
 end
 
 logic branch_result;
@@ -101,7 +137,13 @@ always @(*) begin
     mem_sign_ext <= 1'b0;
     mem_data_write_en <= 1'b0;
     is_mem_data_read <= 1'b0;
-    case(funct)
+    cp0_write_en <= 1'b0;
+    id_excep_info.is_excep <= 1'b0;
+    id_excep_info.excep_code <= 8'd0;
+    is_branch_op <= 1'b0;
+    is_eret <= 1'b0;
+    mem_data <= 32'h00000000;
+    case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
             alu_op <= ALU_ADD;
@@ -158,7 +200,7 @@ always @(*) begin
             operand2 <= rdata2;
             reg_waddr <= instr[15:11];
             reg_write_en <= 1'b0;
-            case (op)
+            case (funct)
                 `FUNCT_SLL: begin                           //SLL
                     alu_op <= ALU_SLL;
                     operand1 <= {27'b0, sa};
@@ -222,6 +264,7 @@ always @(*) begin
                     reg_write_en <= 1'b0;
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
+                    is_branch_op <= 1'b1;
                     end
                 `FUNCT_JALR: begin                          //JALR
                     reg_write_en <= 1'b1;
@@ -229,6 +272,11 @@ always @(*) begin
                     alu_op       <= ALU_NOP;                //ALU无需操作
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
+                    is_branch_op <= 1'b1;
+                    end
+                `FUNCT_SYSCALL: begin                       //SYSCALL
+                    id_excep_info.is_excep <= 1'b1;
+                    id_excep_info.excep_code <= 8'd8;
                     end
                 default: begin
                     
@@ -243,11 +291,13 @@ always @(*) begin
                     branch_op <= BRA_BLTZ;
                     is_branch <= branch_result;
                     new_pc    <= branch_new_pc;
+                    is_branch_op <= 1'b1;
                     end
                 `BRANCH_BGEZ: begin                         //BGEZ
                     branch_op <= BRA_BGEZ;
                     is_branch <= branch_result;
                     new_pc    <= branch_new_pc;
+                    is_branch_op <= 1'b1;
                     end
                 default: begin
                     
@@ -260,30 +310,35 @@ always @(*) begin
             branch_op    <= BRA_BEQ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BNE: begin                                      //BNE
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BNE;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BLEZ: begin                                     //BLEZ
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BLEZ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_BGTZ: begin                                     //BGTZ
             reg_write_en <= 1'b0;
             branch_op    <= BRA_BLEZ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
+            is_branch_op <= 1'b1;
             end
         /*******************   Jump   *********************/
         `OP_J: begin                                        //J(ump)
             reg_write_en <= 1'b0;
             is_branch    <= 1'b1;
             new_pc       <= jump_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_JAL: begin                                      //JAL
             reg_write_en <= 1'b1;
@@ -292,6 +347,7 @@ always @(*) begin
             alu_op       <= ALU_NOP;                        //ALU无需操作
             is_branch    <= 1'b1;
             new_pc       <= jump_new_pc;
+            is_branch_op <= 1'b1;
             end
         `OP_LB: begin                                       //LB
             alu_op <= ALU_ADD;                              //需要计算出访存的地址
@@ -346,12 +402,73 @@ always @(*) begin
             load_from_mem <= 1'b0;                          //需要从mem里load
             mem_data_write_en <= 1'b1;                      //内存写使能置1
             is_mem_data_read <= 1'b0;                       //数据写操作
-            mem_byte_en <= 1'b1;                            //需要字节使能
+            end
+        /********************   CP0   *********************/
+        `OP_COP0: begin
+            case(instr[25:21])
+                5'b00000: begin                             //MFC0
+                    alu_op <= ALU_NOP;                      //空操作
+                    operand1 <= cp0_rdata_r;                //读出来cp0的内容(或来自旁通)(加了个r区别...)
+                    reg_write_en <= 1'b1;
+                    reg_waddr <= reg_raddr2;                //写寄存器的地址
+                    end
+                5'b00100: begin                             //MTC0
+                    alu_op <= ALU_NOP;                      //空操作
+                    operand1 <= reg_rdata2;                 //读出来通用寄存器的内容
+                    cp0_write_en <= 1'b1;
+                    end
+                default: begin
+
+                    end
+            endcase
+            case(funct)
+                `FUNCT_ERET: begin                          //ERET
+                    is_eret <= 1'b1;
+                    is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
+                    new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
+                    end
+                default: begin
+                    
+                    end
+            endcase
             end
         default: begin
             
             end
     endcase
+
+    if (mem_stall) begin
+        reg_write_en <= 1'b0;
+        is_branch <= 1'b0;
+        load_from_mem <= 1'b0;
+        mem_byte_en <= 1'b0;
+        mem_sign_ext <= 1'b0;
+        mem_data_write_en <= 1'b0;
+        is_mem_data_read <= 1'b0;
+        cp0_write_en <= 1'b0;
+        id_excep_info.is_excep <= 1'b0;
+        id_excep_info.excep_code <= 8'd0;
+        is_branch_op <= 1'b0;
+        is_eret <= 1'b0;
+        mem_data <= 32'h00000000;
+    end
+    /*
+    if (stall == `STALL_BEF_ID) begin
+        reg_write_en <= 1'b0;
+        is_branch <= 1'b0;
+        load_from_mem <= 1'b0;
+        mem_byte_en <= 1'b0;
+        mem_sign_ext <= 1'b0;
+        mem_data_write_en <= 1'b0;
+        is_mem_data_read <= 1'b0;
+        cp0_write_en <= 1'b0;
+        id_excep_info.is_excep <= 1'b0;
+        id_excep_info.excep_code <= 8'd0;
+        is_branch_op <= 1'b0;
+        is_eret <= 1'b0;
+        mem_data <= 32'h00000000;
+    end
+    */
 end
 
 endmodule
