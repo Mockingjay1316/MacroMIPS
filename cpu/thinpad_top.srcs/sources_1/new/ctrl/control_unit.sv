@@ -402,7 +402,6 @@ always @(*) begin
             load_from_mem <= 1'b0;                          //需要从mem里load
             mem_data_write_en <= 1'b1;                      //内存写使能置1
             is_mem_data_read <= 1'b0;                       //数据写操作
-            mem_byte_en <= 1'b1;                            //需要字节使能
             end
         /********************   CP0   *********************/
         `OP_COP0: begin
@@ -453,6 +452,23 @@ always @(*) begin
         is_eret <= 1'b0;
         mem_data <= 32'h00000000;
     end
+    /*
+    if (stall == `STALL_BEF_ID) begin
+        reg_write_en <= 1'b0;
+        is_branch <= 1'b0;
+        load_from_mem <= 1'b0;
+        mem_byte_en <= 1'b0;
+        mem_sign_ext <= 1'b0;
+        mem_data_write_en <= 1'b0;
+        is_mem_data_read <= 1'b0;
+        cp0_write_en <= 1'b0;
+        id_excep_info.is_excep <= 1'b0;
+        id_excep_info.excep_code <= 8'd0;
+        is_branch_op <= 1'b0;
+        is_eret <= 1'b0;
+        mem_data <= 32'h00000000;
+    end
+    */
 end
 
 endmodule
