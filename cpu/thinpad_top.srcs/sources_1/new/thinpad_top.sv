@@ -88,7 +88,7 @@ logic[4:0] mem_ctrl_signal;
 logic is_uart, mem_stall;
 logic[5:0] hardware_int;
 
-assign hardware_int = 6'b000000;        //禁用掉了硬件中断
+assign hardware_int = {3'b000, ext_uart_already_read_status^ext_uart_read_status, 2'b00};        //打开了硬件中断
 assign uart_rdn = 1'b1;
 assign uart_wrn = 1'b1;
 
