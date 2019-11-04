@@ -414,7 +414,7 @@ always @(*) begin
                     end
                 5'b00100: begin                             //MTC0
                     alu_op <= ALU_NOP;                      //空操作
-                    operand1 <= reg_rdata2;                 //读出来通用寄存器的内容
+                    operand1 <= rdata2;                     //读出来通用寄存器的内容(旁通了)
                     cp0_write_en <= 1'b1;
                     end
                 default: begin
