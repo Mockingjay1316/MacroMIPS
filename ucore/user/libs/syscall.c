@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <syscall.h>
 
+
 #define MAX_ARGS            4
 #define SYSCALL_BASE        0x80
 
@@ -18,7 +19,7 @@ syscall(int num, ...) {
     va_end(ap);
 
     num += SYSCALL_BASE;
-
+    
     asm volatile(
       ".set noreorder;\n"
       "move $v0, %1;\n" /* syscall no. */

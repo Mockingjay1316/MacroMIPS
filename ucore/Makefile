@@ -54,8 +54,9 @@ INCLUDES  := $(addprefix -I,$(SRC_DIR))
 INCLUDES  += -I$(SRCDIR)/include
 
 # reserve 1MB for user app
-USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep
-INITRD_BLOCK_CNT := 2000 
+USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep cp
+# INITRD_BLOCK_CNT := 2000 
+INITRD_BLOCK_CNT := 4096
 
 ifeq  ($(ON_FPGA), y)
 FPGA_LD_FLAGS += -S
@@ -180,6 +181,11 @@ $(OBJDIR)/ucore-kernel-initrd: $(BUILD_DIR) $(TOOL_MKSFS) $(OBJ) $(USER_APP_BINS
 	$(LD) $(FPGA_LD_FLAGS) $(LDFLAGS_SCRIPT) $(OBJ) \
 				 $(USER_OBJDIR)/initrd.img.o -o $@
 	rm -rf $(ROOTFS_DIR)
+
+$(OBJDIR)/ucore.ub: $(OBJDIR)/ucore-kernel-initrd
+	$(OBJCOPY) -O binary -v $^ $(OBJDIR)/ucore.bin
+	mkimage -A mips -O u-boot -T kernel -C none -a 0x80000040 -e 0x80000040 \
+	-n ucore-thumips -d $(OBJDIR)/ucore.bin $@
 
 boot/loader.bin: boot/bootasm.S
 	$(CC) $(CFLAGS) -g -c -o boot/loader.o $^
