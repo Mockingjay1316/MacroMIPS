@@ -20,6 +20,7 @@ module cp0_reg (
 );
 
 logic[`DATA_WIDTH-1:0] Status, EBase, Cause, EPC;
+logic[5:0] hw_int;
 integer iter;
 cp0_name_t wname, rname;
 
@@ -58,16 +59,18 @@ always_comb begin                                                   //parsing in
     endcase
 end
 
-always @(posedge clk) begin
-    Cause[15:10] <= hardware_int;
+always_comb begin
+    hw_int <= hardware_int;
     hw_int_o <= 1'b0;
-    if (EPC_write_en) begin
-        Cause[7:0] <= excep_code;               //保存中断号,中断号统一由handler管理
+    if ((hw_int & Status[15:10]) != 6'b000000) begin            //把Cause[15:10](也就是h_int)和中断屏蔽与一下
+        hw_int_o <= 1'b1;                                       //硬件中断号统一由handler管理
     end
-    if ((Cause[15:10] & Status[15:10]) != 6'b000000) begin
-        hw_int_o <= 1'b1;
-        //Cause[7:0] <= 8'd0;                     //硬件中断号
+    if (rst) begin
+        hw_int_o <= 1'b0;
     end
+end
+
+always @(posedge clk) begin
     if (write_en) begin
         case(wname)
             CP0_STATUS:     Status  <= wdata;   //写Status寄存器
@@ -84,17 +87,18 @@ always @(posedge clk) begin
         endcase
     end
     if (EPC_write_en) begin                     //在发生异常的时候写EPC
-        EPC <= EPC_in;
+        EPC         <= EPC_in;
+        Status[2]   <= 1'b1;                    //EXL置位表示发生异常，这样也会禁用硬件中断
+        Cause[7:0]  <= excep_code;              //保存中断号,中断号统一由handler管理
     end
     if (is_eret) begin
-        // TODO: eret logic
+        Status[2]   <= 1'b0;                    //清除EXL位
     end
     if (rst) begin                                                  //cp0寄存器同步清零
         Status <= 32'h00000000;
         Cause <= 32'h00000000;
         EPC <= 32'h00000000;
         EBase <= 32'h00000000;
-        hw_int_o <= 1'b0;
     end
 end
 
@@ -111,7 +115,7 @@ always_comb begin
     if (rname == wname) begin
         case (rname)
             CP0_STATUS:     rdata   <= wdata;   //Status寄存器
-            CP0_CAUSE:      rdata   <= {Cause[31:24], wdata[23:22], Cause[21:10], wdata[9:8], Cause[7:0]};   //Cause
+            CP0_CAUSE:      rdata   <= {Cause[31:24], wdata[23:22], Cause[21:16], hw_int, wdata[9:8], Cause[7:0]};   //Cause
             CP0_EPC:        rdata   <= wdata;   //EPC
             CP0_EBASE:      rdata   <= wdata;   //EBse
             default: begin

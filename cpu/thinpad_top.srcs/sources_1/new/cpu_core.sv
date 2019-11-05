@@ -236,6 +236,7 @@ ex_mem_reg ex_mem_reg_r (
 
 excep_handler excep_handler_r (
     .mem_excep_info,
+    .Status(cp0_reg_r.Status),
     .EPC_out(EPC_in),
     .is_excep,
     .excep_code,

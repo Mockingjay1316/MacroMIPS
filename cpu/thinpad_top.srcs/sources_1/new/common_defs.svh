@@ -1,6 +1,8 @@
 `ifndef COMMON_DEFS_VH
 `define COMMON_DEFS_VH
 
+`timescale 1ns / 1ps
+
 `define ADDR_WIDTH 32
 `define DATA_WIDTH 32
 `define INST_WIDTH 32
