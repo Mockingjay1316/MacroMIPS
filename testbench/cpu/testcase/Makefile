@@ -16,7 +16,7 @@ MEMS  := $(patsubst %.s, %.mem, $(SRC))
 all: $(MEMS) $(ANS)
 
 %.o: %.s
-	$(AS) -o $@ $^
+	$(AS) -mips32 -O0 -EB $< -o $@
 
 %.ans: %.s
 	python extract_ans.py --input_file $< --output_file $@
