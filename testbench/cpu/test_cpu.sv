@@ -10,7 +10,7 @@ logic[`ADDR_WIDTH-1:0] pc, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
 logic[4:0] mem_ctrl_signal;
 
-logic [`INST_WIDTH - 1:0] inst_mem[4095:0];
+logic [`INST_WIDTH - 1:0] inst_mem[256:0];
 
 initial begin
     cpu_clk = 1'b0; # 10;
@@ -42,8 +42,8 @@ integer index = 0;
 initial begin
 #20;
 forever begin
+    index = pc[15:0]/4;
     instr = inst_mem[index];
-    index = index + 1;
     #20;
     end
 end
@@ -87,7 +87,6 @@ task unittest(
 	input check_cyc,
 	input fpu
 );
-
 	integer i, fans, count, mem_index = 0;
 	string ans, out, info;
 	for(i = 0; i < $size(inst_mem); i = i + 1)
@@ -120,7 +119,12 @@ task unittest(
 endtask
 
 initial begin
+    unittest("inst_arith",0,0);
+    rst = 1'b1;
+    unittest("inst_logic",0,0);
+    rst = 1'b1;
     unittest("inst_ori",0,0);
+    
 end
 
 endmodule
