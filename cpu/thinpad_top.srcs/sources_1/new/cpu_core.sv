@@ -33,7 +33,6 @@ logic[2:0] cp0_rsel;
 logic[7:0] excep_code;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
 assign if_inst = instruction;
-assign pc_out = if_pc;
 
 logic if_after_branch, id_after_branch, is_excep, is_eret;
 
@@ -244,8 +243,14 @@ excep_handler excep_handler_r (
     .flush
 );
 
+memory_unit mmu (
+    .pc_in(if_pc),
+    .pc_out,
+    .mem_addr_in(mem_alu_result),
+    .mem_addr_out(mem_addr)
+);
+
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
-assign mem_addr = mem_alu_result;
 assign mem_ctrl_signal = mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
 
