@@ -70,11 +70,8 @@ readline(const char *prompt) {
             return NULL;
         }
         else if ((c == 127) && i > 0) {                 //似乎backspace会识别为delete（ascii127）导致无法进入'\b'的情况   额外添加处理
-            putc(c);
-            i --;
-            buffer[i] = '\0';
-            printf("\r%s%s ",prompt,buffer);            //'\r'是删除控制台的上一行，但似乎会残留一个字符没有刷新，所以先把字符刷成多一个' '
-            printf("\r%s%s",prompt,buffer);             //然后再把空格去掉
+            --i;
+            printf("\b \b");
         }
         else if (c >= ' ' && i < BUFSIZE - 1) {
             putc(c);

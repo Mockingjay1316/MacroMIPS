@@ -9,6 +9,7 @@ int vcprintf(const char *fmt, va_list ap);
 int cprintf(const char *fmt, ...);
 void cputchar(int c);
 int getchar(void);
+int cons_getc(void);
 
 void printhex(unsigned int x);
 void printbase10(int x);

@@ -54,7 +54,7 @@ INCLUDES  := $(addprefix -I,$(SRC_DIR))
 INCLUDES  += -I$(SRCDIR)/include
 
 # reserve 1MB for user app
-USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep cp game2048
+USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep snake game2048
 # INITRD_BLOCK_CNT := 2000 
 INITRD_BLOCK_CNT := 8192
 
@@ -68,7 +68,7 @@ endif
 USER_SRCDIR := user
 USER_OBJDIR := $(OBJDIR)/$(USER_SRCDIR)
 USER_LIB_OBJDIR := $(USER_OBJDIR)/libs
-USER_INCLUDE := -I$(USER_SRCDIR)/libs
+USER_INCLUDE := -I$(USER_SRCDIR)/libs -I$(SRCDIR)/driver
 
 USER_APP_BINS:= $(addprefix $(USER_OBJDIR)/, $(USER_APPLIST))
 
