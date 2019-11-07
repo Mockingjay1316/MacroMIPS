@@ -48,12 +48,16 @@ typedef enum logic[3:0] {
 `define OP_SW           6'b101011
 
 `define FUNCT_SLL       6'b000000
+`define FUNCT_TLBR      6'b000001
+`define FUNCT_TLBWI     6'b000010
+`define FUNCT_TLBWR     6'b000110
 `define FUNCT_SLLV      6'b000100
 `define FUNCT_SRL       6'b000010
 `define FUNCT_SRLV      6'b000110
 `define FUNCT_SRA       6'b000011
 `define FUNCT_SRAV      6'b000111
 `define FUNCT_JR        6'b001000
+`define FUNCT_TLBP      6'b001000
 `define FUNCT_JALR      6'b001001
 `define FUNCT_SYSCALL   6'b001100
 `define FUNCT_ERET      6'b011000
@@ -91,6 +95,8 @@ typedef struct packed {
 
 typedef enum logic[6:0] {
     CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
+    CP0_ENTRYHI, CP0_ENTRYLO0, CP0_ENTRYLO1,
+    CP0_PAGEMASK, CP0_INDEX, CP0_RANDOM, CP0_CONTEXT,
     CP0_UNKNOW
 } cp0_name_t;
 

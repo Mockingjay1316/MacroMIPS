@@ -20,6 +20,8 @@ module cp0_reg (
 );
 
 logic[`DATA_WIDTH-1:0] Status, EBase, Cause, EPC;
+logic[`DATA_WIDTH-1:0] Index, Random, Context, PageMask;
+logic[`DATA_WIDTH-1:0] EntryHi, EntryLo0, EntryLo1;
 logic[5:0] hw_int;
 integer iter;
 cp0_name_t wname, rname;
@@ -71,6 +73,7 @@ always_comb begin
 end
 
 always @(posedge clk) begin
+    Random <= Random + 1;
     if (write_en) begin
         case(wname)
             CP0_STATUS:     Status  <= wdata;   //写Status寄存器
@@ -99,6 +102,8 @@ always @(posedge clk) begin
         Cause <= 32'h00000000;
         EPC <= 32'h00000000;
         EBase <= 32'h00000000;
+        Random <= 32'h00000000;
+        Index <= 32'h00000000;
     end
 end
 

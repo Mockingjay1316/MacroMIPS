@@ -427,6 +427,18 @@ always @(*) begin
                     is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
                     new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
                     end
+                `FUNCT_TLBP: begin                          //TLBP
+                    //TODO: TLBP
+                    end
+                `FUNCT_TLBR: begin                          //TLBR
+                    
+                    end
+                `FUNCT_TLBWI: begin                         //TLBWI
+                    
+                    end
+                `FUNCT_TLBWR: begin                         //TLBWR
+                    
+                    end
                 default: begin
                     
                     end
