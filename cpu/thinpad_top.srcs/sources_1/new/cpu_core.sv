@@ -117,10 +117,10 @@ cp0_reg cp0_reg_r (
     .excep_code,
     .hw_int_o,
     .hardware_int,
-    .write_en(wb_cp0_write_en),
-    .waddr(wb_cp0_waddr),
-    .wsel(wb_cp0_wsel),
-    .wdata(wb_reg_wdata)
+    .write_en(ex_cp0_write_en),
+    .waddr(ex_cp0_waddr),
+    .wsel(ex_cp0_wsel),
+    .wdata(ex_operand1)
 );
 
 control_unit control_unit_r (
