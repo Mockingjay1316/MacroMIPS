@@ -62,7 +62,10 @@ always @(*) begin
                 2'b11: base_ram_be_n <= 4'b0111;
             endcase
         end
-        
+    end
+    if (data_addr >= 32'hbfd003f8) begin
+        ext_ram_be_n <= 4'b0000;
+        base_ram_be_n <= 4'b0000;
     end
 end
 
