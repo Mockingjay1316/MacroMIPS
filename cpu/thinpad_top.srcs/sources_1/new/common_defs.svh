@@ -80,6 +80,9 @@ typedef enum logic[3:0] {
 `define STALL_BEF_MEM   5'b11110
 `define STALL_BEF_WB    5'b11111
 
+`define MMU_SIZE        6'd15           //实际的TLB大小为16(15+1)
+`define MMU_SIZE_NUM    15
+
 typedef struct packed {
     logic[4:0]      reg_waddr;
     logic[31:0]     reg_wval;
@@ -97,6 +100,7 @@ typedef enum logic[6:0] {
     CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
     CP0_ENTRYHI, CP0_ENTRYLO0, CP0_ENTRYLO1,
     CP0_PAGEMASK, CP0_INDEX, CP0_RANDOM, CP0_CONTEXT,
+    CP0_CONFIG1, CP0_WIRED,
     CP0_UNKNOW
 } cp0_name_t;
 
@@ -109,5 +113,14 @@ typedef struct packed {
 typedef enum logic[2:0] {
     UART_RWAIT, UART_RREAD, UART_RACK
 } uart_rstate_t;
+
+typedef struct packed {
+    logic[18:0]     VPN2;
+    logic[7:0]      ASID;
+    logic[31:0]     PageMask;
+    logic           G;
+    logic[25:0]     PFN0, PFN1;
+    logic[4:0]      PFN0_fl, PFN1_fl;           //flag: [4:2]-C [1]-D [0]-V
+} tlb_entry_t;
 
 `endif
