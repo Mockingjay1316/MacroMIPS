@@ -21,7 +21,7 @@ module cp0_reg (
 
 logic[`DATA_WIDTH-1:0] Status, EBase, Cause, EPC;
 logic[`DATA_WIDTH-1:0] Index, Random, Context, PageMask;
-logic[`DATA_WIDTH-1:0] EntryHi, EntryLo0, EntryLo1;
+logic[`DATA_WIDTH-1:0] EntryHi, EntryLo0, EntryLo1, Config1, Wired;
 logic[5:0] hw_int;
 integer iter;
 cp0_name_t wname, rname;
@@ -32,6 +32,14 @@ assign EPC_out = EPC;                                              //这里单�
 
 always_comb begin                                                   //parsing input addr & sel
     case(waddr)
+        5'd0:       wname <= CP0_INDEX;
+        5'd1:       wname <= CP0_RANDOM;
+        5'd2:       wname <= CP0_ENTRYLO0;
+        5'd3:       wname <= CP0_ENTRYLO1;
+        5'd4:       wname <= CP0_CONTEXT;
+        5'd5:       wname <= CP0_PAGEMASK;
+        5'd6:       wname <= CP0_WIRED;
+        5'd10:      wname <= CP0_ENTRYHI;
         5'd12:      wname <= CP0_STATUS;
         5'd13:      wname <= CP0_CAUSE;
         5'd14:      wname <= CP0_EPC;
@@ -41,17 +49,37 @@ always_comb begin                                                   //parsing in
                 default:    wname <= CP0_UNKNOW;
             endcase
             end
+        5'd16: begin
+            case(wsel)
+                3'd1:       wname <= CP0_CONFIG1;
+                default:    wname <= CP0_UNKNOW;
+            endcase
+            end
         default: begin
             wname <= CP0_UNKNOW;
         end
     endcase
     case(raddr)
+        5'd0:       rname <= CP0_INDEX;
+        5'd1:       rname <= CP0_RANDOM;
+        5'd2:       rname <= CP0_ENTRYLO0;
+        5'd3:       rname <= CP0_ENTRYLO1;
+        5'd4:       rname <= CP0_CONTEXT;
+        5'd5:       rname <= CP0_PAGEMASK;
+        5'd6:       rname <= CP0_WIRED;
+        5'd10:      rname <= CP0_ENTRYHI;
         5'd12:      rname <= CP0_STATUS;
         5'd13:      rname <= CP0_CAUSE;
         5'd14:      rname <= CP0_EPC;
         5'd15: begin
             case(rsel)
                 3'd1:       rname <= CP0_EBASE;
+                default:    rname <= CP0_UNKNOW;
+            endcase
+            end
+        5'd16: begin
+            case(wsel)
+                3'd1:       rname <= CP0_CONFIG1;
                 default:    rname <= CP0_UNKNOW;
             endcase
             end
@@ -73,10 +101,26 @@ always_comb begin
 end
 
 always @(posedge clk) begin
-    Random <= Random + 1;
+    if (Random > Wired) begin
+        Random <= Random - 1;
+    end else begin
+        Random <= `MMU_SIZE;
+    end
     if (write_en) begin
         case(wname)
-            CP0_STATUS:     Status  <= wdata;   //写Status寄存器
+            CP0_INDEX:      Index    <= wdata;
+            CP0_ENTRYLO0:   EntryLo0 <= wdata;
+            CP0_ENTRYLO1:   EntryLo1 <= wdata;
+            CP0_CONTEXT: begin
+                Context[31:23] <= wdata[31:23];
+                end
+            CP0_PAGEMASK:   PageMask <= wdata;
+            CP0_WIRED: begin
+                Wired <= wdata;
+                Random <= `MMU_SIZE;     //写Wired寄存器同时会置Random为最大值
+                end
+            CP0_ENTRYHI:    EntryHi  <= wdata;
+            CP0_STATUS:     Status   <= wdata;  //写Status寄存器
             CP0_CAUSE: begin                    //写Cause寄存器
                 Cause[9:8]  <= wdata[9:8];
                 Cause[22]   <= wdata[22];
@@ -102,15 +146,28 @@ always @(posedge clk) begin
         Cause <= 32'h00000000;
         EPC <= 32'h00000000;
         EBase <= 32'h00000000;
-        Random <= 32'h00000000;
+        Random <= `MMU_SIZE;
         Index <= 32'h00000000;
+        PageMask <= 32'h00000000;
+        EntryHi <= 32'h00000000;
+        EntryLo0 <= 32'h00000000;
+        EntryLo1 <= 32'h00000000;
+        Wired <= 32'h00000000;
     end
 end
 
 always_comb begin
     case(rname)
+        CP0_INDEX:      rdata   <= Index;
+        CP0_ENTRYLO0:   rdata   <= EntryLo0;
+        CP0_ENTRYLO1:   rdata   <= EntryLo1;
+        CP0_CONTEXT:    rdata   <= Context;
+        CP0_PAGEMASK:   rdata   <= PageMask;
+        CP0_WIRED:      rdata   <= Wired;
+        CP0_ENTRYHI:    rdata   <= EntryHi;
+        CP0_CONFIG1:    rdata   <= {1'b0, `MMU_SIZE, 25'd0};
         CP0_STATUS:     rdata   <= Status;  //Status寄存器
-        CP0_CAUSE:      rdata   <= Cause;   //Cause
+        CP0_CAUSE:      rdata   <= {Cause[31:16], hw_int, Cause[9:0]};   //Cause
         CP0_EPC:        rdata   <= EPC;     //EPC
         CP0_EBASE:      rdata   <= EBase;   //EBse
         default: begin
@@ -119,6 +176,13 @@ always_comb begin
     endcase
     if (rname == wname) begin
         case (rname)
+            CP0_INDEX:      rdata   <= wdata;
+            CP0_ENTRYLO0:   rdata   <= wdata;
+            CP0_ENTRYLO1:   rdata   <= wdata;
+            CP0_CONTEXT:    rdata   <= wdata;
+            CP0_PAGEMASK:   rdata   <= wdata;
+            CP0_WIRED:      rdata   <= wdata;
+            CP0_ENTRYHI:    rdata   <= wdata;
             CP0_STATUS:     rdata   <= wdata;   //Status寄存器
             CP0_CAUSE:      rdata   <= {Cause[31:24], wdata[23:22], Cause[21:16], hw_int, wdata[9:8], Cause[7:0]};   //Cause
             CP0_EPC:        rdata   <= wdata;   //EPC
