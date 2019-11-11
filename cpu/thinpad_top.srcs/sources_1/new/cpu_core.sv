@@ -244,6 +244,8 @@ excep_handler excep_handler_r (
 );
 
 memory_unit mmu (
+    .clk(cpu_clk),
+    .rst(reset_btn),
     .pc_in(if_pc),
     .pc_out,
     .mem_addr_in(mem_alu_result),
