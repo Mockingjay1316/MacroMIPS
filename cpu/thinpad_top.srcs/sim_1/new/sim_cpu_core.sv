@@ -32,10 +32,8 @@ logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
 logic[4:0] mem_ctrl_signal;
 
 initial begin
-    //rst = 1'b1;
     clk_50M = 1'b0; # 10;
     clk_50M = 1'b1; # 10;
-    //rst = 1'b0;
     forever begin
         clk_50M = ~clk_50M; # 10;
     end
@@ -62,12 +60,6 @@ initial begin
     //instr = {`OP_SPECIAL, 5'b11111, 5'b00000, 5'b00010, 5'b00000, `FUNCT_JALR}; #20;
     //instr = {`OP_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `FUNCT_ADDU}; #20;
 end
-
-main_pll pll (
-    .clk_in1(clk_50M),
-    .clk_out2(peri_clk),
-    .locked(rst)
-);
 
 cpu_core cpu (
     .instruction(instr),

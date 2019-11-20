@@ -7,3 +7,5 @@
 vivado.jou
 vivado.log
 vivado*.str
+.DS_Store
+*./DS_Store

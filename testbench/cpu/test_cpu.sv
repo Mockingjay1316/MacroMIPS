@@ -20,24 +20,6 @@ initial begin
     end
 end
 
-/*initial begin
-    #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00001, 16'h0002}; #20;
-    //instr = {`OP_LW, 5'b00000, 5'b00001, 16'h0002}; #20;
-    //instr = {`OP_ORI, 5'b00001, 5'b00010, 16'h0042}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00001, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00010, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00011, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00101, 16'h0002}; #20;
-    instr = {`OP_ORI, 5'b00000, 5'b00110, 16'h0002}; #20;
-    //instr = {`OP_LB, 5'b00000, 5'b00001, 16'hFF0F}; #20;
-    //instr = {`OP_LBU, 5'b00000, 5'b00011, 16'hFFFF}; #20;
-    //instr = {`OP_JAL, 5'b00000, 5'b00101, 16'h7FFF}; #20;
-    //instr = {`OP_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `FUNCT_ADDU}; #20;
-    //instr = {`OP_SPECIAL, 5'b11111, 5'b00000, 5'b00010, 5'b00000, `FUNCT_JALR}; #20;
-    //instr = {`OP_SPECIAL, 5'b00101, 5'b00001, 5'b00001, 5'b00000, `FUNCT_ADDU}; #20;
-end*/
-
 integer index = 0;
 initial begin
 #20;
@@ -70,7 +52,6 @@ task judge(input integer fans, input integer cycle, input string out, input chec
 	begin
 		$display("[%0d] %s", cycle, out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
-		$stop;
 	end else begin
 		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
@@ -119,12 +100,11 @@ task unittest(
 endtask
 
 initial begin
-    unittest("inst_arith",0,0);
+    unittest("inst_move",0,0);
     rst = 1'b1;
-    unittest("inst_logic",0,0);
+    unittest("inst_shift",0,0);
     rst = 1'b1;
     unittest("inst_ori",0,0);
-    
 end
 
 endmodule
