@@ -1,21 +1,25 @@
 `include "common_defs.svh"
 
 module uart_controller (
-    input logic         main_clk, rst;
-    input logic         peri_clk;
-    
-    input logic         ext_uart_ready;
-    input logic         ext_uart_clear;
-    input logic[7:0]    ext_uart_rx;
+    input logic                     rst;
+    input logic                     main_clk;
+    input logic                     peri_clk;
+    input logic[`ADDR_WIDTH-1:0]    mem_addr;
+    input logic[4:0]                mem_ctrl_signal;
+    input logic[`DATA_WIDTH-1:0]    mem_wdata;
 
-    input wire          rxd;
-    input wire          reset_btn;
+    input wire                      rxd;
+    input wire                      reset_btn;
 
-    output wire         txd;
-    output logic        ext_uart_busy;
-    output logic        ext_uart_start;
-    output logic[7:0]   ext_uart_rx;
+    output wire                     txd;
+
 );
+
+logic[7:0] ext_uart_rx;
+logic[7:0] ext_uart_buffer, ext_uart_tx;
+logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
+logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
+uart_rstate_t uart_rstate;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
@@ -27,7 +31,8 @@ async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无
     );
 
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
-uart_rstate_t uart_rstate;
+
+
 always @(posedge peri_clk) begin
     if (reset_btn | ~rst) begin
         uart_rstate <= UART_RWAIT;
