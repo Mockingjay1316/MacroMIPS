@@ -104,4 +104,49 @@ typedef enum logic[2:0] {
     UART_RWAIT, UART_RREAD, UART_RACK
 } uart_rstate_t;
 
+
+interface Bus(
+    input logic clk
+);
+    logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr;
+    logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out;
+    logic[4:0]                  mem_ctrl_signal;
+    logic[`DATA_WIDTH-1:0]      mem_rdata;
+
+    modport master(
+        output  mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
+        input   mem_rada, hardware_int, mem_stall,
+        input   clk
+    );
+
+    modport slave(
+        input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
+        output  mem_rada, hardware_int, mem_stall,
+        input   clk
+    );
+}
+endinterface
+
+interface Sram();
+    wire[31:0] ram_data;      //BaseRAM数据，低8位与CPLD串口控制器共享
+    wire[19:0] ram_addr;      //BaseRAM地址
+    wire[3:0]  ram_be_n;      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    wire       ram_ce_n;      //BaseRAM片选，低有效
+    wire       ram_oe_n;      //BaseRAM读使能，低有效
+    wire       ram_we_n;      //BaseRAM写使能，低有效
+
+    modport master(
+        input ram_data;
+        output ram_addr, ram_be_n, ram_ce_n, ram_oe_n, ram_we_n,
+    );
+endinterface
+
+interface URAT();
+    logic rxd, txd;
+    modport master(
+        input   rxd,
+        output  txd
+    );
+endinterface
+
 `endif
