@@ -143,6 +143,7 @@ endinterface
 
 interface URAT();
     logic rxd, txd;
+    
     modport master(
         input   rxd,
         output  txd
