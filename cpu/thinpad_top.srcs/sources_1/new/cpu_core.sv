@@ -32,6 +32,9 @@ logic[`REGID_WIDTH-1:0] raddr1, raddr2, cp0_raddr;
 logic[2:0] cp0_rsel;
 logic[7:0] excep_code;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
+logic[31:0] index;
+logic from_random, tlb_write_en;
+assign index = from_random ? cp0_reg_r.Random : cp0_reg_r.Index;
 assign if_inst = instruction;
 
 logic if_after_branch, id_after_branch, is_excep, is_eret;
@@ -154,6 +157,8 @@ control_unit control_unit_r (
 
     .mem_stall(mem_stall),
     .is_eret,                                       //指示是否遇到eret指令
+    .from_random,
+    .tlb_write_en,
     .ex_cp0_op,
     .mem_cp0_op,                                    //cp0旁通
 
@@ -248,6 +253,12 @@ memory_unit mmu (
     .rst(reset_btn),
     .pc_in(if_pc),
     .pc_out,
+    .tlb_write_en,
+    .index,
+    .EntryHi(cp0_reg_r.EntryHi),
+    .PageMask(cp0_reg_r.PageMask),
+    .EntryLo1(cp0_reg_r.EntryLo1),
+    .EntryLo0(cp0_reg_r.EntryLo0),
     .mem_addr_in(mem_alu_result),
     .mem_addr_out(mem_addr)
 );

@@ -18,6 +18,7 @@ module control_unit (
 
     input   logic                       mem_stall,
     output  logic                       is_eret,                    //eret没有延迟槽，需要刷掉if-id寄存器
+    output  logic                       from_random, tlb_write_en,
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
@@ -143,6 +144,8 @@ always @(*) begin
     is_branch_op <= 1'b0;
     is_eret <= 1'b0;
     mem_data <= 32'h00000000;
+    from_random <= 1'b0;
+    tlb_write_en <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -434,10 +437,11 @@ always @(*) begin
                     
                     end
                 `FUNCT_TLBWI: begin                         //TLBWI
-                    
+                    tlb_write_en <= 1'b1;
                     end
                 `FUNCT_TLBWR: begin                         //TLBWR
-                    
+                    from_random <= 1'b1;
+                    tlb_write_en <= 1'b1;
                     end
                 default: begin
                     
