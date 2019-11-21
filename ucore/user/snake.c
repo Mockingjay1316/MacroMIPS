@@ -2,8 +2,6 @@
 #include <unistd.h>
 #include <ulib.h>
 #include <string.h>
-#include <defs.h>
-#include <stdarg.h>
 
 #define printf(...)         fprintf(1, __VA_ARGS__)
 #define WIDTH               20
@@ -95,38 +93,44 @@ void generate_food(int *x_food, int *y_food) {
     printf("NOTE!!!Error!!!!!!\n");
 }
 
-void get_user_input(int *x_direction, int *y_direction) {
+bool get_user_input(int *x_direction, int *y_direction) {
+    // int tmp = getchar_wo_blocking();
     char c;
     int ret;
+    bool flag = 0;
     if ((ret = read(0, &c, sizeof(char))) < 0) {
-        return;
+        return flag;
     }
     switch (c)
     {
     case 'w':
-    case 'W':
+    // case 'W':
         if (*y_direction != 1) {
+            flag = 1;
             *y_direction = -1;
             *x_direction = 0;
         }
         break;
     case 's':
-    case 'S':
+    // case 'S':
         if (*y_direction != -1) {
+            flag = 1;
             *y_direction = 1;
             *x_direction = 0;
         }
         break;
     case 'a':
-    case 'A':
+    // case 'A':
         if (*x_direction != 1) {
+            flag = 1;
             *x_direction = -1;
             *y_direction = 0;
         }
         break;
     case 'd':
-    case 'D':
+    // case 'D':
         if (*x_direction != -1) {
+            flag = 1;
             *x_direction = 1;
             *y_direction = 0;
         }
@@ -134,6 +138,8 @@ void get_user_input(int *x_direction, int *y_direction) {
     default:
         break;
     }
+    // printf("%c\n", c);
+    return flag;
 }
 
 int update_snake(struct Snake *snake, int *x_direction, int *y_direction, int *x_food, int *y_food) {
@@ -193,9 +199,11 @@ int main() {
         printf("%c[%d;%dH",27,1,1);
         printf("贪吃蛇小游戏\n");
         printf("WASD控制上下左右\n");
-        printf("蛇头碰触墙壁或身体则游戏结束，按Enter开始\n");
+        printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
 
-        get_user_input(&x_direction, &y_direction);
+        if (!get_user_input(&x_direction, &y_direction)) {
+            continue;
+        }
 
         int game_status = update_snake(snake, &x_direction, &y_direction, &x_food, &y_food);
         printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
@@ -205,7 +213,13 @@ int main() {
         case CONTINUE:
             break;
         case GAME_OVER:
-            printf("%c[%d;%dH",27,4,1);
+            printf("%c[%d;%dH",27,1,1);
+            for(int i = 0; i < 5 + HEIGHT; ++i) {
+                for(int j = 0; j < 100; ++j)
+                    printf(" ");
+                printf("\n");
+            }
+            printf("%c[%d;%dH",27,1,1);
             printf("Game Over\n");
             return 0;
         case WIN:
