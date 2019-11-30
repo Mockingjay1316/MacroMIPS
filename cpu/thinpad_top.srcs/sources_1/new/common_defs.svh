@@ -121,7 +121,7 @@ interface Bus(
 
     modport slave(
         input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
-        output  mem_rada, hardware_int, mem_stall,
+        output  mem_rdata, hardware_int, mem_stall,
         input   clk
     );
 }
@@ -143,7 +143,7 @@ endinterface
 
 interface URAT();
     logic rxd, txd;
-    
+
     modport master(
         input   rxd,
         output  txd

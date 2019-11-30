@@ -1,18 +1,8 @@
 `include "common_defs.svh"
 
 module uart_controller (
-    input logic                     rst;
-    input logic                     main_clk;
-    input logic                     peri_clk;
-    input logic[`ADDR_WIDTH-1:0]    mem_addr;
-    input logic[4:0]                mem_ctrl_signal;
-    input logic[`DATA_WIDTH-1:0]    mem_wdata;
-
-    input wire                      rxd;
-    input wire                      reset_btn;
-
-    output wire                     txd;
-
+    Bus,master    data_bus,
+    UART.slave    uart
 );
 
 logic[7:0] ext_uart_rx;
@@ -20,6 +10,11 @@ logic[7:0] ext_uart_buffer, ext_uart_tx;
 logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
+
+wire rxd. txd;
+assign rxd = uart.rxd;
+assign txd = uart.txd;
+
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
@@ -29,6 +24,20 @@ async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无
         .RxD_clear(ext_uart_clear),                     //清除接收标志
         .RxD_data(ext_uart_rx)                          //接收到的一字节数据
     );
+
+logic rx_fifo_write_en, rx_fifo_read_en, rx_fifo_empty;
+logic [7:0] rx_fifo_data_in, rx_fifo_data_out;
+
+fifo_uart_rx receive_fifo(
+    .clk,
+    .rst,
+    .din(rx_fifo_data_in),
+    .dout(rx_fifo_data_out),
+    .wr_en(rx_fifo_write_en),
+    .rd_en(rx_fifo_read_en),
+    .full(),
+    .empty(rx_fifo_empty)
+);
 
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
 
@@ -59,6 +68,7 @@ always @(posedge peri_clk) begin
         endcase
     end
 end
+
 
 always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发送出去
     if (!ext_uart_busy && ext_uart_wavai) begin
