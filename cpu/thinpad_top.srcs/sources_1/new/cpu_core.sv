@@ -54,6 +54,9 @@ assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
+pipeline_data_t id_pipeline_data, ex_pipeline_data, mem_pipeline_data, wb_pipeline_data;
+logic[31:0] tlbp_index;
+tlb_entry_t tlb_rdata;
 
 logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
 logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
@@ -120,10 +123,16 @@ cp0_reg cp0_reg_r (
     .excep_code,
     .hw_int_o,
     .hardware_int,
-    .write_en(ex_cp0_write_en),
-    .waddr(ex_cp0_waddr),
-    .wsel(ex_cp0_wsel),
-    .wdata(ex_operand1)
+
+    .tlbp(mem_pipeline_data.tlbp),
+    .tlbr(mem_pipeline_data.tlbr),
+    .tlbp_index,
+    .tlb_rdata,
+
+    .write_en(wb_cp0_write_en),
+    .waddr(wb_cp0_waddr),
+    .wsel(wb_cp0_wsel),
+    .wdata(wb_reg_wdata)
 );
 
 control_unit control_unit_r (
@@ -176,6 +185,7 @@ control_unit control_unit_r (
     .mem_byte_en(id_mem_ctrl_signal[1]),
     .mem_sign_ext(id_mem_ctrl_signal[0]),
     .mem_data(id_mem_data),
+    .id_pipeline_data,
     .stall(stall)
 );
 
@@ -194,6 +204,7 @@ id_ex_reg id_ex_reg_r (
     .id_cp0_wsel,
     .id_excep_info,
     .id_mem_ctrl_signal(id_mem_ctrl_signal),
+    .id_pipeline_data,
     .ex_alu_op(ex_alu_op),
     .ex_operand1(ex_operand1),
     .ex_operand2(ex_operand2),
@@ -204,7 +215,8 @@ id_ex_reg id_ex_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
-    .ex_mem_ctrl_signal(ex_mem_ctrl_signal)
+    .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
+    .ex_pipeline_data
 );
 
 alu_core alu_core_r (
@@ -226,6 +238,7 @@ ex_mem_reg ex_mem_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
+    .ex_pipeline_data,
     .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .mem_alu_result(mem_alu_result),
     .mem_reg_waddr(mem_reg_waddr),
@@ -235,6 +248,7 @@ ex_mem_reg ex_mem_reg_r (
     .mem_cp0_write_en,
     .mem_cp0_wsel,
     .mem_excep_info,
+    .mem_pipeline_data,
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal)
 );
 
@@ -248,19 +262,26 @@ excep_handler excep_handler_r (
     .flush
 );
 
+mmu_res_t pc_mmu_result, data_mmu_result;
+
+assign mem_addr = data_mmu_result.paddr;
+assign pc_out = pc_mmu_result.paddr;
+
 memory_unit mmu (
     .clk(cpu_clk),
     .rst(reset_btn),
     .pc_in(if_pc),
-    .pc_out,
-    .tlb_write_en,
+    .tlb_write_en(mem_pipeline_data.tlb_write_en),
     .index,
+    .tlbp_index,
     .EntryHi(cp0_reg_r.EntryHi),
     .PageMask(cp0_reg_r.PageMask),
     .EntryLo1(cp0_reg_r.EntryLo1),
     .EntryLo0(cp0_reg_r.EntryLo0),
     .mem_addr_in(mem_alu_result),
-    .mem_addr_out(mem_addr)
+    .pc_mmu_result,
+    .data_mmu_result,
+    .tlb_rdata
 );
 
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
@@ -285,12 +306,14 @@ mem_wb_reg mem_wb_reg_r (
     .mem_cp0_waddr,
     .mem_cp0_write_en,
     .mem_cp0_wsel,
+    .mem_pipeline_data,
     .wb_reg_waddr(wb_reg_waddr),
     .wb_reg_wdata(wb_reg_wdata),
     .wb_reg_write_en(wb_reg_write_en),
     .wb_cp0_waddr,
     .wb_cp0_write_en,
-    .wb_cp0_wsel
+    .wb_cp0_wsel,
+    .wb_pipeline_data
 );
 
 endmodule
