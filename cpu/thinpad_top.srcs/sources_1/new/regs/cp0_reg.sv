@@ -11,6 +11,9 @@ module cp0_reg (
     input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in,
     input   logic                       is_eret,                    //收到eret时需要进行一系列原子操作
     output  logic[`DATA_WIDTH-1:0]      EPC_out,
+    input   logic                       tlbp, tlbr,
+    input   tlb_entry_t                 tlb_rdata,
+    input   logic[31:0]                 tlbp_index,
 
     input   logic[7:0]                  excep_code,                 //exception handler告知异常码
     output  logic                       hw_int_o,                   //发给control是否发生硬件中断
@@ -141,6 +144,14 @@ always @(posedge clk) begin
     if (is_eret) begin
         Status[2]   <= 1'b0;                    //清除EXL位
     end
+    if (tlbp) begin
+        Index <= tlbp_index;
+    end
+    if (tlbr) begin
+        EntryHi <= {tlb_rdata.VPN2, 5'b00000, tlb_rdata.ASID};
+        EntryLo0 <= {tlb_rdata.PFN0, tlb_rdata.PFN0_fl, tlb_rdata.G};
+        EntryLo1 <= {tlb_rdata.PFN1, tlb_rdata.PFN1_fl, tlb_rdata.G};
+    end
     if (rst) begin                                                  //cp0寄存器同步清零
         Status <= 32'h00000000;
         Cause <= 32'h00000000;
@@ -174,7 +185,7 @@ always_comb begin
             rdata   <= 32'h00000000;
         end
     endcase
-    if (rname == wname) begin
+    if (rname == wname && write_en) begin
         case (rname)
             CP0_INDEX:      rdata   <= wdata;
             CP0_ENTRYLO0:   rdata   <= wdata;
@@ -191,6 +202,18 @@ always_comb begin
                 rdata   <= 32'h00000000;
             end
         endcase
+    end
+    if (rname == CP0_INDEX && tlbp) begin
+        rdata <= tlbp_index;
+    end
+    if (rname == CP0_ENTRYHI && tlbr) begin
+        rdata <= {tlb_rdata.VPN2, 5'b00000, tlb_rdata.ASID};
+    end
+    if (rname == CP0_ENTRYLO0 && tlbr) begin
+        rdata <= {tlb_rdata.PFN0, tlb_rdata.PFN0_fl, tlb_rdata.G};
+    end
+    if (rname == CP0_ENTRYLO1 && tlbr) begin
+        rdata <= {tlb_rdata.PFN1, tlb_rdata.PFN1_fl, tlb_rdata.G};
     end
 end
 
