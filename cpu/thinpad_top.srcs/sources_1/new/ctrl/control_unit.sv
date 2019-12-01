@@ -41,6 +41,7 @@ module control_unit (
     output  logic                       is_mem_data_read, mem_byte_en,
     output  logic                       mem_sign_ext,
     output  logic[`DATA_WIDTH-1:0]      mem_data,                   //写入内存的数据
+    output  pipeline_data_t             id_pipeline_data,
     output  logic[4:0]                  stall
 );
 
@@ -146,6 +147,11 @@ always @(*) begin
     mem_data <= 32'h00000000;
     from_random <= 1'b0;
     tlb_write_en <= 1'b0;
+
+    id_pipeline_data.tlbp <= 1'b0;
+    id_pipeline_data.tlbr <= 1'b0;
+    id_pipeline_data.tlb_write_en <= 1'b0;
+    id_pipeline_data.tlb_write_random <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -431,17 +437,17 @@ always @(*) begin
                     new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
                     end
                 `FUNCT_TLBP: begin                          //TLBP
-                    //TODO: TLBP
+                    id_pipeline_data.tlbp <= 1'b1;
                     end
                 `FUNCT_TLBR: begin                          //TLBR
-                    
+                    id_pipeline_data.tlbr <= 1'b1;
                     end
                 `FUNCT_TLBWI: begin                         //TLBWI
-                    tlb_write_en <= 1'b1;
+                    id_pipeline_data.tlb_write_en <= 1'b1;
                     end
                 `FUNCT_TLBWR: begin                         //TLBWR
-                    from_random <= 1'b1;
-                    tlb_write_en <= 1'b1;
+                    id_pipeline_data.tlb_write_random <= 1'b1;
+                    id_pipeline_data.tlb_write_en <= 1'b1;
                     end
                 default: begin
                     
