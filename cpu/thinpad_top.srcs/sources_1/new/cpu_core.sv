@@ -8,7 +8,7 @@ module cpu_core (
 logic[`ADDR_WIDTH-1:0] pc_out, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, reg_out, mem_rdata;
 logic[`INST_WIDTH-1:0] instruction;
-logic[4:0] mem_ctrl_logic;
+logic[4:0] mem_ctrl_signal;
 logic mem_stall;
 logic[5:0] hardware_int;
 
@@ -45,18 +45,22 @@ logic id_cp0_write_en, ex_cp0_write_en, mem_cp0_write_en, wb_cp0_write_en;
 logic pc_write_en, EPC_write_en, hw_int_o;
 logic[`DATA_WIDTH-1:0] EPC_in, EPC_out;
 
+logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
+logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
+logic[`REGID_WIDTH-1:0] wb_waddr;
+logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
+logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
+
+
 cp0_op_t ex_cp0_op, mem_cp0_op, wb_cp0_op;
 assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
 
-logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
-logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
 
-logic[`REGID_WIDTH-1:0] wb_waddr;
-logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
-logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
+
+
 //stall
 //4 -> load_from_mem
 //3 -> mem_data_write_en

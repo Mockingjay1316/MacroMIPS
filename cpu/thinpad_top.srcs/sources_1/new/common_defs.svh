@@ -112,7 +112,7 @@ typedef struct packed {
 } Clock;
 
 interface Bus(
-    Clock clk
+    input Clock clk
 );
     logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr;
     logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out;
@@ -131,7 +131,7 @@ interface Bus(
         output  mem_rdata, hardware_int, mem_stall,
         input   clk
     );
-}
+
 endinterface
 
 interface Sram();
@@ -168,5 +168,6 @@ interface CPLD();
         output uart_rdn, uart_wrn,
         input uart_dataready, uart_tbre, uart_tsre
     );
+endinterface
 
 `endif

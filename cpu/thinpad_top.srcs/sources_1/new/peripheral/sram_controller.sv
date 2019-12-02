@@ -8,12 +8,11 @@ module sram_controller (
     CPLD.master         cpld
 );
 
-logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read;
-logic[`ADDR_WIDTH-1:0] data_addr;
+logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read, instr_read;
 logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext;
 logic mem_stall;
-
-logic uart_rdn, uart_wdn, uart_dataready, uart_tbre, uart_tsre;
+logic uart_rdn, uart_wrn;
+logic uart_dataready, uart_tbre, uart_tsre;
 assign cpld.uart_rdn = uart_rdn;
 assign cpld.uart_wrn = uart_wrn;
 assign uart_dataready = cpld.uart_dataready;
@@ -25,6 +24,7 @@ assign peri_clk = inst_bus.clk.peri_clk;
 assign main_clk = inst_bus.clk.main_clk;
 
 assign data_bus.mem_rdata = data_read;
+assign inst_bus.mem_rdata = instr_read;
 assign load_from_mem = inst_bus.mem_ctrl_signal[4];
 assign data_write_en = inst_bus.mem_ctrl_signal[3];
 assign is_data_read = inst_bus.mem_ctrl_signal[2];
@@ -36,10 +36,38 @@ assign pc = inst_bus.mem_addr;
 assign inst_bus.mem_stall = mem_stall;
 
 assign data_write = data_bus.mem_wdata;
-assign ext_ram.ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
-assign base_ram.ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
-assign rdata = is_data_read ? (data_addr[22] ? ext_ram_data : base_ram_data) : 32'h00000000;
 
+logic[31:0] base_ram_data, ext_ram_data;
+assign ext_ram.ram_data = ext_ram_data;
+assign base_ram.ram_data = base_ram_data;
+assign ext_ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+
+assign rdata = is_data_read ? (data_addr[22] ? ext_ram.ram_data : base_ram.ram_data) : 32'h00000000;
+
+logic[3:0] ext_ram_be_n, base_ram_be_n;
+assign ext_ram.ram_be_n = ext_ram_be_n;
+assign base_ram.ram_be_n = base_ram_be_n;
+
+logic base_ram_ce_n, base_ram_oe_n, base_ram_we_n;
+logic ext_ram_ce_n, ext_ram_oe_n, ext_ram_we_n;
+
+assign base_ram.ram_ce_n = base_ram_ce_n;
+assign base_ram.ram_oe_n = base_ram_oe_n;
+assign base_ram.ram_we_n = base_ram_we_n;
+assign ext_ram.ram_ce_n = ext_ram_ce_n;
+assign ext_ram.ram_oe_n = ext_ram_oe_n;
+assign ext_ram.ram_we_n = ext_ram_we_n;
+
+logic [19:0] base_ram_addr, ext_ram_addr;
+assign base_ram.ram_addr = base_ram_addr;
+assign ext_ram.ram_addr = ext_ram_addr;
+
+logic [31:0] uart_data;
+assign uart_data = uart_wrn ? 32'bz : data_read;
+
+logic rst;
+assign rst = inst_bus.clk.rst;
 always_comb begin
     if (data_addr >= 32'h80000000 && data_addr <= 32'h80800000) begin
         mem_stall <= ~data_addr[22] & (load_from_mem | data_write_en);
@@ -98,18 +126,18 @@ always @(posedge peri_clk) begin
                 end
             end
         end
-        if(mem_addr == 32'hbfd003f8) begin
+        if(data_addr == 32'hbfd003f8) begin
             if(data_write_en) begin    //write si 
                 uart_wrn <= 1'b0;
                 uart_rdn <= 1'b1;
-                base_ram_data <= mem_wdata;
+                base_ram_data <= data_write;
                 base_ram_ce_n <= 1'b1;
             end else begin  //read si
                 uart_rdn <= 1'b0;
                 uart_wrn <= 1'b1;
                 data_read <= {24'b0, uart_data[7:0]};  
             end
-        end else if (mem_addr == 32'hbfd003fc) begin
+        end else if (data_addr == 32'hbfd003fc) begin
             data_read <= {30'b0, uart_dataready, uart_tsre & uart_tbre};
         end
         if (is_data_read) begin
