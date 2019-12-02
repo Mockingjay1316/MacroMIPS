@@ -120,7 +120,7 @@ interface Bus(
     );
 
     modport slave(
-        input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
+        input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal, pc
         output  mem_rdata, hardware_int, mem_stall,
         input   clk
     );
@@ -136,8 +136,8 @@ interface Sram();
     wire       ram_we_n;      //BaseRAM写使能，低有效
 
     modport master(
-        input ram_data;
-        output ram_addr, ram_be_n, ram_ce_n, ram_oe_n, ram_we_n,
+        input ram_data,
+        output ram_addr, ram_be_n, ram_ce_n, ram_oe_n, ram_we_n
     );
 endinterface
 
@@ -149,5 +149,17 @@ interface URAT();
         output  txd
     );
 endinterface
+
+interface CPLD();
+    logic uart_rdn;
+    logic uart_wrn;
+    logic uart_dataready;
+    logic uart_tbre;
+    logic uart_tsre;
+
+    modport master(
+        output uart_rdn, uart_wrn
+        input uart_dataready, uart_tbre, uart_tsre
+    );
 
 `endif
