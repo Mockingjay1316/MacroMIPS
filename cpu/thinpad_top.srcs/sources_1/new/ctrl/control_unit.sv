@@ -15,6 +15,7 @@ module control_unit (
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
     input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
+    input   excep_info_t                ifid_excep_info,
 
     input   logic                       mem_stall,
     output  logic                       is_eret,                    //eret没有延迟槽，需要刷掉if-id寄存器
@@ -67,6 +68,7 @@ assign ret_pc = old_pc + 4'b1000;                                               
 assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;   //branch指令的新pc
 assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};                     //Jump指令的新pc
 assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
+assign id_excep_info.tlb_pc_miss = ifid_excep_info.tlb_pc_miss;
 
 always @(*) begin
     real_EPC <= cp0_EPC;
@@ -141,6 +143,7 @@ always @(*) begin
     is_mem_data_read <= 1'b0;
     cp0_write_en <= 1'b0;
     id_excep_info.is_excep <= 1'b0;
+    id_excep_info.is_syscall <= 1'b0;
     id_excep_info.excep_code <= 8'd0;
     is_branch_op <= 1'b0;
     is_eret <= 1'b0;
@@ -285,6 +288,7 @@ always @(*) begin
                     end
                 `FUNCT_SYSCALL: begin                       //SYSCALL
                     id_excep_info.is_excep <= 1'b1;
+                    id_excep_info.is_syscall <= 1'b1;
                     id_excep_info.excep_code <= 8'd8;
                     end
                 default: begin
