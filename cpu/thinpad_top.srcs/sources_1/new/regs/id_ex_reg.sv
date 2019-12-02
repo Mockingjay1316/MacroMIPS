@@ -35,7 +35,7 @@ always @(posedge clk) begin
         ex_cp0_wsel <= 3'b000;
         ex_mem_data <= `DATA_WIDTH'h00000000;
         ex_mem_ctrl_signal <= 5'b00000;
-        ex_excep_info <= 40'd0;
+        ex_excep_info <= {$bits(excep_info_t){1'b0}};
         ex_pipeline_data.tlb_write_en <= 1'b0;
         ex_pipeline_data.tlb_write_random <= 1'b0;
         ex_pipeline_data.tlbp <= 1'b0;
@@ -51,7 +51,7 @@ always @(posedge clk) begin
         ex_cp0_wsel <= 3'b000;
         ex_mem_data <= `DATA_WIDTH'h00000000;
         ex_mem_ctrl_signal <= 5'b00000;
-        ex_excep_info <= 40'd0;
+        ex_excep_info <= {$bits(excep_info_t){1'b0}};
         ex_pipeline_data.tlb_write_en <= 1'b0;
         ex_pipeline_data.tlb_write_random <= 1'b0;
         ex_pipeline_data.tlbp <= 1'b0;

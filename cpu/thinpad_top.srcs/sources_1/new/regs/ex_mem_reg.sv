@@ -31,7 +31,7 @@ always @(posedge clk) begin
         mem_cp0_waddr <= `REGID_WIDTH'h0;
         mem_cp0_wsel <= 3'b000;
         mem_mem_ctrl_signal <= 5'b00000;
-        mem_excep_info <= 40'd0;
+        mem_excep_info <= {$bits(excep_info_t){1'b0}};
         mem_pipeline_data.tlb_write_en <= 1'b0;
         mem_pipeline_data.tlb_write_random <= 1'b0;
         mem_pipeline_data.tlbp <= 1'b0;
@@ -45,7 +45,7 @@ always @(posedge clk) begin
         mem_cp0_waddr <= `REGID_WIDTH'h0;
         mem_cp0_wsel <= 3'b000;
         mem_mem_ctrl_signal <= 5'b00000;
-        mem_excep_info <= 40'd0;
+        mem_excep_info <= {$bits(excep_info_t){1'b0}};
         mem_pipeline_data.tlb_write_en <= 1'b0;
         mem_pipeline_data.tlb_write_random <= 1'b0;
         mem_pipeline_data.tlbp <= 1'b0;
