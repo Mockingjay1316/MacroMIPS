@@ -108,8 +108,9 @@ typedef enum logic[6:0] {
 typedef struct packed {
     logic[31:0]     EPC;
     logic           is_excep;
+    logic           is_syscall;
+    logic           tlb_pc_miss;
     logic[7:0]      excep_code;
-    logic           pc_tlb_miss, data_tlb_miss;
 } excep_info_t;
 
 typedef enum logic[2:0] {
