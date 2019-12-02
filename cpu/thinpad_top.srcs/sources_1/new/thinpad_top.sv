@@ -61,16 +61,16 @@ module thinpad_top(
     output  wire       video_de            //行数据有效信号，用于区分消隐�???
 );
 
+
 logic rst, peri_clk, bus_clk, main_clk;
-logic[`INST_WIDTH-1:0] instr;
-logic[`ADDR_WIDTH-1:0] pc, mem_addr;
-logic[`DATA_WIDTH-1:0] mem_wdata, sram_rdata, uart_rdata, reg_out, mem_rdata;
-logic[4:0] mem_ctrl_signal;
-logic is_uart, mem_stall;
-logic[5:0] hardware_int;
-
-assign hardware_int = {3'b000, ext_uart_already_read_status^ext_uart_read_status, 2'b00};        //打开了硬件中�???
-
+Clock clk;
+assign clk.clk_50M = clk_50M;
+assign clk.clk_11M0592 = clk_11M0592;
+assign clk.reset_btn = reset_btn;
+assign clk.rst= rst;
+assign clk.peri_clk = peri_clk;
+assign clk.bus_clk = bus_clk;
+assign main_clk = main_clk;
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -80,98 +80,38 @@ main_pll pll (
     .locked(rst)
 );
 
+Bus cpu_data_bus(.clk);
+Bus cpu_inst_bus(.clk);
+
 cpu_core cpu (
-    .clk_50M(main_clk),
-    .clk_11M0592(clk_11M0592),
+    .inst_bus(cpu_inst_bus.master),
+    .data_bus(cpu_data_bus.master)
+);
 
-    .clock_btn(clock_btn),
-    .reset_btn(reset_btn | ~rst),
-    .mem_stall(mem_stall),
+Bus sram_bus(.clk);
+Bus sram_inst(.clk);
+Bus cpld_bus(.clk);
 
-    .leds(leds),
-    .dpy0(dpy0),
-    .dpy1(dpy1),
+data_bus data_bus_instance(
+    .cpu(cpu_data_bus.slave),
+    .sram(sram_bus.master)
+);
 
-    .hardware_int,
-    .pc_out(pc),
-    .mem_addr(mem_addr),
-    .mem_wdata(mem_wdata),
-    .reg_out(reg_out),
-    .mem_rdata(mem_rdata),
-    .mem_ctrl_signal(mem_ctrl_signal),
-    .is_uart(is_uart),
-    .instruction(instr)
+inst_bus inst_bus_instance(
+    .cpu(cpu_inst_bus.slave),
+    .sram(sram_inst.master)
 );
 
 sram_controller sram_ctrl (
-    .main_clk(main_clk),
-    .peri_clk(peri_clk),
-    .rst(~rst),
-    .pc(pc),
-    .instr_read(instr),
-    .data_write_en(mem_ctrl_signal[3]),
-    .load_from_mem(mem_ctrl_signal[4]),
-    .is_data_read(mem_ctrl_signal[2]),
-    .mem_byte_en(mem_ctrl_signal[1]),
-    .mem_sign_ext(mem_ctrl_signal[0]),
-    .data_addr(mem_addr),
-    .data_write(mem_wdata),
-    .data_read(sram_rdata),
-    .mem_stall(mem_stall),
-
-    .base_ram_data(base_ram_data),
-    .base_ram_addr(base_ram_addr),
-    .base_ram_be_n(base_ram_be_n),
-    .base_ram_ce_n(base_ram_ce_n),
-    .base_ram_oe_n(base_ram_oe_n),
-    .base_ram_we_n(base_ram_we_n),
-
-    .ext_ram_data(ext_ram_data),
-    .ext_ram_addr(ext_ram_addr),
-    .ext_ram_be_n(ext_ram_be_n),
-    .ext_ram_ce_n(ext_ram_ce_n),
-    .ext_ram_oe_n(ext_ram_oe_n),
-    .ext_ram_we_n(ext_ram_we_n)
-);
-/*
-ila_0 ila (
-    .clk(main_clk),
-    .probe0(ext_uart_already_read_status),
-    .probe1(ext_uart_read_status),
-    .probe2(cpu.cp0_reg_r.Status),
-    .probe3(uart_rdata),
-    .probe4(ext_uart_wavai),
-    .probe5(ext_uart_start),
-    .probe6(ext_uart_tx),
-    .probe7(mem_stall),
-    .probe8(mem_ctrl_signal),
-    .probe9(pc),
-    .probe10(mem_addr),
-    .probe11(reg_out),
-    .probe12(instr)
-);
-*/
-assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
-
-//直连串口接收发送演示，从直连串口收到的数据再发送出去
-uart_controller uart_ctrl(
-    .main_clk(main_clk),
-    .peri_clk(peri_clk),
-    .rst(~rst),
-    .reset_btn(reset_btn),
-    .rxd(rxd),
-    .txd(txd),
-    .mem_wdata(mem_wdata),
-    .mem_addr(mem_addr),
-    .mem_ctrl_signal(mem_ctrl_signal)
+    .inst_bus(sram_bus.slave),
+    .base_ram,
+    .ext_ram,
+    .cpld
 );
 
-//直连串口接收发�?�演示，从直连串口收到的数据再发送出�???
-logic[7:0] ext_uart_rx;
-logic[7:0] ext_uart_buffer, ext_uart_tx;
-logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
-logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
-uart_rstate_t uart_rstate;
+
+
+
 
 
 

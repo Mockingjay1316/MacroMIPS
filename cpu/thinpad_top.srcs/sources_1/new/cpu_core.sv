@@ -1,13 +1,13 @@
 `include "common_defs.svh"
 
 module cpu_core (
-    Bus.master          inst_bus;
-    Bus.master          data_bus;
+    Bus.master          inst_bus,
+    Bus.master          data_bus
 );
 
 logic[`ADDR_WIDTH-1:0] pc_out, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, reg_out, mem_rdata;
-logic[`INST_WIDTH-1:0] instruction
+logic[`INST_WIDTH-1:0] instruction;
 logic[4:0] mem_ctrl_logic;
 logic mem_stall;
 logic[5:0] hardware_int;
@@ -252,14 +252,6 @@ memory_unit mmu (
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
 assign mem_ctrl_signal = mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
-
-always @(*) begin
-    if (mem_addr >= 32'hbfd003f8) begin
-        is_uart <= 1'b1;
-    end else begin
-        is_uart <= 1'b0;
-    end
-end
 
 mem_wb_reg mem_wb_reg_r (
     .clk(cpu_clk),

@@ -1,21 +1,30 @@
 `include "common_defs.svh"
 
 module sram_controller (
-    Bus.slave           data_bus;
-    Bus.slave           inst_bus;
-    Sram.master         base_ram;
-    Sram.master         ext_ram;
+    Bus.slave           data_bus,
+    Bus.slave           inst_bus,
+    Sram.master         base_ram,
+    Sram.master         ext_ram,
+    CPLD.master         cpld
 );
 
-logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc;
+logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read;
 logic[`ADDR_WIDTH-1:0] data_addr;
 logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext;
 logic mem_stall;
+
+logic uart_rdn, uart_wdn, uart_dataready, uart_tbre, uart_tsre;
+assign cpld.uart_rdn = uart_rdn;
+assign cpld.uart_wrn = uart_wrn;
+assign uart_dataready = cpld.uart_dataready;
+assign uart_tbre = cpld.uart_tbre;
+assign uart_tsre = cpld.uart_tsre; 
 
 logic peri_clk, main_clk;
 assign peri_clk = inst_bus.clk.peri_clk;
 assign main_clk = inst_bus.clk.main_clk;
 
+assign data_bus.mem_rdata = data_read;
 assign load_from_mem = inst_bus.mem_ctrl_signal[4];
 assign data_write_en = inst_bus.mem_ctrl_signal[3];
 assign is_data_read = inst_bus.mem_ctrl_signal[2];
@@ -58,11 +67,12 @@ always @(*) begin
                 2'b11: base_ram_be_n <= 4'b0111;
             endcase
         end
-        
     end
 end
 
 always @(posedge peri_clk) begin
+    uart_rdn <= 1;
+    uart_wrn <= 1;
     if (rst) begin
         base_ram_ce_n <= 1'b1;
         base_ram_oe_n <= 1'b1;
@@ -87,6 +97,20 @@ always @(posedge peri_clk) begin
                     base_wdata <= data_write;
                 end
             end
+        end
+        if(mem_addr == 32'hbfd003f8) begin
+            if(data_write_en) begin    //write si 
+                uart_wrn <= 1'b0;
+                uart_rdn <= 1'b1;
+                base_ram_data <= mem_wdata;
+                base_ram_ce_n <= 1'b1;
+            end else begin  //read si
+                uart_rdn <= 1'b0;
+                uart_wrn <= 1'b1;
+                data_read <= {24'b0, uart_data[7:0]};  
+            end
+        end else if (mem_addr == 32'hbfd003fc) begin
+            data_read <= {30'b0, uart_dataready, uart_tsre & uart_tbre};
         end
         if (is_data_read) begin
             ext_ram_ce_n <= 1'b0;

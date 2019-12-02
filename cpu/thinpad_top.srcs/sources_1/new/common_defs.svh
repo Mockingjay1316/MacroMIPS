@@ -15,7 +15,7 @@ typedef enum logic[3:0] {
     ALU_AND, ALU_NOR, ALU_OR, ALU_XOR,
     ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
     ALU_NOP
-} alu_op_t;             //alu的各个操作，相当于指令的简化版
+} alu_op_t;             //alu的各个操作，相当于指令的�??化版
 
 typedef enum logic[3:0] {
     BRA_BEQ, BRA_BGEZ, BRA_BGTZ, BRA_BLEZ, BRA_BLTZ,
@@ -23,7 +23,7 @@ typedef enum logic[3:0] {
     BRA_NOP
 } branch_op_t;
 
-//NOTE: 已修复OP和FUNCT反了的问题
+//NOTE: 已修复OP和FUNCT反了的问�??
 
 `define OP_SPECIAL      6'b000000
 `define OP_REGIMM       6'b000001
@@ -109,24 +109,25 @@ typedef struct packed {
     logic reset_btn;
     logic clk_50M, clk_11M0592;
     logic bus_clk, main_clk, peri_clk;
-} Clock
+} Clock;
 
 interface Bus(
-    input Clock clk
+    Clock clk
 );
     logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr;
     logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out;
     logic[4:0]                  mem_ctrl_signal;
     logic[`DATA_WIDTH-1:0]      mem_rdata;
+    logic                       hardware_int, mem_stall;
 
     modport master(
         output  mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
-        input   mem_rada, hardware_int, mem_stall,
+        input   mem_rdata, hardware_int, mem_stall,
         input   clk
     );
 
     modport slave(
-        input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal, pc
+        input   mem_addr, mem_wdata, reg_out, mem_ctrl_signal,
         output  mem_rdata, hardware_int, mem_stall,
         input   clk
     );
@@ -134,12 +135,12 @@ interface Bus(
 endinterface
 
 interface Sram();
-    wire[31:0] ram_data;      //BaseRAM数据，低8位与CPLD串口控制器共享
+    wire[31:0] ram_data;      //BaseRAM数据，低8位与CPLD串口控制器共�??
     wire[19:0] ram_addr;      //BaseRAM地址
-    wire[3:0]  ram_be_n;      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
-    wire       ram_ce_n;      //BaseRAM片选，低有效
-    wire       ram_oe_n;      //BaseRAM读使能，低有效
-    wire       ram_we_n;      //BaseRAM写使能，低有效
+    wire[3:0]  ram_be_n;      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持�??0
+    wire       ram_ce_n;      //BaseRAM片�?�，低有�??
+    wire       ram_oe_n;      //BaseRAM读使能，低有�??
+    wire       ram_we_n;      //BaseRAM写使能，低有�??
 
     modport master(
         inout ram_data,
@@ -164,7 +165,7 @@ interface CPLD();
     logic uart_tsre;
 
     modport master(
-        output uart_rdn, uart_wrn
+        output uart_rdn, uart_wrn,
         input uart_dataready, uart_tbre, uart_tsre
     );
 
