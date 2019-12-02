@@ -37,7 +37,7 @@ logic from_random, tlb_write_en;
 assign index = from_random ? cp0_reg_r.Random : cp0_reg_r.Index;
 assign if_inst = instruction;
 
-logic if_after_branch, id_after_branch, is_excep, is_eret;
+logic if_after_branch, id_after_branch, is_excep, is_eret, is_tlb_refill;
 
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
@@ -54,6 +54,7 @@ assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
+excep_info_t if_excep_info, ifid_excep_info;
 pipeline_data_t id_pipeline_data, ex_pipeline_data, mem_pipeline_data, wb_pipeline_data;
 logic[31:0] tlbp_index;
 tlb_entry_t tlb_rdata;
@@ -64,7 +65,7 @@ logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
 logic[`REGID_WIDTH-1:0] wb_waddr;
 logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
 logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
-//stall
+//mem_ctrl_signal
 //4 -> load_from_mem
 //3 -> mem_data_write_en
 //2 -> is_mem_data_read
@@ -81,12 +82,14 @@ pc_reg pc_reg_r (
     .stall(stall[4]),
     .mem_stall(mem_stall),
     .is_excep,
+    .is_tlb_refill,
     .ebase(cp0_reg_r.EBase),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
 );
 
+assign if_excep_info.tlb_pc_miss = pc_mmu_result.miss;
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
@@ -96,7 +99,9 @@ if_id_reg if_id_reg_r (
     .if_after_branch,
     .id_after_branch,
     .if_inst(if_inst),
-    .id_inst(id_inst)
+    .id_inst(id_inst),
+    .if_excep_info,
+    .ifid_excep_info
 );
 
 reg_file reg_file_r (
@@ -171,6 +176,7 @@ control_unit control_unit_r (
     .tlb_write_en,
     .ex_cp0_op,
     .mem_cp0_op,                                    //cp0旁通
+    .ifid_excep_info,
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
@@ -256,6 +262,9 @@ ex_mem_reg ex_mem_reg_r (
 excep_handler excep_handler_r (
     .mem_excep_info,
     .Status(cp0_reg_r.Status),
+    .tlb_data_miss(data_mmu_result.miss),
+    .mem_mem_ctrl_signal,
+    .is_tlb_refill,
     .EPC_out(EPC_in),
     .is_excep,
     .excep_code,
@@ -286,7 +295,7 @@ memory_unit mmu (
 );
 
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
-assign mem_ctrl_signal = mem_mem_ctrl_signal;
+assign mem_ctrl_signal = data_mmu_result.miss ? 5'b00000 : mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
 
 always @(*) begin
@@ -299,7 +308,7 @@ end
 
 mem_wb_reg mem_wb_reg_r (
     .clk(cpu_clk),
-    .rst(reset_btn),
+    .rst(reset_btn | is_excep),
     .stall(stall[0]),
     .mem_reg_waddr(mem_reg_waddr),
     .mem_reg_wdata(mem_reg_wdata),
