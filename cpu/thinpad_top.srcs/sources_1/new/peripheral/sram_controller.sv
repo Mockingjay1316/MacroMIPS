@@ -1,29 +1,34 @@
 `include "common_defs.svh"
 
 module sram_controller (
-/*
-    input   logic       main_clk, rst,
-    input   logic       peri_clk,
-    input   logic       load_from_mem,
-    input   logic       is_data_read,       //1表示读数据，0表示写数据
-    input   logic       data_write_en,
-    input   logic       mem_byte_en,
-    input   logic       mem_sign_ext,
-    input   logic[31:0] pc, data_addr,
-    input   logic[31:0] data_write,
-    output  logic[31:0] data_read, instr_read,
-    output  logic       mem_stall,*/
-
-    Bus.slave           inst_bus,
-    Bus.slave           data_bus,
-    Sram.master         base_ram_data,
-    Sram.master         ext_ram_data
+    Bus.slave           data_bus;
+    Bus.slave           inst_bus;
+    Sram.master         base_ram;
+    Sram.master         ext_ram;
 );
 
-logic[31:0] base_wdata, ext_wdata, rdata;
+logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc;
+logic[`ADDR_WIDTH-1:0] data_addr;
+logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext;
+logic mem_stall;
 
-assign ext_ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
-assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+logic peri_clk, main_clk;
+assign peri_clk = inst_bus.clk.peri_clk;
+assign main_clk = inst_bus.clk.main_clk;
+
+assign load_from_mem = inst_bus.mem_ctrl_signal[4];
+assign data_write_en = inst_bus.mem_ctrl_signal[3];
+assign is_data_read = inst_bus.mem_ctrl_signal[2];
+assign mem_byte_en = inst_bus.mem_ctrl_signal[1];
+assign mem_sign_ext = inst_bus.mem_ctrl_signal[0];
+
+assign data_addr = data_bus.mem_addr;
+assign pc = inst_bus.mem_addr;
+assign inst_bus.mem_stall = mem_stall;
+
+assign data_write = data_bus.mem_wdata;
+assign ext_ram.ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
+assign base_ram.ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 assign rdata = is_data_read ? (data_addr[22] ? ext_ram_data : base_ram_data) : 32'h00000000;
 
 always_comb begin

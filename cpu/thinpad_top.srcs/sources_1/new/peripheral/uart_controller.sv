@@ -1,7 +1,7 @@
 `include "common_defs.svh"
 
 module uart_controller (
-    Bus,master    data_bus,
+    Bus.master    data_bus,
     UART.slave    uart
 );
 
@@ -15,6 +15,10 @@ wire rxd. txd;
 assign rxd = uart.rxd;
 assign txd = uart.txd;
 
+logic[`DATA_WIDTH-1:0] uart_data_buff;
+logic[`DATA_WIDTH-1:0] uart_data;
+
+assign uart_data = uart_wrn ? 32'bz : uart_data_buff;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
@@ -81,6 +85,8 @@ always @(posedge peri_clk) begin                         //将缓冲区ext_uart_
 end
 
 always @(*) begin
+    uart_rdn <= 1;
+    uart_wrn <= 1;
     if (mem_addr[3:0] == 4'hc) begin
         uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
     end else if (mem_addr[3:0] == 4'h8) begin
