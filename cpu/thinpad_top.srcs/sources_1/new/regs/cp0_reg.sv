@@ -130,7 +130,7 @@ always @(posedge clk) begin
                 Cause[23]   <= wdata[23];
                 end
             CP0_EPC:        EPC     <= wdata;   //写EPC
-            CP0_EBASE:      EBase   <= wdata;   //写EBse
+            CP0_EBASE:      EBase[29:12]   <= wdata[29:12];   //写EBse
             default: begin
                 
             end
@@ -156,7 +156,7 @@ always @(posedge clk) begin
         Status <= 32'h00000000;
         Cause <= 32'h00000000;
         EPC <= 32'h00000000;
-        EBase <= 32'h00000000;
+        EBase <= 32'h80000000;
         Random <= `MMU_SIZE;
         Index <= 32'h00000000;
         PageMask <= 32'h00000000;
@@ -197,7 +197,7 @@ always_comb begin
             CP0_STATUS:     rdata   <= wdata;   //Status寄存器
             CP0_CAUSE:      rdata   <= {Cause[31:24], wdata[23:22], Cause[21:16], hw_int, wdata[9:8], Cause[7:0]};   //Cause
             CP0_EPC:        rdata   <= wdata;   //EPC
-            CP0_EBASE:      rdata   <= wdata;   //EBse
+            CP0_EBASE:      rdata   <= {EBase[31:30], wdata[29:12], EBase[11:0]};   //EBase
             default: begin
                 rdata   <= 32'h00000000;
             end

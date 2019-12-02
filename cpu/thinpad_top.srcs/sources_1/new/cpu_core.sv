@@ -81,6 +81,7 @@ pc_reg pc_reg_r (
     .stall(stall[4]),
     .mem_stall(mem_stall),
     .is_excep,
+    .ebase(cp0_reg_r.EBase),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
