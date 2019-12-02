@@ -104,9 +104,15 @@ typedef enum logic[2:0] {
     UART_RWAIT, UART_RREAD, UART_RACK
 } uart_rstate_t;
 
+typedef struct packed {
+    logic rst;
+    logic reset_btn;
+    logic clk_50M, clk_11M0592;
+    logic bus_clk, main_clk, peri_clk;
+} Clock
 
 interface Bus(
-    input logic clk
+    input Clock clk
 );
     logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr;
     logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out;
@@ -136,7 +142,7 @@ interface Sram();
     wire       ram_we_n;      //BaseRAM写使能，低有效
 
     modport master(
-        input ram_data,
+        inout ram_data,
         output ram_addr, ram_be_n, ram_ce_n, ram_oe_n, ram_we_n
     );
 endinterface

@@ -1,30 +1,29 @@
 `include "common_defs.svh"
 
 module cpu_core (
-    input   logic       clk_50M,            //50MHz 时钟输入
-    input   logic       clk_11M0592,        //11.0592MHz 时钟输入
-
-    input   logic       clock_btn,          //BTN5手动时钟按钮开关，带消抖电路，按下时为1
-    input   logic       reset_btn,          //BTN6手动复位按钮开关，带消抖电路，按下时为1
-    input   logic       mem_stall,
-
-    output  logic[15:0] leds,               //16位LED，输出时1点亮
-    output  logic[7:0]  dpy0,               //数码管低位信号，包括小数点，输出1点亮
-    output  logic[7:0]  dpy1,               //数码管高位信号，包括小数点，输出1点亮
-
-    output  logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr,
-    output  logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out,
-    output  logic[4:0]                  mem_ctrl_signal,
-    output  logic                       is_uart,
-    input   logic[5:0]                  hardware_int,               //硬件中断
-    input   logic[`DATA_WIDTH-1:0]      mem_rdata,
-    input   logic[`INST_WIDTH-1:0]      instruction     //调试信号，用来在不实现访存模块时输入指令
+    Bus.master          inst_bus;
+    Bus.master          data_bus;
 );
 
-assign leds = 16'b0101010101010101;
+logic[`ADDR_WIDTH-1:0] pc_out, mem_addr;
+logic[`DATA_WIDTH-1:0] mem_wdata, reg_out, mem_rdata;
+logic[`INST_WIDTH-1:0] instruction
+logic[4:0] mem_ctrl_logic;
+logic mem_stall;
+logic[5:0] hardware_int;
 
-logic cpu_clk;
-assign cpu_clk = clk_50M;
+assign inst_bus.mem_addr = pc_out;
+assign data_bus.mem_addr = mem_addr;
+assign data_bus.mem_wdata = mem_wdata;
+assign inst_bus.mem_ctrl_signal = mem_ctrl_signal;
+assign instruction = inst_bus.mem_rdata;
+assign mem_rdata = data_bus.mem_rdata;
+assign mem_stall = inst_bus.mem_stall;
+assign hardware_int = inst_bus.hardware_int;
+
+logic cpu_clk, reset_btn;
+assign cpu_clk = inst_bus.clk.clk_50M;
+assign reset_btn = (~inst_bus.clk.clk.rst | inst_bus.clk.clk.reset_btn);
 
 logic[`ADDR_WIDTH-1:0] if_pc, id_pc, new_pc;
 logic[`INST_WIDTH-1:0] if_inst, id_inst;
