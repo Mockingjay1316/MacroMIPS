@@ -9,3 +9,4 @@ boot/loader
 tools/mksfs
 .gdb_history
 .config_*
+.vscode
