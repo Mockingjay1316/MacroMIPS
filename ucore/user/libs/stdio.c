@@ -128,4 +128,3 @@ fprintf(int fd, const char *fmt, ...) {
 
     return cnt;
 }
-

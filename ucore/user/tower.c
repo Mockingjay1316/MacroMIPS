@@ -57,6 +57,10 @@ typedef struct Monster {
 
 char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
 char raw_map[BOARD_SIZE][BOARD_SIZE];
+int up_x[3] = {6, 1, 2};
+int up_y[3] = {11, 2, 11};
+int down_x[3] = {2, 1, 10};
+int down_y[3] = {1, 10, 11};
 Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
 int layer = 1;
 
@@ -216,7 +220,7 @@ bool battle(char m) {
     switch (m)
     {
     case SLIME:
-        monster.hp = 60;
+        monster.hp = 50;
         monster.attack = 50;
         monster.defence = 1;
         break;
@@ -299,6 +303,21 @@ void update_defence(int delta) {
 
 void update_layer(int delta) {
     layer += delta;
+    char file_name[15];
+    char tmp[2];
+    tmp[0] = '0' + layer;
+    tmp[1] = '\0';
+    strcat("map_", tmp, file_name);
+    strcat(file_name, ".txt", file_name);
+    import(file_name);
+    if (delta > 0) {
+        hero.x = up_x[layer - 1];
+        hero.y = up_y[layer - 1];
+    } else {
+        hero.x = down_x[layer - 1];
+        hero.y = down_y[layer - 1];
+    }
+    print_green(hero.x, hero.y, "勇");
 }
 
 
@@ -311,6 +330,7 @@ bool move() {
     bool can_move = true;
     bool update = false;
     bool ret = false;
+    bool new_layer = false;
     switch (raw_map[y_result][x_result])
     {
     case SLIME:
@@ -364,9 +384,11 @@ bool move() {
         break;
     case UP_STAIR:
         update_layer(1);
+        new_layer = true;
         break;
     case DOWN_STAIR:
         update_layer(-1);
+        new_layer = true;
         break;
     case WALL:
         can_move = false;
@@ -392,11 +414,11 @@ bool move() {
             print_green(x_result, y_result, "勇");
         }
     }
-    if (can_move) {
+    if (can_move && !new_layer) {
         hero.x = x_result;
         hero.y = y_result;
         strcpy(map[y][x], "  ");
-        if (!ret)
+        if (!ret && !new_layer)
             print_green(x_result, y_result, "勇");
         printf("\n                                \n"); 
     }
@@ -412,6 +434,7 @@ int main() {
         if (!get_user_input(&hero.x_direction, &hero.y_direction)) {
             continue;
         }
+        printf("X:%d, Y:%d\n", hero.x, hero.y);
         move();
         draw();
     }
