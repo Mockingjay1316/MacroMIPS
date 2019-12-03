@@ -54,7 +54,7 @@ INCLUDES  := $(addprefix -I,$(SRC_DIR))
 INCLUDES  += -I$(SRCDIR)/include
 
 # reserve 1MB for user app
-USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep snake game2048
+USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep tower
 # INITRD_BLOCK_CNT := 2000 
 INITRD_BLOCK_CNT := 8192
 
@@ -169,6 +169,7 @@ $(TOOL_MKSFS): tools/mksfs.c
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $^
 
 $(OBJDIR)/ucore-kernel-initrd: $(BUILD_DIR) $(TOOL_MKSFS) $(OBJ) $(USER_APP_BINS) tools/kernel.ld
+	make -C user/tower
 	rm -rf $(ROOTFS_DIR) $(ROOTFS_IMG)
 	mkdir $(ROOTFS_DIR)
 	cp $(USER_APP_BINS) $(ROOTFS_DIR)

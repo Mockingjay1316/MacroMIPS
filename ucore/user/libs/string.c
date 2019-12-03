@@ -85,6 +85,13 @@ strncpy(char *dst, const char *src, size_t len) {
     return dst;
 }
 
+void
+strcat(const char *dst, const char *src, char *buf) {
+    strcpy(buf, dst);
+    char *p = buf + strlen(dst);
+    while ((*(p++) = *(src++) ) != '\0');
+}
+
 /* *
  * strcmp - compares the string @s1 and @s2
  * @s1:     string to be compared
