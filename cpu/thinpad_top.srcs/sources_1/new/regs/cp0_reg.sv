@@ -138,7 +138,7 @@ always @(posedge clk) begin
     end
     if (EPC_write_en) begin                     //在发生异常的时候写EPC
         EPC         <= EPC_in;
-        Status[2]   <= 1'b1;                    //EXL置位表示发生异常，这样也会禁用硬件中断
+        Status[1]   <= 1'b1;                    //EXL置位表示发生异常，这样也会禁用硬件中断
         Cause[6:2]  <= excep_code[6:2];         //保存中断号,中断号统一由handler管理
         if (excep_code[6:2] == 5'd3) begin      //为了TLB快速重填，需要设置Context和EntryHi寄存器
             Context[22:4]  <= BadVAddr[31:13];
@@ -146,7 +146,7 @@ always @(posedge clk) begin
         end
     end
     if (is_eret) begin
-        Status[2]   <= 1'b0;                    //清除EXL位
+        Status[1]   <= 1'b0;                    //清除EXL位
     end
     if (tlbp) begin
         Index <= tlbp_index;
