@@ -6,6 +6,9 @@
 // #include "map.h"
 
 #define printf(...)         fprintf(1, __VA_ARGS__)
+#define false               0
+#define true                1
+
 #define BOARD_SIZE          13
 #define MAX_SEQ_SIZE        30
 
@@ -32,6 +35,8 @@
 typedef struct Hero {
     int x;
     int y;
+    int x_direction;
+    int y_direction;
     int hp;
     int attack;
     int defence;
@@ -43,7 +48,7 @@ typedef struct Hero {
 
 char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
 char raw_map[BOARD_SIZE][BOARD_SIZE];
-Hero hero = {6, 11, 400, 15, 10, 0, 0, 0, 0};
+Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
 int layer = 1;
 
 void import(char* file_name) {
@@ -70,25 +75,25 @@ void import(char* file_name) {
                 if (WALL == buffer[x]) {                                  // 墙壁
                     strcpy(map[y + 1][x + 1], "██");
                 } else if (BLUE_BOTTLE == buffer[x]) {                    // 蓝血瓶
-                    print_blue(map, x + 1, y + 1, "血");
+                    print_blue(x + 1, y + 1, "血");
                 } else if (RED_BOTTLE == buffer[x]) {                     // 红血瓶
-                    print_red(map, x + 1, y + 1, "血");
+                    print_red(x + 1, y + 1, "血");
                 } else if (RED_GATE == buffer[x]) {                       // 红门
-                    print_red(map, x + 1, y + 1, "〓");
+                    print_red(x + 1, y + 1, "〓");
                 } else if (BLUE_GATE == buffer[x]) {                      // 蓝门
-                    print_blue(map, x + 1, y + 1, "〓");
+                    print_blue(x + 1, y + 1, "〓");
                 } else if (YELLOW_GATE == buffer[x]) {                    // 黄门
-                    print_yellow(map, x + 1, y + 1, "〓");
+                    print_yellow(x + 1, y + 1, "〓");
                 } else if (YELLOW_KEY == buffer[x]) {                     // 黄钥匙
-                    print_yellow(map, x + 1, y + 1, "♀ ");
+                    print_yellow(x + 1, y + 1, "♀ ");
                 } else if (BLUE_KEY == buffer[x]) {                       // 蓝钥匙
-                    print_blue(map, x + 1, y + 1, "♀ ");
+                    print_blue(x + 1, y + 1, "♀ ");
                 } else if (RED_KEY == buffer[x]) {                        // 红钥匙
-                    print_red(map, x + 1, y + 1, "♀ ");
+                    print_red(x + 1, y + 1, "♀ ");
                 } else if (BLUE_GEM == buffer[x]) {                       // 蓝宝石
-                    print_blue(map, x + 1, y + 1, "◆ ");
+                    print_blue(x + 1, y + 1, "◆ ");
                 } else if (RED_GEM == buffer[x]) {                        // 红宝石
-                    print_red(map, x + 1, y + 1, "◆ ");
+                    print_red(x + 1, y + 1, "◆ ");
                 } else if (SLIME == buffer[x]) {                          // 史莱姆
                     strcpy(map[y + 1][x + 1], "史");
                 } else if (BAT == buffer[x]) {                            // 蝙蝠
@@ -124,7 +129,7 @@ void draw(){
     }
 }
 
-void print_red(char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE], int x, int y, char* c) {
+void print_red(int x, int y, char* c) {
     char buf[20];
     // sprintf(buf, "\033[31m%s\033[0m", c);
     // strcpy(map[y][x], buf);
@@ -133,7 +138,7 @@ void print_red(char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE], int x, int y, cha
     strcpy(map[y][x], buf);
 }
 
-void print_blue(char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE], int x, int y, char* c) {
+void print_blue(int x, int y, char* c) {
     char buf[20];
     // sprintf(buf, "\033[34m%s\033[0m", c);
     // strcpy(map[y][x], buf);
@@ -142,11 +147,20 @@ void print_blue(char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE], int x, int y, ch
     strcpy(map[y][x], buf);
 }
 
-void print_yellow(char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE], int x, int y, char* c) {
+void print_yellow(int x, int y, char* c) {
     char buf[20];
     // sprintf(buf, "\033[33m%s\033[0m", c);
     // strcpy(map[y][x], buf);
     strcat("\033[33m", c, buf);
+    strcat(buf, "\033[0m", buf);
+    strcpy(map[y][x], buf);
+} 
+
+void print_green(int x, int y, char* c) {
+    char buf[20];
+    // sprintf(buf, "\033[36m%s\033[0m", c);
+    // strcpy(map[y][x], buf);
+    strcat("\033[36m", c, buf);
     strcat(buf, "\033[0m", buf);
     strcpy(map[y][x], buf);
 } 
@@ -161,32 +175,24 @@ bool get_user_input(int *x_direction, int *y_direction) {
     switch (c)
     {
     case 'w':
-        if (*y_direction != 1) {
-            flag = 1;
-            *y_direction = -1;
-            *x_direction = 0;
-        }
+        flag = 1;
+        *y_direction = -1;
+        *x_direction = 0;
         break;
     case 's':
-        if (*y_direction != -1) {
-            flag = 1;
-            *y_direction = 1;
-            *x_direction = 0;
-        }
+        flag = 1;
+        *y_direction = 1;
+        *x_direction = 0;
         break;
     case 'a':
-        if (*x_direction != 1) {
-            flag = 1;
-            *x_direction = -1;
-            *y_direction = 0;
-        }
+        flag = 1;
+        *x_direction = -1;
+        *y_direction = 0;
         break;
     case 'd':
-        if (*x_direction != -1) {
-            flag = 1;
-            *x_direction = 1;
-            *y_direction = 0;
-        }
+        flag = 1;
+        *x_direction = 1;
+        *y_direction = 0;
         break;
     default:
         break;
@@ -194,10 +200,150 @@ bool get_user_input(int *x_direction, int *y_direction) {
     return flag;
 }
 
+// 可以战斗，且战斗完毕返回true;无法战斗返回false
+bool battle(char monster) {
+    return true;
+}
+
+// 如果钥匙足够，则返回true并打开门，如果钥匙不够，返回false
+bool open_door(char door) {
+    bool flag = false;
+    if (door == RED_GATE && hero.red_key_num > 0) {
+        hero.red_key_num--;
+        flag = true;
+    }
+    else if (door == BLUE_GATE && hero.blue_key_num > 0) { 
+        hero.blue_key_num--;
+        flag = true;
+    }
+    else if (door == YELLOW_GATE && hero.yellow_key_num > 0) {
+        hero.yellow_key_num--;
+        flag = true;
+    }
+    return flag;
+}
+
+void add_key_num(char key) {
+    if (key == RED_KEY)
+        hero.red_key_num++;
+    else if (key == BLUE_KEY)
+        hero.blue_key_num++;
+    else if (key == YELLOW_KEY) 
+        hero.yellow_key_num++;
+}
+
+bool update_hp(int delta) {
+    if (hero.hp < -delta)
+        return false;
+    hero.hp += delta;
+    return true;
+}
+
+void update_attack(int delta) {
+    hero.attack += delta;
+}
+
+void update_defence(int delta) {
+    hero.defence += delta;
+}
+
+void update_layer(int delta) {
+    layer += delta;
+}
+
+void move() {
+    int x = hero.x;
+    int y = hero.y;
+    int x_result = x + hero.x_direction;
+    int y_result = y + hero.y_direction;
+    bool can_move = true;
+    bool update = false;
+    switch (raw_map[y_result][x_result])
+    {
+    case SLIME:
+    case SKELETON:
+    case SKELETON_GENERAL:
+    case WIZARD:
+    case BAT:
+        if (!battle(raw_map[y_result][x_result])) {
+            printf("\n与其战斗将会死亡\n");
+            printf("%c[%d;%dH",27,18,1);
+            can_move = false;
+        } else {
+            update = true;
+        }
+        break;
+    case RED_GATE:
+    case BLUE_GATE:
+    case YELLOW_GATE:
+        if (!open_door(raw_map[y_result][x_result])){
+            printf("\n钥匙数量不足\n");
+            printf("%c[%d;%dH",27,18,1);
+            can_move = false;
+        } else {
+            update = true;
+        }
+        break;
+    case YELLOW_KEY:
+    case BLUE_KEY:
+    case RED_KEY:
+        add_key_num(raw_map[y_result][x_result]);
+        raw_map[y_result][x_result] = ROAD;
+        strcpy(map[y_result][x_result], "  ");
+        update = true;
+        break;
+    case RED_BOTTLE:
+        update_hp(50);
+        update = true;
+        break;
+    case BLUE_BOTTLE:
+        update_hp(100);
+        update = true;
+        break;
+    case RED_GEM:
+        update_attack(5);
+        update = true;
+        break;
+    case BLUE_GEM:
+        update_defence(5);
+        update = true;
+        break;
+    case UP_STAIR:
+        update_layer(1);
+        break;
+    case DOWN_STAIR:
+        update_layer(-1);
+        break;
+    case WALL:
+        can_move = false;
+        break;
+    default:
+        break;
+    }
+    if (update) {
+        raw_map[y_result][x_result] = ROAD;
+        strcpy(map[y_result][x_result], "  ");
+    }
+    if (can_move) {
+        hero.x = x_result;
+        hero.y = y_result;
+        strcpy(map[y][x], "  ");
+        // strcpy(map[y_result][x_result], "勇");
+        print_green(x_result, y_result, "勇");
+    }
+}
+
 int main() {
     printf("\e[1;1H\e[2J");
     import("map_1.txt");
+    print_green(hero.x, hero.y, "勇");
     draw();
-    
+    while(1) {
+        if (!get_user_input(&hero.x_direction, &hero.y_direction)) {
+            continue;
+        }
+        move();
+        draw();
+    }
     return 0;
 }
