@@ -57,11 +57,12 @@ typedef struct Monster {
 
 char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
 char raw_map[BOARD_SIZE][BOARD_SIZE];
-int up_x[3] = {6, 1, 2};
-int up_y[3] = {11, 2, 11};
-int down_x[3] = {2, 1, 10};
-int down_y[3] = {1, 10, 11};
-Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
+int up_x[10] = {6, 1, 2, 11, 2, 1, 11, 1, 6, 1};
+int up_y[10] = {11, 2, 11, 10, 11, 2, 10, 2, 2, 10};
+int down_x[10] = {2, 1, 10, 1, 1, 11, 1, 6, 1};
+int down_y[10] = {1, 10, 11, 10, 2, 10, 2, 2, 10};
+// Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
+Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 0, 100, 100, 100};
 int layer = 1;
 
 void import(char* file_name) {
