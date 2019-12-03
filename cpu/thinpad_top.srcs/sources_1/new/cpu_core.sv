@@ -34,7 +34,7 @@ logic[7:0] excep_code;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
 logic[31:0] index;
 logic from_random, tlb_write_en;
-assign index = from_random ? cp0_reg_r.Random : cp0_reg_r.Index;
+assign index = mem_pipeline_data.tlb_write_random ? cp0_reg_r.Random : cp0_reg_r.Index;
 assign if_inst = instruction;
 
 logic if_after_branch, id_after_branch, is_excep, is_eret, is_tlb_refill;
