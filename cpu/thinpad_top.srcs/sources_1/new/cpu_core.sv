@@ -124,6 +124,7 @@ cp0_reg cp0_reg_r (
     .rsel(cp0_rsel),
     .rdata(cp0_rdata),
     .EPC_write_en(is_excep),
+    .is_eret,
     .EPC_in,
     .BadVAddr,
     .EPC_out,
