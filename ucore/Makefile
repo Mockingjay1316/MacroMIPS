@@ -169,7 +169,7 @@ $(TOOL_MKSFS): tools/mksfs.c
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $^
 
 $(OBJDIR)/ucore-kernel-initrd: $(BUILD_DIR) $(TOOL_MKSFS) $(OBJ) $(USER_APP_BINS) tools/kernel.ld
-	make -C user/tower
+	# make -C user/tower
 	rm -rf $(ROOTFS_DIR) $(ROOTFS_IMG)
 	mkdir $(ROOTFS_DIR)
 	cp $(USER_APP_BINS) $(ROOTFS_DIR)
