@@ -299,7 +299,7 @@ memory_unit mmu (
 );
 
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
-assign mem_ctrl_signal = data_mmu_result.miss ? 5'b00000 : mem_mem_ctrl_signal;
+assign mem_ctrl_signal = (data_mmu_result.miss | ~data_mmu_result.valid) ? 5'b00000 : mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
 
 always @(*) begin
