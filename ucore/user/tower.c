@@ -46,6 +46,15 @@ typedef struct Hero {
     int yellow_key_num;
 }Hero;
 
+typedef struct Monster {
+    int x;
+    int y;
+    int type;
+    int hp;
+    int attack;
+    int defence;
+}Monster;
+
 char map[BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
 char raw_map[BOARD_SIZE][BOARD_SIZE];
 Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
@@ -118,7 +127,7 @@ void import(char* file_name) {
 }
 void draw(){
     printf("%c[%d;%dH",27,1,1);
-    printf("HP:%d\t攻击力:%d\t防御力:%d\n金钱:%d\t层数:%d\n黄钥匙:%d\t蓝钥匙:%d\t红钥匙:%d\n\n", 
+    printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
             hero.blue_key_num, hero.red_key_num);
     for (int y = 0; y < BOARD_SIZE; ++y) {
@@ -201,7 +210,48 @@ bool get_user_input(int *x_direction, int *y_direction) {
 }
 
 // 可以战斗，且战斗完毕返回true;无法战斗返回false
-bool battle(char monster) {
+bool battle(char m) {
+    Monster monster;
+    monster.type = m;
+    switch (m)
+    {
+    case SLIME:
+        monster.hp = 60;
+        monster.attack = 50;
+        monster.defence = 1;
+        break;
+    case SKELETON:
+        monster.hp = 110;
+        monster.attack = 25;
+        monster.defence = 5;
+        break;
+    case SKELETON_GENERAL:
+        monster.hp = 150;
+        monster.attack = 50;
+        monster.defence = 20;
+        break;
+    case BAT:
+        monster.hp = 100;
+        monster.attack = 20;
+        monster.defence = 5;
+        break;
+    case WIZARD:
+        monster.hp = 450;
+        monster.attack = 150;
+        monster.defence = 90;
+        break;
+    default:
+        break;
+    }
+    if (hero.attack <= monster.defence)     // 如果英雄的攻击没办法破防，就没办法打
+        return false;
+    if (hero.defence >= monster.attack)     // 如果怪物的攻击没办法破放，无伤通过
+        return true;
+    int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
+    int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
+    if (round_hero <= round_monster)      // 如果英雄先死，不能打
+        return false;
+    hero.hp -= round_monster * (monster.attack - hero.defence);
     return true;
 }
 
@@ -251,13 +301,16 @@ void update_layer(int delta) {
     layer += delta;
 }
 
-void move() {
+
+// 战斗就返回true，否则false
+bool move() {
     int x = hero.x;
     int y = hero.y;
     int x_result = x + hero.x_direction;
     int y_result = y + hero.y_direction;
     bool can_move = true;
     bool update = false;
+    bool ret = false;
     switch (raw_map[y_result][x_result])
     {
     case SLIME:
@@ -266,10 +319,11 @@ void move() {
     case WIZARD:
     case BAT:
         if (!battle(raw_map[y_result][x_result])) {
-            printf("\n与其战斗将会死亡\n");
+            printf("\n与其战斗将会死亡           \n");
             printf("%c[%d;%dH",27,18,1);
             can_move = false;
         } else {
+            ret = true;
             update = true;
         }
         break;
@@ -277,7 +331,7 @@ void move() {
     case BLUE_GATE:
     case YELLOW_GATE:
         if (!open_door(raw_map[y_result][x_result])){
-            printf("\n钥匙数量不足\n");
+            printf("\n钥匙数量不足              \n");
             printf("%c[%d;%dH",27,18,1);
             can_move = false;
         } else {
@@ -321,16 +375,32 @@ void move() {
         break;
     }
     if (update) {
-        raw_map[y_result][x_result] = ROAD;
         strcpy(map[y_result][x_result], "  ");
+        raw_map[y_result][x_result] = ROAD;
+        if (ret) {
+            char buf[10];
+            strcpy(buf, map[y_result][x_result]);
+            print_yellow(x_result, y_result, "✦ ");
+            draw();
+            sleep(150);
+            strcpy(map[y_result][x_result], buf);
+            draw();
+            sleep(150);
+            print_yellow(x_result, y_result, "✦ ");
+            draw();
+            sleep(150);
+            print_green(x_result, y_result, "勇");
+        }
     }
     if (can_move) {
         hero.x = x_result;
         hero.y = y_result;
         strcpy(map[y][x], "  ");
-        // strcpy(map[y_result][x_result], "勇");
-        print_green(x_result, y_result, "勇");
+        if (!ret)
+            print_green(x_result, y_result, "勇");
+        printf("\n                                \n"); 
     }
+    return ret;
 }
 
 int main() {
