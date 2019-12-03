@@ -8,7 +8,7 @@ module cp0_reg (
     input   logic[`REGID_WIDTH-1:0]     raddr, waddr,               //读和写的地址
     input   logic[2:0]                  wsel, rsel,                 //select字段
     input   logic[5:0]                  hardware_int,               //硬件中断
-    input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in,
+    input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in, BadVAddr,
     input   logic                       is_eret,                    //收到eret时需要进行一系列原子操作
     output  logic[`DATA_WIDTH-1:0]      EPC_out,
     input   logic                       tlbp, tlbr,
@@ -139,7 +139,11 @@ always @(posedge clk) begin
     if (EPC_write_en) begin                     //在发生异常的时候写EPC
         EPC         <= EPC_in;
         Status[2]   <= 1'b1;                    //EXL置位表示发生异常，这样也会禁用硬件中断
-        Cause[7:0]  <= excep_code;              //保存中断号,中断号统一由handler管理
+        Cause[6:2]  <= excep_code[6:2];         //保存中断号,中断号统一由handler管理
+        if (excep_code[6:2] == 5'd3) begin      //为了TLB快速重填，需要设置Context和EntryHi寄存器
+            Context[22:4]  <= BadVAddr[31:13];
+            EntryHi[31:13] <= BadVAddr[31:13];
+        end
     end
     if (is_eret) begin
         Status[2]   <= 1'b0;                    //清除EXL位
@@ -164,6 +168,7 @@ always @(posedge clk) begin
         EntryLo0 <= 32'h00000000;
         EntryLo1 <= 32'h00000000;
         Wired <= 32'h00000000;
+        Context <= 32'h00000000;
     end
 end
 

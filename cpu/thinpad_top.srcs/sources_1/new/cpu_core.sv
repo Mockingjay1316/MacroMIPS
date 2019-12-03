@@ -56,7 +56,7 @@ assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
 excep_info_t if_excep_info, ifid_excep_info;
 pipeline_data_t id_pipeline_data, ex_pipeline_data, mem_pipeline_data, wb_pipeline_data;
-logic[31:0] tlbp_index;
+logic[31:0] tlbp_index, BadVAddr;
 tlb_entry_t tlb_rdata;
 
 logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
@@ -125,6 +125,7 @@ cp0_reg cp0_reg_r (
     .rdata(cp0_rdata),
     .EPC_write_en(is_excep),
     .EPC_in,
+    .BadVAddr,
     .EPC_out,
     .excep_code,
     .hw_int_o,
@@ -262,7 +263,9 @@ ex_mem_reg ex_mem_reg_r (
 excep_handler excep_handler_r (
     .mem_excep_info,
     .Status(cp0_reg_r.Status),
-    .tlb_data_miss(data_mmu_result.miss),
+    .pc_mmu_result,
+    .data_mmu_result,
+    .BadVAddr,
     .mem_mem_ctrl_signal,
     .is_tlb_refill,
     .EPC_out(EPC_in),
