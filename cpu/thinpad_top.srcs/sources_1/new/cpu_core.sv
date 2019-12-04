@@ -32,10 +32,12 @@ logic[`REGID_WIDTH-1:0] raddr1, raddr2, cp0_raddr;
 logic[2:0] cp0_rsel;
 logic[7:0] excep_code;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
+logic[31:0] index;
+logic from_random, tlb_write_en;
+assign index = mem_pipeline_data.tlb_write_random ? cp0_reg_r.Random : cp0_reg_r.Index;
 assign if_inst = instruction;
-assign pc_out = if_pc;
 
-logic if_after_branch, id_after_branch, is_excep, is_eret;
+logic if_after_branch, id_after_branch, is_excep, is_eret, is_tlb_refill;
 
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
@@ -52,6 +54,10 @@ assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
+excep_info_t if_excep_info, ifid_excep_info;
+pipeline_data_t id_pipeline_data, ex_pipeline_data, mem_pipeline_data, wb_pipeline_data;
+logic[31:0] tlbp_index, BadVAddr;
+tlb_entry_t tlb_rdata;
 
 logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
 logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
@@ -59,7 +65,7 @@ logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
 logic[`REGID_WIDTH-1:0] wb_waddr;
 logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
 logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
-//stall
+//mem_ctrl_signal
 //4 -> load_from_mem
 //3 -> mem_data_write_en
 //2 -> is_mem_data_read
@@ -76,11 +82,14 @@ pc_reg pc_reg_r (
     .stall(stall[4]),
     .mem_stall(mem_stall),
     .is_excep,
+    .is_tlb_refill,
+    .ebase(cp0_reg_r.EBase),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
 );
 
+assign if_excep_info.tlb_pc_miss = pc_mmu_result.miss;
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
@@ -90,7 +99,9 @@ if_id_reg if_id_reg_r (
     .if_after_branch,
     .id_after_branch,
     .if_inst(if_inst),
-    .id_inst(id_inst)
+    .id_inst(id_inst),
+    .if_excep_info,
+    .ifid_excep_info
 );
 
 reg_file reg_file_r (
@@ -113,11 +124,19 @@ cp0_reg cp0_reg_r (
     .rsel(cp0_rsel),
     .rdata(cp0_rdata),
     .EPC_write_en(is_excep),
+    .is_eret,
     .EPC_in,
+    .BadVAddr,
     .EPC_out,
     .excep_code,
     .hw_int_o,
     .hardware_int,
+
+    .tlbp(mem_pipeline_data.tlbp),
+    .tlbr(mem_pipeline_data.tlbr),
+    .tlbp_index,
+    .tlb_rdata,
+
     .write_en(wb_cp0_write_en),
     .waddr(wb_cp0_waddr),
     .wsel(wb_cp0_wsel),
@@ -155,8 +174,11 @@ control_unit control_unit_r (
 
     .mem_stall(mem_stall),
     .is_eret,                                       //指示是否遇到eret指令
+    .from_random,
+    .tlb_write_en,
     .ex_cp0_op,
     .mem_cp0_op,                                    //cp0旁通
+    .ifid_excep_info,
 
     .old_pc(id_pc),
     .is_branch(pc_write_en),
@@ -172,6 +194,7 @@ control_unit control_unit_r (
     .mem_byte_en(id_mem_ctrl_signal[1]),
     .mem_sign_ext(id_mem_ctrl_signal[0]),
     .mem_data(id_mem_data),
+    .id_pipeline_data,
     .stall(stall)
 );
 
@@ -190,6 +213,7 @@ id_ex_reg id_ex_reg_r (
     .id_cp0_wsel,
     .id_excep_info,
     .id_mem_ctrl_signal(id_mem_ctrl_signal),
+    .id_pipeline_data,
     .ex_alu_op(ex_alu_op),
     .ex_operand1(ex_operand1),
     .ex_operand2(ex_operand2),
@@ -200,7 +224,8 @@ id_ex_reg id_ex_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
-    .ex_mem_ctrl_signal(ex_mem_ctrl_signal)
+    .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
+    .ex_pipeline_data
 );
 
 alu_core alu_core_r (
@@ -222,6 +247,7 @@ ex_mem_reg ex_mem_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
+    .ex_pipeline_data,
     .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .mem_alu_result(mem_alu_result),
     .mem_reg_waddr(mem_reg_waddr),
@@ -231,12 +257,18 @@ ex_mem_reg ex_mem_reg_r (
     .mem_cp0_write_en,
     .mem_cp0_wsel,
     .mem_excep_info,
+    .mem_pipeline_data,
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal)
 );
 
 excep_handler excep_handler_r (
     .mem_excep_info,
     .Status(cp0_reg_r.Status),
+    .pc_mmu_result,
+    .data_mmu_result,
+    .BadVAddr,
+    .mem_mem_ctrl_signal,
+    .is_tlb_refill,
     .EPC_out(EPC_in),
     .is_excep,
     .excep_code,
@@ -244,9 +276,30 @@ excep_handler excep_handler_r (
     .flush
 );
 
+mmu_res_t pc_mmu_result, data_mmu_result;
+
+assign mem_addr = data_mmu_result.paddr;
+assign pc_out = pc_mmu_result.paddr;
+
+memory_unit mmu (
+    .clk(cpu_clk),
+    .rst(reset_btn),
+    .pc_in(if_pc),
+    .tlb_write_en(mem_pipeline_data.tlb_write_en),
+    .index,
+    .tlbp_index,
+    .EntryHi(cp0_reg_r.EntryHi),
+    .PageMask(cp0_reg_r.PageMask),
+    .EntryLo1(cp0_reg_r.EntryLo1),
+    .EntryLo0(cp0_reg_r.EntryLo0),
+    .mem_addr_in(mem_alu_result),
+    .pc_mmu_result,
+    .data_mmu_result,
+    .tlb_rdata
+);
+
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
-assign mem_addr = mem_alu_result;
-assign mem_ctrl_signal = mem_mem_ctrl_signal;
+assign mem_ctrl_signal = (data_mmu_result.miss | ~data_mmu_result.valid) ? 5'b00000 : mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
 
 always @(*) begin
@@ -259,7 +312,7 @@ end
 
 mem_wb_reg mem_wb_reg_r (
     .clk(cpu_clk),
-    .rst(reset_btn),
+    .rst(reset_btn | is_excep),
     .stall(stall[0]),
     .mem_reg_waddr(mem_reg_waddr),
     .mem_reg_wdata(mem_reg_wdata),
@@ -267,12 +320,14 @@ mem_wb_reg mem_wb_reg_r (
     .mem_cp0_waddr,
     .mem_cp0_write_en,
     .mem_cp0_wsel,
+    .mem_pipeline_data,
     .wb_reg_waddr(wb_reg_waddr),
     .wb_reg_wdata(wb_reg_wdata),
     .wb_reg_write_en(wb_reg_write_en),
     .wb_cp0_waddr,
     .wb_cp0_write_en,
-    .wb_cp0_wsel
+    .wb_cp0_wsel,
+    .wb_pipeline_data
 );
 
 endmodule

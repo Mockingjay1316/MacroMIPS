@@ -156,9 +156,9 @@ sram_controller sram_ctrl (
 /*
 ila_0 ila (
     .clk(main_clk),
-    .probe0(is_uart),
-    .probe1(ext_uart_busy),
-    .probe2(mem_rdata),
+    .probe0(ext_uart_already_read_status),
+    .probe1(ext_uart_read_status),
+    .probe2(cpu.cp0_reg_r.Status),
     .probe3(uart_rdata),
     .probe4(ext_uart_wavai),
     .probe5(ext_uart_start),
@@ -180,7 +180,7 @@ logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
 
-async_receiver #(.ClkFrequency(60000000),.Baud(9600))   //接收模块，9600无检验位
+async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
         .clk(peri_clk),                                 //外部时钟信号
         .RxD(rxd),                                      //外部串行信号输入
@@ -250,7 +250,7 @@ always @(posedge main_clk) begin                         //将缓冲区ext_uart_
     end
 end
 
-async_transmitter #(.ClkFrequency(60000000),.Baud(9600)) //发送模块，9600无检验位
+async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发送模块，9600无检验位
     ext_uart_t(
         .clk(peri_clk),                                 //外部时钟信号
         .TxD(txd),                                      //串行信号输出

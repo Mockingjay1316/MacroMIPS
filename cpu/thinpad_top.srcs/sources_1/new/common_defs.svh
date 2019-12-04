@@ -48,12 +48,16 @@ typedef enum logic[3:0] {
 `define OP_SW           6'b101011
 
 `define FUNCT_SLL       6'b000000
+`define FUNCT_TLBR      6'b000001
+`define FUNCT_TLBWI     6'b000010
+`define FUNCT_TLBWR     6'b000110
 `define FUNCT_SLLV      6'b000100
 `define FUNCT_SRL       6'b000010
 `define FUNCT_SRLV      6'b000110
 `define FUNCT_SRA       6'b000011
 `define FUNCT_SRAV      6'b000111
 `define FUNCT_JR        6'b001000
+`define FUNCT_TLBP      6'b001000
 `define FUNCT_JALR      6'b001001
 `define FUNCT_SYSCALL   6'b001100
 `define FUNCT_ERET      6'b011000
@@ -76,6 +80,10 @@ typedef enum logic[3:0] {
 `define STALL_BEF_MEM   5'b11110
 `define STALL_BEF_WB    5'b11111
 
+`define MMU_SIZE        6'd15           //实际的TLB大小为16(15+1)
+`define MMU_SIZE_NUM    16
+`define MMU_SIZE_NUM_LOG2   4
+
 typedef struct packed {
     logic[4:0]      reg_waddr;
     logic[31:0]     reg_wval;
@@ -91,17 +99,51 @@ typedef struct packed {
 
 typedef enum logic[6:0] {
     CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
+    CP0_ENTRYHI, CP0_ENTRYLO0, CP0_ENTRYLO1,
+    CP0_PAGEMASK, CP0_INDEX, CP0_RANDOM, CP0_CONTEXT,
+    CP0_CONFIG1, CP0_WIRED,
     CP0_UNKNOW
 } cp0_name_t;
 
 typedef struct packed {
     logic[31:0]     EPC;
     logic           is_excep;
+    logic           is_syscall;
+    logic           tlb_pc_miss;
     logic[7:0]      excep_code;
 } excep_info_t;
 
 typedef enum logic[2:0] {
     UART_RWAIT, UART_RREAD, UART_RACK
 } uart_rstate_t;
+
+typedef struct packed {
+    logic[18:0]     VPN2;
+    logic[7:0]      ASID;
+    logic[31:0]     PageMask;
+    logic           G;
+    logic[25:0]     PFN0, PFN1;
+    logic[4:0]      PFN0_fl, PFN1_fl;           //flag: [4:2]-C [1]-D [0]-V
+} tlb_entry_t;
+
+typedef struct packed {
+    logic[31:0]     paddr;
+    logic[3:0]      index;
+    logic           miss, dirty, valid;
+    logic[2:0]      cache_fl;
+} tlb_res_t;
+
+typedef struct packed {
+    logic[31:0]     paddr, vaddr;
+    logic           miss, dirty, valid, illegal;
+} mmu_res_t;
+
+typedef struct packed {
+    logic           tlb_write_en, tlb_write_random, tlbp, tlbr;
+    tlb_entry_t     tlb_rdata;
+    logic[31:0]     tlbp_index;
+} pipeline_data_t;
+
+typedef logic [`MMU_SIZE_NUM * $bits(tlb_entry_t) - 1:0] tlb_flat_entry_t;
 
 `endif

@@ -36,7 +36,9 @@ assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base
 assign rdata = is_data_read ? (data_addr[22] ? ext_ram_data : base_ram_data) : 32'h00000000;
 
 always_comb begin
-    if (data_addr >= 32'h80000000 && data_addr <= 32'h80800000) begin
+    if (data_addr >= 32'h80000000 && data_addr < 32'h80800000) begin
+        mem_stall <= ~data_addr[22] & (load_from_mem | data_write_en);
+    end else if (data_addr >= 32'h00000000 && data_addr < 32'h00800000) begin
         mem_stall <= ~data_addr[22] & (load_from_mem | data_write_en);
     end else begin
         mem_stall <= 1'b0;
@@ -62,7 +64,10 @@ always @(*) begin
                 2'b11: base_ram_be_n <= 4'b0111;
             endcase
         end
-        
+    end
+    if (data_addr >= 32'hbfd003f8) begin
+        ext_ram_be_n <= 4'b0000;
+        base_ram_be_n <= 4'b0000;
     end
 end
 

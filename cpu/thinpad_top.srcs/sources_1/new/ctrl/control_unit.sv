@@ -15,9 +15,11 @@ module control_unit (
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
     input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
+    input   excep_info_t                ifid_excep_info,
 
     input   logic                       mem_stall,
     output  logic                       is_eret,                    //eret没有延迟槽，需要刷掉if-id寄存器
+    output  logic                       from_random, tlb_write_en,
 
     output  logic[`DATA_WIDTH-1:0]      operand1, operand2,         //送往ALU的操作数
     output  logic[`REGID_WIDTH-1:0]     reg_raddr1, reg_raddr2, reg_waddr,
@@ -40,6 +42,7 @@ module control_unit (
     output  logic                       is_mem_data_read, mem_byte_en,
     output  logic                       mem_sign_ext,
     output  logic[`DATA_WIDTH-1:0]      mem_data,                   //写入内存的数据
+    output  pipeline_data_t             id_pipeline_data,
     output  logic[4:0]                  stall
 );
 
@@ -65,6 +68,7 @@ assign ret_pc = old_pc + 4'b1000;                                               
 assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slot_pc;   //branch指令的新pc
 assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};                     //Jump指令的新pc
 assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
+assign id_excep_info.tlb_pc_miss = ifid_excep_info.tlb_pc_miss;
 
 always @(*) begin
     real_EPC <= cp0_EPC;
@@ -139,10 +143,18 @@ always @(*) begin
     is_mem_data_read <= 1'b0;
     cp0_write_en <= 1'b0;
     id_excep_info.is_excep <= 1'b0;
+    id_excep_info.is_syscall <= 1'b0;
     id_excep_info.excep_code <= 8'd0;
     is_branch_op <= 1'b0;
     is_eret <= 1'b0;
     mem_data <= 32'h00000000;
+    from_random <= 1'b0;
+    tlb_write_en <= 1'b0;
+
+    id_pipeline_data.tlbp <= 1'b0;
+    id_pipeline_data.tlbr <= 1'b0;
+    id_pipeline_data.tlb_write_en <= 1'b0;
+    id_pipeline_data.tlb_write_random <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -276,6 +288,7 @@ always @(*) begin
                     end
                 `FUNCT_SYSCALL: begin                       //SYSCALL
                     id_excep_info.is_excep <= 1'b1;
+                    id_excep_info.is_syscall <= 1'b1;
                     id_excep_info.excep_code <= 8'd8;
                     end
                 default: begin
@@ -426,6 +439,19 @@ always @(*) begin
                     is_eret <= 1'b1;
                     is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
                     new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
+                    end
+                `FUNCT_TLBP: begin                          //TLBP
+                    id_pipeline_data.tlbp <= 1'b1;
+                    end
+                `FUNCT_TLBR: begin                          //TLBR
+                    id_pipeline_data.tlbr <= 1'b1;
+                    end
+                `FUNCT_TLBWI: begin                         //TLBWI
+                    id_pipeline_data.tlb_write_en <= 1'b1;
+                    end
+                `FUNCT_TLBWR: begin                         //TLBWR
+                    id_pipeline_data.tlb_write_random <= 1'b1;
+                    id_pipeline_data.tlb_write_en <= 1'b1;
                     end
                 default: begin
                     
