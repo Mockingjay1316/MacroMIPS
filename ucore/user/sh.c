@@ -52,7 +52,13 @@ readline(const char *prompt) {
     if (prompt != NULL) {
         printf("%s", prompt);
     }
-    int ret, i = 0;
+    int ret, i = 0, j = 0, x = 0;						//添加x用于记录光标位于倒数第x的位置 
+    int flag = 0;                                       //0:init  1:get 27  2:get 91
+    const char deleteKey = 127;
+    const char dir_27 = 27;                             //输入方向键会依次得到27/91/65~68
+    const char dir_91 = 91;
+    const char leftKey = 'D';
+    const char rightKey = 'C';
     while (1) {
         char c;
         if ((ret = read(0, &c, sizeof(char))) < 0) {
@@ -65,29 +71,61 @@ readline(const char *prompt) {
             }
             return NULL;
         }
-
+		for(j=0;j<i-x;j++)printf("\b");
+		for(j=0;j<i;j++)printf(" ");
+		for(j=0;j<i;j++)printf("\b");
         if (c == 3) {
             return NULL;
         }
-        else if ((c == 127) && i > 0) {                 //似乎backspace会识别为delete（ascii127）导致无法进入'\b'的情况   额外添加处理
-            --i;
-            printf("\b \b");
+        else if (c == dir_27 && flag==0) {
+            flag=1;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
         }
-        else if (c >= ' ' && i < BUFSIZE - 1) {
-            putc(c);
-            buffer[i ++] = c;
+        else if (c == dir_91 && flag==1) {
+            flag=2;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
         }
-        else if (c == '\b' && i > 0) {
-            putc(c);
-            i --;
-            buffer[i] = '\0';                           //类似c==127的情况
-            printf("\r%s%s ",prompt,buffer);
-            printf("\r%s%s",prompt,buffer);
+        else if ((c == deleteKey) && i > 0 && x < i) {
+            for(j=x;j>0;j--)buffer[i-j-1]=buffer[i-j];
+			i--;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
+        }
+        else if ((c == '\b') && i > 0 && x < i) {
+            for(j=x;j>0;j--)buffer[i-j-1]=buffer[i-j];
+			i--;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
+        }
+        else if ((c==leftKey)&&flag==2) {
+            flag=0;
+            if(x<i)	x++;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
+		}
+        else if ((c==rightKey)&&flag==2) {
+            flag=0;
+            if(x>0) x--;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
+		}
+        else if (c >= ' ' && c < deleteKey && i < BUFSIZE - 1) {
+            for(j=0;j<x;j++)buffer[i-j]=buffer[i-j-1];
+            buffer[i-x] = c;
+            i++;
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
         }
         else if (c == '\n' || c == '\r') {
-            putc(c);
+			for(j=0;j<i;j++)putc(buffer[j]);
             buffer[i] = '\0';
             break;
+        }
+        else {
+			for(j=0;j<i;j++)putc(buffer[j]);
+			for(j=0;j<x;j++)printf("\b");
         }
     }
     return buffer;
