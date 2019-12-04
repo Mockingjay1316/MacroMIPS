@@ -56,7 +56,7 @@ generate
 for (i = 0; i < `MMU_SIZE_NUM; i = i + 1)
 begin: gen_tlb_match
     assign entries[i] = tlb_flat_entry[(i + 1) * $bits(tlb_entry_t) - 1:i * $bits(tlb_entry_t)];
-    assign hits[i] = (entries[i].VPN2 == vaddr[31:13] && (entries[i].ASID == asid || entries[i].G));
+    assign hits[i] = (entries[i].VPN2 == vaddr[31:13] && (entries[i].ASID == asid || entries[i].G) && entries[i].inited);
 end
 endgenerate
 
