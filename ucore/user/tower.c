@@ -31,6 +31,9 @@
 #define ROAD                ' '
 #define UP_STAIR            't'
 #define DOWN_STAIR          'w'
+#define SWORD               'a'
+#define SHIELD              'c'
+#define SHOP                'i'
 
 typedef struct Hero {
     int x;
@@ -61,8 +64,8 @@ int up_x[10] = {6, 1, 2, 11, 2, 1, 11, 1, 6, 1};
 int up_y[10] = {11, 2, 11, 10, 11, 2, 10, 2, 2, 10};
 int down_x[10] = {2, 1, 10, 1, 1, 11, 1, 6, 1};
 int down_y[10] = {1, 10, 11, 10, 2, 10, 2, 2, 10};
-Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
-// Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 0, 100, 100, 100};
+// Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
+Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100};
 int layer = 1;
 
 void import(char* file_name) {
@@ -124,6 +127,16 @@ void import(char* file_name) {
                     strcpy(map[y + 1][x + 1], "↑ ");
                 } else if (DOWN_STAIR == buffer[x]) {                     // 下楼梯
                     strcpy(map[y + 1][x + 1], "↓ ");
+                } else if (SHOP == buffer[x]) {
+                    strcpy(map[y + 1][x + 1], "商");
+                    strcpy(map[y + 1][x + 2], "店");
+                    ++x;
+                } else if (SWORD == buffer[x]) {
+                    // strcpy(map[y + 1][x + 1], "⚔ ");
+                    print_green(x + 1, y + 1, "⚔ ");
+                } else if (SHIELD == buffer[x]) {
+                    // strcpy(map[y + 1][x + 1], "⍟ ");
+                    print_green(x + 1, y + 1, "⍟ ");
                 }
             }
             ++y;
@@ -179,37 +192,40 @@ void print_green(int x, int y, char* c) {
     strcpy(map[y][x], buf);
 } 
 
-bool get_user_input(int *x_direction, int *y_direction) {
+
+// 如果是wasd，返回0，否则返回字符unicode编码
+int get_user_input() {
     char c;
     int ret;
-    bool flag = 0;
+    int flag = -1;
     if ((ret = read(0, &c, sizeof(char))) < 0) {
         return flag;
     }
     switch (c)
     {
-    case 'w':
-        flag = 1;
-        *y_direction = -1;
-        *x_direction = 0;
-        break;
-    case 's':
-        flag = 1;
-        *y_direction = 1;
-        *x_direction = 0;
-        break;
-    case 'a':
-        flag = 1;
-        *x_direction = -1;
-        *y_direction = 0;
-        break;
-    case 'd':
-        flag = 1;
-        *x_direction = 1;
-        *y_direction = 0;
-        break;
-    default:
-        break;
+        case 'w':
+            flag = 0;
+            hero.y_direction = -1;
+            hero.x_direction = 0;
+            break;
+        case 's':
+            flag = 0;
+            hero.y_direction = 1;
+            hero.x_direction = 0;
+            break;
+        case 'a':
+            flag = 0;
+            hero.x_direction = -1;
+            hero.y_direction = 0;
+            break;
+        case 'd':
+            flag = 0;
+            hero.x_direction = 1;
+            hero.y_direction = 0;
+            break;
+        default:
+            flag = c;
+            break;
     }
     return flag;
 }
@@ -321,6 +337,46 @@ void update_layer(int delta) {
     print_green(hero.x, hero.y, "勇");
 }
 
+bool update_money(int delta) {
+    if (hero.money < -delta) {
+        return false;
+    }
+    hero.money += delta;
+    return true;
+}
+
+void buy() {
+    printf("欢迎来到商店！请按键盘上方数字键选择购买的物品。\n");
+    printf("1. 攻击力+5, $100\n");
+    printf("2. 防御力+5, $100\n");
+    printf("3. HP+500, $100\n");
+    int ret;
+    while ((ret = get_user_input()) != 0) {
+        bool success = false;
+        switch (ret)
+        {
+            case '1':
+                if ((success = update_money(-100)) == true)
+                    update_attack(5);
+                break;
+            case '2':
+                if ((success = update_money(-100)) == true)
+                    update_defence(5);
+                break;
+            case '3':
+                if ((success = update_money(-100)) == true)
+                    update_hp(500);
+                break;
+            default:
+                break;
+        }
+        if (!success) 
+            printf("金钱不足");
+        draw();
+    }
+    printf("\e[1;1H\e[2J");
+}
+
 
 // 战斗就返回true，否则false
 bool move() {
@@ -394,6 +450,16 @@ bool move() {
     case WALL:
         can_move = false;
         break;
+    case SWORD:
+        update_attack(20);
+        break;
+    case SHIELD:
+        update_defence(20);
+        break;
+    case SHOP:
+        buy();
+        can_move = false;
+        break;
     default:
         break;
     }
@@ -432,7 +498,7 @@ int main() {
     print_green(hero.x, hero.y, "勇");
     draw();
     while(1) {
-        if (!get_user_input(&hero.x_direction, &hero.y_direction)) {
+        if (get_user_input() != 0) {
             continue;
         }
         printf("X:%d, Y:%d\n", hero.x, hero.y);
