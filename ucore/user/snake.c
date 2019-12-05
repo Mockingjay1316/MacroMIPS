@@ -196,10 +196,10 @@ int main() {
     printf("\e[1;1H\e[2J");
     generate_food(&x_food, &y_food);
     while(1) {
-        printf("%c[%d;%dH",27,1,1);
-        printf("贪吃蛇小游戏\n");
-        printf("WASD控制上下左右\n");
-        printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
+        // printf("%c[%d;%dH",27,1,1);
+        // printf("贪吃蛇小游戏\n");
+        // printf("WASD控制上下左右\n");
+        // printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
 
         int fpid=fork();
 
@@ -215,7 +215,8 @@ int main() {
                 printf("%c[%d;%dH",27,1,1);
                 printf("贪吃蛇小游戏\n");
                 printf("WASD控制上下左右\n");
-                printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
+                printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
+                printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
                 printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
                 switch (game_status)
                 {
@@ -250,9 +251,7 @@ int main() {
             int time=gettime_msec(),move=0;
             int bef_x_direction=x_direction,bef_y_direction=y_direction;
 
-            if (!get_user_input(&x_direction, &y_direction)) {
-                continue;
-            }
+            while (!get_user_input(&x_direction, &y_direction));
 
 
             kill(fpid);

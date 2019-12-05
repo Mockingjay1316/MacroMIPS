@@ -54,7 +54,7 @@ INCLUDES  := $(addprefix -I,$(SRC_DIR))
 INCLUDES  += -I$(SRCDIR)/include
 
 # reserve 1MB for user app
-USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep tower
+USER_APPLIST     := cat sh ls forktest yield faultreadkernel faultread sleep tower snake
 # INITRD_BLOCK_CNT := 2000 
 INITRD_BLOCK_CNT := 8192
 
