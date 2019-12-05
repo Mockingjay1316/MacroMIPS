@@ -201,35 +201,98 @@ int main() {
         printf("WASD控制上下左右\n");
         printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
 
-        if (!get_user_input(&x_direction, &y_direction)) {
-            continue;
-        }
+        int fpid=fork();
 
-        int game_status = update_snake(snake, &x_direction, &y_direction, &x_food, &y_food);
-        printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
-        printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
-        switch (game_status)
+        if(fpid<0)
         {
-        case CONTINUE:
-            break;
-        case GAME_OVER:
-            printf("%c[%d;%dH",27,1,1);
-            for(int i = 0; i < 5 + HEIGHT; ++i) {
-                for(int j = 0; j < 100; ++j)
-                    printf(" ");
-                printf("\n");
+            printf("error\n");
+        }
+        else if(fpid==0)//child
+        {
+            while(1)
+            {
+                int game_status = update_snake(snake, &x_direction, &y_direction, &x_food, &y_food);
+                printf("%c[%d;%dH",27,1,1);
+                printf("贪吃蛇小游戏\n");
+                printf("WASD控制上下左右\n");
+                printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
+                printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
+                switch (game_status)
+                {
+                case CONTINUE:
+                    break;
+                case GAME_OVER:
+                    printf("%c[%d;%dH",27,1,1);
+                    for(int i = 0; i < 5 + HEIGHT; ++i) {
+                        for(int j = 0; j < 100; ++j)
+                            printf(" ");
+                        printf("\n");
+                    }
+                    printf("%c[%d;%dH",27,1,1);
+                    printf("Game Over\n");
+                    return 0;
+                case WIN:
+                    printf("%c[%d;%dH",27,4,1);
+                    printf("You Win\n");
+                    return 0;
+                default:
+                    break;
+                }
+
+                draw_canvas();
+
+                
+                sleep(400);//0.4s
+            }
+        }
+        else//father
+        {
+            int time=gettime_msec(),move=0;
+            int bef_x_direction=x_direction,bef_y_direction=y_direction;
+
+            if (!get_user_input(&x_direction, &y_direction)) {
+                continue;
+            }
+
+
+            kill(fpid);
+            move=(gettime_msec()-time)/400;
+            
+            int game_status;
+            for(int i=0;i<=move;i++)
+            {
+                game_status = update_snake(snake, &bef_x_direction, &bef_y_direction, &x_food, &y_food);
+                if(game_status==GAME_OVER||game_status==WIN)break;
             }
             printf("%c[%d;%dH",27,1,1);
-            printf("Game Over\n");
-            return 0;
-        case WIN:
-            printf("%c[%d;%dH",27,4,1);
-            printf("You Win\n");
-            return 0;
-        default:
-            break;
-        }
+            printf("贪吃蛇小游戏\n");
+            printf("WASD控制上下左右\n");
+            printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
+            printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", bef_x_direction, bef_y_direction, x_food, y_food);
+            printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
+            switch (game_status)
+            {
+            case CONTINUE:
+                break;
+            case GAME_OVER:
+                printf("%c[%d;%dH",27,1,1);
+                for(int i = 0; i < 5 + HEIGHT; ++i) {
+                    for(int j = 0; j < 100; ++j)
+                        printf(" ");
+                    printf("\n");
+                }
+                printf("%c[%d;%dH",27,1,1);
+                printf("Game Over\n");
+                return 0;
+            case WIN:
+                printf("%c[%d;%dH",27,4,1);
+                printf("You Win\n");
+                return 0;
+            default:
+                break;
+            }
 
-        draw_canvas();
+            draw_canvas();
+        }
     }
 }
