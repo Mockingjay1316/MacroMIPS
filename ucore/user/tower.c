@@ -92,6 +92,7 @@ int down_y[10] = {1, 10, 11, 10, 2, 10, 2, 2, 10};
 // Hero hero = {6, 11, 0, 0, 400, 10, 10, 4, 0, 0, 0, 0, 0};
 Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100, 0, 0};
 int layer = 1;
+int shop_cost = 20;
 
 void init_monsters() {
     monsters[MONSTER_SLIME].hp = 60;
@@ -450,10 +451,10 @@ bool update_money(int delta) {
 }
 
 void buy() {
-    printf("欢迎来到商店！请按键盘上方数字键选择购买的物品。\n");
-    printf("1. 攻击力+5, $100\n");
-    printf("2. 防御力+5, $100\n");
-    printf("3. HP+500, $100\n");
+    printf("你若给我%d个金币，我就帮你提升以下一种能力。\n", shop_cost);
+    printf("1. 攻击力+2, $20\n");
+    printf("2. 防御力+4, $20\n");
+    printf("3. HP+100, $20\n");
     int ret;
     while ((ret = get_user_input()) != 0) {
         bool success = false;
@@ -461,14 +462,17 @@ void buy() {
         {
             case '1':
                 if ((success = update_money(-100)) == true)
+                    shop_cost *= 2;
                     update_attack(5);
                 break;
             case '2':
                 if ((success = update_money(-100)) == true)
+                    shop_cost *= 2;
                     update_defence(5);
                 break;
             case '3':
                 if ((success = update_money(-100)) == true)
+                    shop_cost *= 2;
                     update_hp(500);
                 break;
             default:
@@ -482,7 +486,14 @@ void buy() {
 }
 
 void talk_to_shop_man() {
-
+    if (layer == 6) {
+        printf("商人：魔塔一共50层，每一层为一个区域。\n");
+        printf("如果不打败此区域的头目就不能到更高的地方。\n");
+    } else if (layer == 7) {
+        printf("商人：在商店里你最好选择提升防御，只有在\n");
+        printf("攻击力低于敌人的防御力时才提升攻击力\n");
+    }
+    get_user_input();
 }
 
 void talk_to_old_man() {
@@ -490,6 +501,12 @@ void talk_to_old_man() {
         printf("老者：我可以给你怪物手册，你可以用快捷键3去使用它。\n");
         printf("它能预测出当前楼层各类怪物对你的伤害\n");
         has_prop[MANUAL] = true;
+    } else if (layer == 4) {
+        printf("老者：有些门不能用钥匙打开，只有当你打败它的守卫后\n");
+        printf("才会自动打开。\n");
+    } else if (layer == 6) {
+        printf("老者：你购买了礼物后再与商人对话，\n");
+        printf("他会告诉你一些重要的消息。\n");
     }
     get_user_input();
 }
@@ -543,6 +560,7 @@ bool move() {
         } else {
             ret = true;
             update = true;
+            can_move = false;
         }
         break;
     case RED_GATE:
@@ -553,6 +571,7 @@ bool move() {
             printf("%c[%d;%dH",27,19,1);
             can_move = false;
         } else {
+            can_move = false;
             update = true;
         }
         break;
@@ -573,11 +592,11 @@ bool move() {
         update = true;
         break;
     case RED_GEM:
-        update_attack(5);
+        update_attack(1);
         update = true;
         break;
     case BLUE_GEM:
-        update_defence(5);
+        update_defence(1);
         update = true;
         break;
     case UP_STAIR:
@@ -645,7 +664,7 @@ bool move() {
             print_yellow(x_result, y_result, "✦ ");
             draw();
             sleep(150);
-            print_green(x_result, y_result, "勇");
+            print_green(x_result, y_result, "  ");
         }
     }
     if (can_move && !new_layer) {
