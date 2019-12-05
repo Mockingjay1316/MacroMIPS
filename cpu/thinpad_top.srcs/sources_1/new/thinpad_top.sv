@@ -17,9 +17,7 @@ module thinpad_top(
     Sram.master        base_ram,
     Sram.master        ext_ram,
 
-    //直连串口信号
-    output  wire       txd,                //直连串口发�?�端
-    input   wire       rxd,                //直连串口接收�???
+    UART.master        uart,
 
     //Flash存储器信号，参�?? JS28F640 芯片手册
     output  wire[22:0] flash_a,            //Flash地址，a0仅在8bit模式有效�???16bit模式无意�???
@@ -113,11 +111,6 @@ uart_controller usrt_ctrl(
     .data_bus(data_bus.slave),
     .uart  
 );
-
-
-
-
-
 
 
 endmodule
