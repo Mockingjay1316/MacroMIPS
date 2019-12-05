@@ -102,6 +102,7 @@ typedef enum logic[6:0] {
     CP0_ENTRYHI, CP0_ENTRYLO0, CP0_ENTRYLO1,
     CP0_PAGEMASK, CP0_INDEX, CP0_RANDOM, CP0_CONTEXT,
     CP0_CONFIG1, CP0_WIRED,
+    CP0_COUNT, CP0_COMPARE,
     CP0_UNKNOW
 } cp0_name_t;
 
@@ -124,6 +125,7 @@ typedef struct packed {
     logic           G;
     logic[25:0]     PFN0, PFN1;
     logic[4:0]      PFN0_fl, PFN1_fl;           //flag: [4:2]-C [1]-D [0]-V
+    logic           inited;
 } tlb_entry_t;
 
 typedef struct packed {

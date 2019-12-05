@@ -33,7 +33,7 @@ assign data_mmu_result.paddr = data_mapped ? data_result.paddr : mem_addr_in;
 assign data_mmu_result.vaddr = mem_addr_in;
 
 tlb_entry_t tlb_wdata;
-assign tlb_wdata = {EntryHi[31:13], EntryHi[7:0], PageMask, EntryLo0[0], EntryLo0[31:6], EntryLo1[31:6], EntryLo0[5:1], EntryLo1[5:1]};
+assign tlb_wdata = {EntryHi[31:13], EntryHi[7:0], PageMask, EntryLo0[0], EntryLo0[31:6], EntryLo1[31:6], EntryLo0[5:1], EntryLo1[5:1], 1'b1};
 
 tlb tlb_r (
     .clk,
