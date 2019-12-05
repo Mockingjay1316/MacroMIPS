@@ -109,6 +109,11 @@ sram_controller sram_ctrl (
     .cpld
 );
 
+uart_controller usrt_ctrl(
+    .data_bus(data_bus.slave),
+    .uart  
+);
+
 
 
 

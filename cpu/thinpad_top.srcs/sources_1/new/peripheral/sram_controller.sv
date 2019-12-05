@@ -9,7 +9,7 @@ module sram_controller (
 );
 
 logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read, instr_read;
-logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext;
+logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext, load_from_mem;
 logic mem_stall;
 logic uart_rdn, uart_wrn;
 logic uart_dataready, uart_tbre, uart_tsre;
@@ -125,20 +125,6 @@ always @(posedge peri_clk) begin
                     base_wdata <= data_write;
                 end
             end
-        end
-        if(data_addr == 32'hbfd003f8) begin
-            if(data_write_en) begin    //write si 
-                uart_wrn <= 1'b0;
-                uart_rdn <= 1'b1;
-                base_ram_data <= data_write;
-                base_ram_ce_n <= 1'b1;
-            end else begin  //read si
-                uart_rdn <= 1'b0;
-                uart_wrn <= 1'b1;
-                data_read <= {24'b0, uart_data[7:0]};  
-            end
-        end else if (data_addr == 32'hbfd003fc) begin
-            data_read <= {30'b0, uart_dataready, uart_tsre & uart_tbre};
         end
         if (is_data_read) begin
             ext_ram_ce_n <= 1'b0;

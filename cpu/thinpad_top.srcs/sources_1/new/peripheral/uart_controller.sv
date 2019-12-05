@@ -11,14 +11,13 @@ logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
 
+logic[`DATA_WIDTH-1:0] uart_rdata;
+logic[`ADDR_WIDTH-1:0] mem_addr;
 wire rxd. txd;
 assign rxd = uart.rxd;
-assign txd = uart.txd;
-
-logic[`DATA_WIDTH-1:0] uart_data_buff;
-logic[`DATA_WIDTH-1:0] uart_data;
-
-assign uart_data = uart_wrn ? 32'bz : uart_data_buff;
+assign uart.txd = txd;
+assign data_bus.mem_rdata = uart_rdata;
+assign mem_addr = data_bus.mem_addr;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
