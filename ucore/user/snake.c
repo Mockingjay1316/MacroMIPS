@@ -80,9 +80,9 @@ void generate_food(int *x_food, int *y_food) {
     for(int i = 0; i < WIDTH - 2; ++i) {
         for(int j = 0; j < HEIGHT - 2; ++j) {
             if(occupied[i][j] == 0)
-                if(++current_cnt == random_cnt) {
-                    *x_food = i + 1;
-                    *y_food = j + 1;
+                if(current_cnt++ == random_cnt) {
+                    *y_food = i + 1;
+                    *x_food = j + 1;
                     canvas[*y_food][*x_food] = '*';
                     // printf("x_food:%d y_food:%d", *x_food, *y_food);
                     // draw_canvas();
@@ -147,7 +147,6 @@ int update_snake(struct Snake *snake, int *x_direction, int *y_direction, int *x
     int x_tail = tail->m_x;
     int y_tail = tail->m_y;
     struct Snake *head = snake;
-    occupied[tail->m_y-1][tail->m_x-1] = 0;
     canvas[tail->m_y][tail->m_x] = ' ';
     for (int i = snake_length - 1; i > 0; --i) {
         snake[i].m_x = snake[i-1].m_x;
@@ -163,6 +162,8 @@ int update_snake(struct Snake *snake, int *x_direction, int *y_direction, int *x
         if(++snake_length == WIN_CONDITION) {
             return WIN;
         }
+    } else {
+        occupied[y_tail-1][x_tail-1] = 0;
     }
     for(int i = 1; i < snake_length; ++i) {
         if((snake[i].m_x == head->m_x && snake[i].m_y == head->m_y) || 
