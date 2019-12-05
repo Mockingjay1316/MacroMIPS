@@ -13,6 +13,7 @@
 #define MAX_SEQ_SIZE        14
 
 #define WALL                '#'
+#define FAKE_WALL           '@'
 #define BLUE_BOTTLE         'l'
 #define RED_BOTTLE          'h'
 #define RED_GATE            'r'
@@ -47,6 +48,8 @@ typedef struct Hero {
     int red_key_num;
     int blue_key_num;
     int yellow_key_num;
+    bool has_sword;
+    bool has_shield;
 }Hero;
 
 typedef struct Monster {
@@ -56,6 +59,7 @@ typedef struct Monster {
     int hp;
     int attack;
     int defence;
+    int money;
 }Monster;
 
 char map[9][BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
@@ -65,8 +69,8 @@ int up_x[10] = {6, 1, 2, 11, 2, 1, 11, 1, 6, 1};
 int up_y[10] = {11, 2, 11, 10, 11, 2, 10, 2, 2, 10};
 int down_x[10] = {2, 1, 10, 1, 1, 11, 1, 6, 1};
 int down_y[10] = {1, 10, 11, 10, 2, 10, 2, 2, 10};
-// Hero hero = {6, 11, 0, 0, 400, 15, 10, 0, 0, 0, 0};
-Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100};
+// Hero hero = {6, 11, 0, 0, 400, 10, 10, 4, 0, 0, 0, 0, 0};
+Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100, 0, 0};
 int layer = 1;
 
 void import(char* file_name) {
@@ -91,7 +95,7 @@ void import(char* file_name) {
             // printf("%d\n", y);
             for (int x = 0; x < BOARD_SIZE - 2; ++x) {  
                 raw_map[layer-1][y + 1][x + 1] = buffer[x];
-                if (WALL == buffer[x]) {                                  // 墙壁
+                if (WALL == buffer[x] || FAKE_WALL == buffer[x]) {        // 墙壁或假墙壁
                     strcpy(map[layer-1][y + 1][x + 1], "██");
                 } else if (BLUE_BOTTLE == buffer[x]) {                    // 蓝血瓶
                     print_blue(x + 1, y + 1, "血");
@@ -130,8 +134,10 @@ void import(char* file_name) {
                 } else if (DOWN_STAIR == buffer[x]) {                     // 下楼梯
                     strcpy(map[layer-1][y + 1][x + 1], "↓ ");
                 } else if (SHOP == buffer[x]) {
-                    strcpy(map[layer-1][y + 1][x + 1], "商");
-                    strcpy(map[layer-1][y + 1][x + 2], "店");
+                    // strcpy(map[layer-1][y + 1][x + 1], "商");
+                    // strcpy(map[layer-1][y + 1][x + 2], "店");
+                    print_green(x + 1, y + 1, "商");
+                    print_green(x + 2, y + 1, "店");
                     ++x;
                 } else if (SWORD == buffer[x]) {
                     // strcpy(map[y + 1][x + 1], "⚔ ");
@@ -148,9 +154,17 @@ void import(char* file_name) {
 }
 void draw(){
     printf("%c[%d;%dH",27,1,1);
-    printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n\n", 
+    printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
             hero.blue_key_num, hero.red_key_num);
+    if (hero.has_sword)
+        printf("武器: 剑    ");
+    else
+        printf("武器: 无    ");
+    if (hero.has_shield)
+        printf("防器: 盾\n\n");
+    else
+        printf("防器: 无\n\n");
     for (int y = 0; y < BOARD_SIZE; ++y) {
         for (int x = 0; x < BOARD_SIZE; ++x) {
             printf("%s", map[layer-1][y][x]);
@@ -241,41 +255,49 @@ bool battle(char m) {
     {
     case SLIME:
         monster.hp = 50;
-        monster.attack = 50;
+        monster.attack = 20;
         monster.defence = 1;
+        monster.money = 2;
         break;
     case SKELETON:
         monster.hp = 110;
         monster.attack = 25;
         monster.defence = 5;
+        monster.money = 5;
         break;
     case SKELETON_GENERAL:
         monster.hp = 150;
-        monster.attack = 50;
+        monster.attack = 40;
         monster.defence = 20;
+        monster.money = 8;
         break;
     case BAT:
         monster.hp = 100;
         monster.attack = 20;
         monster.defence = 5;
+        monster.money = 3;
         break;
     case WIZARD:
         monster.hp = 450;
         monster.attack = 150;
         monster.defence = 90;
+        monster.money = 22;
         break;
     default:
         break;
     }
     if (hero.attack <= monster.defence)     // 如果英雄的攻击没办法破防，就没办法打
         return false;
-    if (hero.defence >= monster.attack)     // 如果怪物的攻击没办法破放，无伤通过
+    if (hero.defence >= monster.attack) {     // 如果怪物的攻击没办法破放，无伤通过
+        update_money(monster.money);
         return true;
+    }
     int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
     int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
     if (round_hero <= round_monster)      // 如果英雄先死，不能打
         return false;
     hero.hp -= round_monster * (monster.attack - hero.defence);
+    update_money(monster.money);
     return true;
 }
 
@@ -456,16 +478,24 @@ bool move() {
         can_move = false;
         break;
     case SWORD:
-        update_attack(20);
+        update_attack(10);
+        hero.has_sword = true;
         break;
     case SHIELD:
-        update_defence(20);
+        update_defence(10);
+        hero.has_shield = true;
         break;
     case SHOP:
         buy();
         can_move = false;
         break;
+    case FAKE_WALL:
+        break;
     default:
+        if (raw_map[layer-1][y_result][x_result-1] == SHOP) {
+            buy();
+            can_move = false;
+        }
         break;
     }
     if (update) {
@@ -506,7 +536,7 @@ int main() {
         if (get_user_input() != 0) {
             continue;
         }
-        printf("X:%d, Y:%d\n", hero.x, hero.y);
+        // printf("X:%d, Y:%d\n", hero.x, hero.y);
         move();
         draw();
     }
