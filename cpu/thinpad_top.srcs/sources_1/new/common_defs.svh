@@ -148,7 +148,7 @@ interface Sram();
     );
 endinterface
 
-interface URAT();
+interface UART();
     logic rxd, txd;
 
     modport master(

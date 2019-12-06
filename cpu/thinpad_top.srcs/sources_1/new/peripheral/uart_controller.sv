@@ -11,13 +11,21 @@ logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
 
-logic[`DATA_WIDTH-1:0] uart_rdata;
+logic[`DATA_WIDTH-1:0] uart_rdata, mem_wdata;
 logic[`ADDR_WIDTH-1:0] mem_addr;
+logic is_write_data, is_read_data;
 wire rxd. txd;
 assign rxd = uart.rxd;
 assign uart.txd = txd;
 assign data_bus.mem_rdata = uart_rdata;
 assign mem_addr = data_bus.mem_addr;
+assign is_write_data = data_bus.mem_ctrl_signal[3];
+assign is_read_data = data_bus.mem_ctrl_signal[2];
+assign mem_wdata = data_bus.mem_wdata;
+
+logic peri_clk, main_clk;
+assign peri_clk = data_bus.clk.peri_clk;
+assign main_clk = data_bus.clk.main_clk;
 
 async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
@@ -43,7 +51,6 @@ fifo_uart_rx receive_fifo(
 );
 
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
-
 
 always @(posedge peri_clk) begin
     if (reset_btn | ~rst) begin
@@ -84,14 +91,12 @@ always @(posedge peri_clk) begin                         //将缓冲区ext_uart_
 end
 
 always @(*) begin
-    uart_rdn <= 1;
-    uart_wrn <= 1;
     if (mem_addr[3:0] == 4'hc) begin
         uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
     end else if (mem_addr[3:0] == 4'h8) begin
-        if (mem_ctrl_signal[3] & is_uart) begin
+        if (is_write_data) begin
             ext_uart_tx <= mem_wdata[7:0];
-        end else if (is_uart) begin
+        end else begin
             uart_rdata <= {24'b0, ext_uart_buffer};
         end
     end
@@ -100,7 +105,7 @@ end
 always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发送出去
     if (reset_btn | ~rst) begin
         ext_uart_already_read_status <= 1'b0;
-    end else if (is_uart & mem_ctrl_signal[2] && mem_addr[3:0] == 4'h8) begin
+    end else if (is_read_data && mem_addr[3:0] == 4'h8) begin
         ext_uart_already_read_status <= ext_uart_read_status;
     end
 end
