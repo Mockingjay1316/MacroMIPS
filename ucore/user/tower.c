@@ -72,7 +72,7 @@ typedef struct Hero {
 typedef struct Monster {
     int x;
     int y;
-    char name[10];
+    char name[15];
     int hp;
     int attack;
     int defence;
@@ -89,10 +89,107 @@ int up_x[10] = {6, 1, 2, 11, 2, 1, 11, 1, 6, 1};
 int up_y[10] = {11, 2, 11, 10, 11, 2, 10, 2, 2, 10};
 int down_x[10] = {2, 1, 10, 1, 1, 11, 1, 6, 1};
 int down_y[10] = {1, 10, 11, 10, 2, 10, 2, 2, 10};
-// Hero hero = {6, 11, 0, 0, 400, 10, 10, 4, 0, 0, 0, 0, 0};
-Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100, 0, 0};
+Hero hero = {6, 11, 0, 0, 1000, 100, 100, 4, 0, 0, 0, 1, 1};
+// Hero hero = {6, 11, 0, 0, 40000, 1500, 1000, 10000, 100, 100, 100, 0, 0};
 int layer = 1;
 int shop_cost = 20;
+bool meet = true;   // 是否要遇到大魔王
+
+void move_print(int line) {
+    printf("%c[%d;%dH",27,line,1);
+}
+
+void screen_clear() {
+    printf("\e[1;1H\e[2J");
+}
+
+void init_game() {
+    int pid = fork();
+    if (pid == 0) {
+        printf("````````````````````````````````````````````````````````````````````````````\n\
+`````````````````````jjjjjjjjjj``a~`````````````````````````````````````````\n\
+`````````````````````@@@@@~@@@@``a~`````````````````````````````````````````\n\
+`````````````````````````E#``````a~`````````````````````````````````````````\n\
+`````````````````````````E#``````a~``,;,```````,;;``````````````````````````\n\
+`````````````````````````E#``````a~`g~~~1`````a@~~a,````````````````````````\n\
+`````````````````````````E#``````a~g*??@@,```g#?'^#g````````````````````````\n\
+`````````````````````````E#``````a~!```?~i``y~\"```~g_```````````````````````\n\
+`````````````````````````E#``````a~````\"~[``##`````gL```````````````````````\n\
+`````````````````````````E#``````a~````v~[``EggggggEL```````````````````````\n\
+`````````````````````````E#``````a~````v~[``~R777777^```````````````````````\n\
+`````````````````````````E#``````a~````v~[``#&``````````````````````````````\n\
+`````````````````````````E#``````a~````v~[``T~_`````````````````````````````\n\
+`````````````````````````E#``````a~````v~[``~@#/``,z````````````````````````\n\
+`````````````````````````E#``````a~````v~[```^#~gg~#````````````````````````\n\
+`````````````````````````''``````''````~''````~^7!^`````````````````````````\n\
+````````````````````````````````````````````````````````````````````````````\n\
+```$@***#~***M~L````````````````````````````````````````````````````````````\n\
+```R@```T~```v~p```````,,,```````````````````````````,,,````````````````;;,`\n\
+```#@```T~```v~p`````yg~~~gu````gggga`````ggggz````wg~~~gu``````gggg``wg~~#_\n\
+```##```T~```v~4````gM#*7H@~g,`~#~@$F````~QQ~@k```gg#*7*@~a````~QQ#~`d~@Q~~[\n\
+```##```T~```v~*```g~F````~Q~&``~~#````,````~[```g~P````~Q~L``````T~d@[```7`\n\
+```''```T~````'```j~#``````~#~,``$~(``a#_``j~'``_~#``````~@@``````T~#(``````\n\
+````````T~````````g~[```````T~[``?~i``#~*``g#```a~yjjjjjjjE~(`````T~\"```````\n\
+````````T~````````#~(```````?~4``~~&``~Z#``EP```$~~g~~~~~~~~.`````T~````````\n\
+````````T~````````$~(```````j~L```$E`j#\"~,_~!```$~['''''''''``````T~````````\n\
+````````T~````````T~p```````d~!```?~_g*~~+T@````T~p```````````````T~````````\n\
+````````T~````````\"~@;`````j~#````v~pE!`$&#F````\"~#,``````_w,`````T~````````\n\
+`````_jjd~ujj,`````Tg#u,,,w@~!`````$~~``T~~I`````T~#j,,,_g~~'```jjd~jjjj_```\n\
+`````$~~~~~M~p``````7@~~~~~#!``````T~#``\"~~``````~Xg~~~~~~F^```$~~~~~~~~@```\n\
+````````````````````````````````````````````````````````````````````````````\n");
+        while(1) {
+            // screen_clear();
+            move_print(31);
+            printf("\
+$F**#y````````````````````````````j[```````````````````g```````````````j[```\n\
+$[``~~(```;;``,;,````;;```,;,`````T[````,;,```````;;,``E`````;;``````;`T[```\n\
+$[```#.`@j#*`w#H#_`v#*#1`j#*#+```T@@E(`w#Q@l`````dFQ#`#~E@`y@M#k``$\\@QT@@E(`\n\
+$[``_@``@P```#```&`a[`~``#(`~`````a[```#```@,```v@`````g```~``\"E``$#```a[```\n\
+$ggg#!``@```aL;;;E`Xgj,``T&j``````a[``aL```$[```~@y;```g`````_jE``$[```a[```\n\
+$[''````@```$F****``^Q#_`~?Qg/````a[``$[```Tp````'7@y``g```j#7~@``$[```a[```\n\
+$[``````@```Tp````````?#````T4````T[``T4```g!``````~#x`g```@```@``$[```T[```\n\
+$[``````@```~#u,__`s/,jF`y;,y*````T&,,~@u,j#````vu,,#'`@i,v@/,w~``$[```T&,,`\n\
+*+``````*````^Q#F^`^Q@*~~?Q#*`````~Q$+`^Q@*'````'7#$7``?#$`7#F^*``*+```~Q$+`\n");
+            sleep(1000);
+            // screen_clear();
+            move_print(31);
+            printf("\
+``@**Q@i````````````````````````````g````````````````````$```````````````g``\n\
+`_#```T4````;```;;````;;````;;``````#`````;;```````,;,``j*````;;,`````;,`#``\n\
+`j*```a[`a[@Q`jg*#l``g*Q4``g*Qp```j#~E*`jgM@y`````w#H#'g@EE`vgM#g``j[g$U#~E*\n\
+`a[``_#'`@P``_#``\"#`a[````g!`~`````TL``v#'`~~,````@``'``@``````v~``a#```TL``\n\
+`#ggg#(``@```g[;;;#`Tg/```9b/``````#!``g!```E(```v@u,```@````,jw@``#!```#!``\n\
+`@'''```\"#```~****7`~7#a``~7#a`````@```~````@'````^Q#l`\"F```a*!?#``@````@```\n\
+_#``````T*``v~````````~E(```~@`````@``v~```j#```````7#`T*``a[``T*`_#````@```\n\
+j*``````a[```#[,,l`wj,_#`a/,v#````\"#,,`#L,j#\"````y,,y[`TL,`$i,j#[`j*```\"#,,`\n\
+X!``````*'````Q#F^`^Q@*~`?Q#*'````~Q$[``Q#*~````~7#$7``^#$`?#F[*'`X!```~Q$[`\n");
+            sleep(1000);
+        }
+    } else {
+        get_user_input();
+        kill(pid);
+        // screen_clear();
+        // move_print(100);
+        // printf("这是一个很古老的故事\n\n");
+        // sleep(3000);
+        // printf("在很久很久以前，在遥远的西方大地上，有着这样一个王国，王国虽小但全国的人们都生活得幸福快乐。\n\n");
+        // sleep(3000);
+        // printf("突然有一天，从天空飞来了一群可怕的怪物，它们来到王宫，抢走了国王唯一的女儿。\n\n");
+        // sleep(3000);
+        // printf("第二天，国王便向全国下达了紧急令，只要谁能将公主给找回来，他便将王位让给他。\n\n");
+        // sleep(3000);
+        // printf("于是，全国的勇士们都出发了，他们的足迹遍布了全国的各个角落，可一点儿线索也没有找到，时间很快就过去了一个月。\n\n");
+        // sleep(3000);
+        // printf("终于，在国王下达命令的第三十一天，一个从远方归来的人告诉国王，说在海边的一座小岛上，曾看到一群怪物出现过。\n\n");
+        // sleep(3000);
+        // printf("勇士们又出发了，可是，却几乎没有一个人可以回来，有幸回来的，都再也不敢去了。\n\n");
+        // sleep(3000);
+        // printf("而我们的故事，便是从这里开始。\n\n");
+        // sleep(3000);
+        // printf("任意键继续......\n");
+        // get_user_input();
+    }
+}
 
 void init_monsters() {
     monsters[MONSTER_SLIME].hp = 60;
@@ -124,6 +221,12 @@ void init_monsters() {
     monsters[MONSTER_WIZARD].defence = 8;
     monsters[MONSTER_WIZARD].money = 5;
     strcpy(monsters[MONSTER_WIZARD].name, "初级法师");
+}
+
+void print_conversation(char* words) {
+    screen_clear();
+    move_print(11);
+    printf("%s", words);
 }
 
 void import(char* file_name) {
@@ -224,9 +327,10 @@ void print_prop() {
 }
 
 void draw(){
-    printf("\e[1;1H\e[2J");
+    screen_clear();
         // printf("%c[%d;%dH",27,19,1);
-    printf("%c[%d;%dH",27,1,1);
+    // printf("%c[%d;%dH",27,1,1);
+    move_print(1);
     printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
             hero.blue_key_num, hero.red_key_num);
@@ -452,9 +556,9 @@ bool update_money(int delta) {
 
 void buy() {
     printf("你若给我%d个金币，我就帮你提升以下一种能力。\n", shop_cost);
-    printf("1. 攻击力+2, $20\n");
-    printf("2. 防御力+4, $20\n");
-    printf("3. HP+100, $20\n");
+    printf("1. 攻击力+2\n");
+    printf("2. 防御力+4\n");
+    printf("3. HP+100\n");
     int ret;
     while ((ret = get_user_input()) != 0) {
         bool success = false;
@@ -463,17 +567,17 @@ void buy() {
             case '1':
                 if ((success = update_money(-100)) == true)
                     shop_cost *= 2;
-                    update_attack(5);
+                    update_attack(2);
                 break;
             case '2':
                 if ((success = update_money(-100)) == true)
                     shop_cost *= 2;
-                    update_defence(5);
+                    update_defence(4);
                 break;
             case '3':
                 if ((success = update_money(-100)) == true)
                     shop_cost *= 2;
-                    update_hp(500);
+                    update_hp(100);
                 break;
             default:
                 break;
@@ -482,31 +586,26 @@ void buy() {
             printf("金钱不足");
         draw();
     }
-    printf("\e[1;1H\e[2J");
+    screen_clear();
 }
 
 void talk_to_shop_man() {
     if (layer == 6) {
-        printf("商人：魔塔一共50层，每一层为一个区域。\n");
-        printf("如果不打败此区域的头目就不能到更高的地方。\n");
+        print_conversation("商人：魔塔一共50层，每一层为一个区域。\n如果不打败此区域的头目就不能到更高的地方。");
     } else if (layer == 7) {
-        printf("商人：在商店里你最好选择提升防御，只有在\n");
-        printf("攻击力低于敌人的防御力时才提升攻击力\n");
+        print_conversation("商人：在商店里你最好选择提升防御，只有在\n攻击力低于敌人的防御力时才提升攻击力");
     }
     get_user_input();
 }
 
 void talk_to_old_man() {
     if (layer == 3) {
-        printf("老者：我可以给你怪物手册，你可以用快捷键3去使用它。\n");
-        printf("它能预测出当前楼层各类怪物对你的伤害\n");
+        print_conversation("老者：我可以给你怪物手册，你可以用快捷键3去使用它。\n它能预测出当前楼层各类怪物对你的伤害");
         has_prop[MANUAL] = true;
     } else if (layer == 4) {
-        printf("老者：有些门不能用钥匙打开，只有当你打败它的守卫后\n");
-        printf("才会自动打开。\n");
+        print_conversation("老者：有些门不能用钥匙打开，只有当你打败它的守卫后\n才会自动打开。");
     } else if (layer == 6) {
-        printf("老者：你购买了礼物后再与商人对话，\n");
-        printf("他会告诉你一些重要的消息。\n");
+        print_conversation("老者：你购买了礼物后再与商人对话，\n他会告诉你一些重要的消息。");
     }
     get_user_input();
 }
@@ -514,8 +613,8 @@ void talk_to_old_man() {
 void use_prop(int id) {
     if (!has_prop[id - '1'])
         return;
-    printf("\e[1;1H\e[2J");
-    printf("%c[%d;%dH",27,5,1);
+    screen_clear();
+    move_print(5);
     if (id == '1') {              // 快速上楼
         if (layer < 9 && layer_visited[layer])
             update_layer(1);
@@ -536,6 +635,94 @@ void use_prop(int id) {
     }
 }
 
+void meet_king(int x, int y) {
+    if (layer == 3 && x == 5 && y == 9 && meet) {
+        char c;
+        print_yellow(x, y - 2, "魔");
+        draw();
+        sleep(1500);
+        print_conversation("魔王：欢迎来到魔塔，你是第一百位挑战者。你若能打败我所有的手下，我就与你一对一的决斗。\n现在，你必须接受我的安排！");
+        get_user_input();
+        print_blue(x - 1, y, "士");
+        print_blue(x + 1, y, "士");
+        print_blue(x, y - 1, "士");
+        print_blue(x, y + 1, "士");
+        draw();
+        sleep(1000);
+        print_conversation("什么？");
+        get_user_input();
+        char buf[10];
+        strcpy(buf, map[layer-1][y][x]);
+        print_yellow(x, y, "✦ ");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][y][x], buf);
+        draw();
+        sleep(500);
+        print_yellow(x, y, "✦ ");
+        draw();
+        meet = false;
+        strcpy(map[layer-1][y-2][x], "  ");
+        strcpy(map[layer-1][y][x-1], "  ");
+        strcpy(map[layer-1][y][x+1], "  ");
+        strcpy(map[layer-1][y-1][x], "  ");
+        strcpy(map[layer-1][y+1][x], "  ");
+        sleep(1500);
+        print_conversation("");
+        sleep(2000);
+        print_conversation("........");
+        get_user_input();
+        print_conversation("........喂！醒醒！");
+        get_user_input();
+        update_layer(-1);
+        strcpy(map[layer-1][hero.y][hero.x], "  ");
+        hero.x = 3;
+        hero.y = 8;
+        hero.hp = 400;
+        hero.attack = 10;
+        hero.defence = 10;
+        hero.has_shield = false;
+        hero.has_sword = false;
+        print_green(hero.x, hero.y, "勇");
+        print_blue(hero.x, hero.y - 1, "偷");
+        draw();
+        sleep(2000);
+        print_conversation("小偷：你清醒了吗？你到监狱时还处在昏迷中，魔法警卫把你扔到了我这个房间。\n但你很幸运，我刚完成逃跑的暗道你就清醒了，我们一起越狱吧。");
+        get_user_input();
+        // sleep(500);
+        print_conversation("小偷：你的剑和盾被警卫拿走了，你必须先找到武器。我知道铁剑在5楼，铁盾在9楼，你最好先取到他们。\n我现在有事要做没法帮你，再见。");
+        get_user_input();
+        strcpy(map[layer-1][hero.y-1][hero.x], "  ");
+        strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
+        print_green(hero.x - 1, hero.y - 1, "偷");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
+        strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
+        print_green(hero.x - 2, hero.y - 1, "偷");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
+        strcpy(map[layer-1][hero.y][hero.x-2], "  ");
+        print_green(hero.x - 2, hero.y, "偷");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][hero.y][hero.x-2], "  ");
+        strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
+        print_green(hero.x - 2, hero.y + 1, "偷");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
+        strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
+        print_green(hero.x - 2, hero.y + 2, "偷");
+        draw();
+        sleep(500);
+        strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
+        draw();
+        sleep(500);
+    }
+}
+
 // 战斗就返回true，否则false
 bool move() {
     int x = hero.x;
@@ -546,6 +733,7 @@ bool move() {
     bool update = false;
     bool ret = false;
     bool new_layer = false;
+    // meet_king(x_result, y_result);
     switch (raw_map[layer-1][y_result][x_result])
     {
     case SLIME:
@@ -555,7 +743,8 @@ bool move() {
     case BAT:
         if (!battle(raw_map[layer-1][y_result][x_result])) {
             printf("\n与其战斗将会死亡           \n");
-            printf("%c[%d;%dH",27,19,1);
+            // printf("%c[%d;%dH",27,19,1);
+            move_print(19);
             can_move = false;
         } else {
             ret = true;
@@ -568,7 +757,7 @@ bool move() {
     case YELLOW_GATE:
         if (!open_door(raw_map[layer-1][y_result][x_result])){
             printf("\n钥匙数量不足              \n");
-            printf("%c[%d;%dH",27,19,1);
+            move_print(19);
             can_move = false;
         } else {
             can_move = false;
@@ -673,14 +862,13 @@ bool move() {
         strcpy(map[layer-1][y][x], "  ");
         if (!ret && !new_layer)
             print_green(x_result, y_result, "勇");
-        // printf("                                                               \n"); 
-        // printf("                                                               \n");
     }
     return ret;
 }
 
 int main() {
-    printf("\e[1;1H\e[2J");
+    screen_clear();
+    init_game();
     import("map_1.txt");
     print_green(hero.x, hero.y, "勇");
     draw();
@@ -691,12 +879,12 @@ int main() {
         if ((input = get_user_input()) == -1) {
             continue;
         }
-        
         if (input == 0)
             move();
         else   
             use_prop(input);
         draw();
+        meet_king(hero.x, hero.y);
     }
     return 0;
 }
