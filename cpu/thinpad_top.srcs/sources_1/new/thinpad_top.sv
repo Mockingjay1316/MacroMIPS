@@ -13,7 +13,12 @@ module thinpad_top(
     output  wire[7:0]  dpy0,               //数码管低位信号，包括小数点，输出1点亮
     output  wire[7:0]  dpy1,               //数码管高位信号，包括小数点，输出1点亮
 
-    CPLD.master        CPLD,
+    output wire uart_rdn, // read
+    output wire uart_wrn, // write
+    input wire uart_dataready,
+    input wire uart_tbre, // busy sending
+    input wire uart_tsre,  // send done
+
     Sram.master        base_ram,
     Sram.master        ext_ram,
 
@@ -68,7 +73,7 @@ assign clk.reset_btn = reset_btn;
 assign clk.rst= rst;
 assign clk.peri_clk = peri_clk;
 assign clk.bus_clk = bus_clk;
-assign main_clk = main_clk;
+assign clk.main_clk = main_clk;
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -86,29 +91,31 @@ cpu_core cpu (
     .data_bus(cpu_data_bus.master)
 );
 
-Bus sram_bus(.clk);
-Bus sram_inst(.clk);
+Bus sram_data_bus(.clk);
+Bus sram_inst_bus(.clk);
 Bus cpld_bus(.clk);
+Bus uart_bus(.clk);
 
 data_bus data_bus_instance(
     .cpu(cpu_data_bus.slave),
-    .sram(sram_bus.master)
+    .sram(sram_data_bus.master),
+    .uart(uart_bus.master)
 );
 
 inst_bus inst_bus_instance(
     .cpu(cpu_inst_bus.slave),
-    .sram(sram_inst.master)
+    .sram(sram_inst_bus.master)
 );
 
 sram_controller sram_ctrl (
-    .inst_bus(sram_bus.slave),
+    .inst_bus(sram_inst_bus.slave),
+    .data_bus(sram_data_bus.slave),
     .base_ram,
-    .ext_ram,
-    .cpld
+    .ext_ram
 );
 
-uart_controller usrt_ctrl(
-    .data_bus(data_bus.slave),
+uart_controller uart_ctrl(
+    .data_bus(uart_bus.slave),
     .uart  
 );
 

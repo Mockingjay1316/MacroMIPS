@@ -23,7 +23,7 @@ assign hardware_int = inst_bus.hardware_int;
 
 logic cpu_clk, reset_btn;
 assign cpu_clk = inst_bus.clk.clk_50M;
-assign reset_btn = (~inst_bus.clk.clk.rst | inst_bus.clk.clk.reset_btn);
+assign reset_btn = (~inst_bus.clk.rst | inst_bus.clk.reset_btn);
 
 logic[`ADDR_WIDTH-1:0] if_pc, id_pc, new_pc;
 logic[`INST_WIDTH-1:0] if_inst, id_inst;

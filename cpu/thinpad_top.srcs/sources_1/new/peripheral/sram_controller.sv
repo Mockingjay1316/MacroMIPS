@@ -4,8 +4,7 @@ module sram_controller (
     Bus.slave           data_bus,
     Bus.slave           inst_bus,
     Sram.master         base_ram,
-    Sram.master         ext_ram,
-    CPLD.master         cpld
+    Sram.master         ext_ram
 );
 
 logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read, instr_read;

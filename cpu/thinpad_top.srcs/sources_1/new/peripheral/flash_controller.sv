@@ -2,12 +2,11 @@
 
 module flash_controller (
     input wire clk,
-    inptu logic[7:0] flash_data,
+    input logic[7:0] flash_data,
     output wire[22:0] flash_addr,
-    output wire[18:0] video_addr;
-    output logic[7;0] video_data;
-
-    output logic video_write_enable; 
+    output wire[18:0] video_addr,
+    output logic[7:0] video_data,
+    output logic video_write_enable
 );
 
 reg[22:0] addr;
@@ -42,7 +41,7 @@ always @(posedge clk) begin
                 state <= ADDR;
         end
         default: begin
-            addr <= addr
+            addr <= addr;
             video_write_enable <= 1;
             video_data <= video_data;
             state <= END;

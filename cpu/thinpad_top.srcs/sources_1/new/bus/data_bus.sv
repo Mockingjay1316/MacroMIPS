@@ -17,13 +17,13 @@ module data_bus(
 
 	always_comb begin
 		if(cpu.mem_addr[3:0] == 4'hc | cpu.mem_addr[3:0] == 4'h8) begin
-			uart.mem_ctrl_data = uart.mem_ctrl_data;
+			uart.mem_ctrl_signal = uart.mem_ctrl_signal;
 			cpu.mem_rdata = uart.mem_rdata;
 		end
 		else begin 
-			ram.mem_ctrl_data = cpu.mem_ctrl_data;
-			cpu.mem_rdata = ram.mem_rdata;
-			cpu.mem_stall = ram.mem_stall
+			sram.mem_ctrl_signal = cpu.mem_ctrl_signal;
+			cpu.mem_rdata = sram.mem_rdata;
+			cpu.mem_stall = sram.mem_stall;
 		end
 	end
 

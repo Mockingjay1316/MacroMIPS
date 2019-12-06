@@ -1,10 +1,10 @@
-module (
-    Bus.master data_bus;
+module cpld_controller(
+    Bus.master data_bus,
     CPLD.master cpld  
 );
 
 logic[`ADDR_WIDTH-1:0] mem_addr;
-logic[`DATA_WIDTH-1:0] uart_rdata;
+logic[`DATA_WIDTH-1:0] uart_rdata, mem_wdata, uart_data;
 
 logic uart_rdn, uart_wdn, uart_dataready, uart_tbre, uart_tsre;
 logic mem_iswrite;
@@ -39,3 +39,5 @@ always @(*) begin
         uart_rdata <= {30'b0, uart_dataready, uart_tsre & uart_tbre};
     end
 end
+
+endmodule
