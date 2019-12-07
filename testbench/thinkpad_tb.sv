@@ -7,7 +7,7 @@ clock clock_instance(.clk);
 
 Sram     base_ram();
 Sram     ext_ram(); 
-UART     uart();
+Uart     uart();
 
 reg[3:0]  touch_btn;
 reg[31:0] dip_sw;   
@@ -61,7 +61,7 @@ thinpad_top thinpad_instance(
 
 
 cpld_model cpld(
-    .clk_uart(clk_11M0592),
+    .clk_uart(clk.clk_11M0592),
     .uart_rdn(uart_rdn),
     .uart_wrn(uart_wrn),
     .uart_dataready(uart_dataready),
@@ -86,7 +86,7 @@ initial begin
     cpld.pc_send_byte(8'h33);
 end
 
-    parameter BASE_RAM_INIT_FILE = "../../../../../testbench/thinpad/mem_init/base.bin";
+    parameter BASE_RAM_INIT_FILE = "//Mac/Home/Desktop/supervisor-mips32-master/kernel/kernel.bin";
     parameter EXT_RAM_INIT_FILE = "../../../../../testbench/thinpad/mem_init/ext.bin";
     parameter FLASH_INIT_FILE = "../../../../../testbench/thinpad/mem_init/flash.bin";
 

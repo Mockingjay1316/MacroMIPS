@@ -10,13 +10,6 @@ module sram_controller (
 logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read, instr_read;
 logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext, load_from_mem;
 logic mem_stall;
-logic uart_rdn, uart_wrn;
-logic uart_dataready, uart_tbre, uart_tsre;
-assign cpld.uart_rdn = uart_rdn;
-assign cpld.uart_wrn = uart_wrn;
-assign uart_dataready = cpld.uart_dataready;
-assign uart_tbre = cpld.uart_tbre;
-assign uart_tsre = cpld.uart_tsre; 
 
 logic peri_clk, main_clk;
 assign peri_clk = inst_bus.clk.peri_clk;
@@ -62,9 +55,6 @@ logic [19:0] base_ram_addr, ext_ram_addr;
 assign base_ram.ram_addr = base_ram_addr;
 assign ext_ram.ram_addr = ext_ram_addr;
 
-logic [31:0] uart_data;
-assign uart_data = uart_wrn ? 32'bz : data_read;
-
 logic rst;
 assign rst = inst_bus.clk.rst;
 always_comb begin
@@ -98,8 +88,6 @@ always @(*) begin
 end
 
 always @(posedge peri_clk) begin
-    uart_rdn <= 1;
-    uart_wrn <= 1;
     if (rst) begin
         base_ram_ce_n <= 1'b1;
         base_ram_oe_n <= 1'b1;

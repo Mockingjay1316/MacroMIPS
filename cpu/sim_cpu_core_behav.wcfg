@@ -3,83 +3,47 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="sim_cpu_core_behav.wdb" id="1">
+      <db_ref path="thinpad_tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="\$unit_alu_core_sv " />
             <top_module name="glbl" />
-            <top_module name="sim_cpu_core" />
+            <top_module name="thinpad_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1532320000fs"></ZoomStartTime>
-      <ZoomEndTime time="1679720001fs"></ZoomEndTime>
-      <Cursor1Time time="2000000000fs"></Cursor1Time>
+      <ZoomStartTime time="2241876175fs"></ZoomStartTime>
+      <ZoomEndTime time="2469175284fs"></ZoomEndTime>
+      <Cursor1Time time="2285922000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="204"></NameColumnWidth>
-      <ValueColumnWidth column_width="100"></ValueColumnWidth>
+      <NameColumnWidth column_width="225"></NameColumnWidth>
+      <ValueColumnWidth column_width="235"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="15" />
-   <wvobject fp_name="/sim_cpu_core/pc" type="array">
-      <obj_property name="ElementShortName">pc[31:0]</obj_property>
-      <obj_property name="ObjectShortName">pc[31:0]</obj_property>
+   <WVObjectSize size="6" />
+   <wvobject fp_name="/thinpad_tb/clk" type="array">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/instr" type="array">
-      <obj_property name="ElementShortName">instr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">instr[31:0]</obj_property>
+   <wvobject fp_name="/thinpad_tb/thinpad_instance/cpu_data_bus/pc_out" type="array">
+      <obj_property name="ElementShortName">pc_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_out[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/alu_op" type="array">
-      <obj_property name="ElementShortName">alu_op[3:0]</obj_property>
-      <obj_property name="ObjectShortName">alu_op[3:0]</obj_property>
+   <wvobject fp_name="/thinpad_tb/thinpad_instance/base_ram/ram_data" type="array">
+      <obj_property name="ElementShortName">ram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_data[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/operand1" type="array">
-      <obj_property name="ElementShortName">operand1[31:0]</obj_property>
-      <obj_property name="ObjectShortName">operand1[31:0]</obj_property>
+   <wvobject fp_name="/thinpad_tb/thinpad_instance/cpu/inst_bus/mem_addr" type="array">
+      <obj_property name="ElementShortName">mem_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/operand2" type="array">
-      <obj_property name="ElementShortName">operand2[31:0]</obj_property>
-      <obj_property name="ObjectShortName">operand2[31:0]</obj_property>
+   <wvobject fp_name="/thinpad_tb/thinpad_instance/cpu/data_bus/mem_addr" type="array">
+      <obj_property name="ElementShortName">mem_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mem_addr[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/alu_core_r/alu_result" type="array">
-      <obj_property name="ElementShortName">alu_result[31:0]</obj_property>
-      <obj_property name="ObjectShortName">alu_result[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/waddr" type="array">
-      <obj_property name="ElementShortName">waddr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">waddr[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/wdata" type="array">
-      <obj_property name="ElementShortName">wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/reg_file_r/write_en" type="logic">
-      <obj_property name="ElementShortName">write_en</obj_property>
-      <obj_property name="ObjectShortName">write_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/sram_ctrl/data_addr" type="array">
-      <obj_property name="ElementShortName">data_addr[31:0]</obj_property>
-      <obj_property name="ObjectShortName">data_addr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/cp0_raddr" type="array">
-      <obj_property name="ElementShortName">cp0_raddr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_raddr[4:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/control_unit_r/cp0_rsel" type="array">
-      <obj_property name="ElementShortName">cp0_rsel[2:0]</obj_property>
-      <obj_property name="ObjectShortName">cp0_rsel[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/excep_handler_r/excep_code" type="array">
-      <obj_property name="ElementShortName">excep_code[7:0]</obj_property>
-      <obj_property name="ObjectShortName">excep_code[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/excep_handler_r/EPC_out" type="array">
-      <obj_property name="ElementShortName">EPC_out[31:0]</obj_property>
-      <obj_property name="ObjectShortName">EPC_out[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/sim_cpu_core/cpu/excep_handler_r/is_excep" type="logic">
-      <obj_property name="ElementShortName">is_excep</obj_property>
-      <obj_property name="ObjectShortName">is_excep</obj_property>
+   <wvobject fp_name="/thinpad_tb/thinpad_instance/cpu/cpu_clk" type="logic">
+      <obj_property name="ElementShortName">cpu_clk</obj_property>
+      <obj_property name="ObjectShortName">cpu_clk</obj_property>
    </wvobject>
 </wave_config>

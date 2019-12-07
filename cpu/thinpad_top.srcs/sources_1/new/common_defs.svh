@@ -15,7 +15,7 @@ typedef enum logic[3:0] {
     ALU_AND, ALU_NOR, ALU_OR, ALU_XOR,
     ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
     ALU_NOP
-} alu_op_t;             //alu的各个操作，相当于指令的�??化版
+} alu_op_t;             //alu的各个操作，相当于指令的�???化版
 
 typedef enum logic[3:0] {
     BRA_BEQ, BRA_BGEZ, BRA_BGTZ, BRA_BLEZ, BRA_BLTZ,
@@ -23,7 +23,7 @@ typedef enum logic[3:0] {
     BRA_NOP
 } branch_op_t;
 
-//NOTE: 已修复OP和FUNCT反了的问�??
+//NOTE: 已修复OP和FUNCT反了的问�???
 
 `define OP_SPECIAL      6'b000000
 `define OP_REGIMM       6'b000001
@@ -135,21 +135,22 @@ interface Bus(
 endinterface
 
 interface Sram();
-    wire[31:0] ram_data;      //BaseRAM数据，低8位与CPLD串口控制器共�??
+    wire[31:0] ram_data;      //BaseRAM数据，低8位与CPLD串口控制器共�???
     wire[19:0] ram_addr;      //BaseRAM地址
-    wire[3:0]  ram_be_n;      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持�??0
-    wire       ram_ce_n;      //BaseRAM片�?�，低有�??
-    wire       ram_oe_n;      //BaseRAM读使能，低有�??
-    wire       ram_we_n;      //BaseRAM写使能，低有�??
+    wire[3:0]  ram_be_n;      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持�???0
+    wire       ram_ce_n;      //BaseRAM片�?�，低有�???
+    wire       ram_oe_n;      //BaseRAM读使能，低有�???
+    wire       ram_we_n;      //BaseRAM写使能，低有�???
 
     modport master(
         inout ram_data,
         output ram_addr, ram_be_n, ram_ce_n, ram_oe_n, ram_we_n
     );
+
 endinterface
 
-interface UART();
-    logic rxd, txd;
+interface Uart();
+    wire rxd, txd;
 
     modport master(
         input   rxd,
