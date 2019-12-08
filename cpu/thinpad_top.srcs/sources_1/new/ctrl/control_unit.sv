@@ -15,6 +15,9 @@ module control_unit (
     input   logic[4:0]                  mem_mem_ctrl_signal,
 
     input   cp0_op_t                    ex_cp0_op, mem_cp0_op,      //cp0旁通
+    input   hilo_op_t                   ex_hilo_op, mem_hilo_op, wb_hilo_op,
+    input   logic[31:0]                 hi_out, lo_out,
+    output  hilo_op_t                   id_hilo_op,
     input   excep_info_t                ifid_excep_info,
 
     input   logic                       mem_stall,
@@ -62,6 +65,7 @@ assign cp0_wsel = instr[2:0];
 
 logic[`ADDR_WIDTH-1:0] branch_new_pc, jump_new_pc, delay_slot_pc, ret_pc;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata_r, real_EPC;
+logic[63:0] hilo_data;
 
 assign delay_slot_pc = old_pc + 3'b100;                                                 //延迟槽内指令的pc
 assign ret_pc = old_pc + 4'b1000;                                                       //返回应该返回到跳转指令的pc+8
@@ -122,6 +126,16 @@ always @(*) begin
     end else begin
         cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
     end
+
+    if (ex_hilo_op.hilo_write_en) begin
+        hilo_data <= ex_hilo_op.hilo_wval;
+    end else if (mem_hilo_op.hilo_write_en) begin
+        hilo_data <= mem_hilo_op.hilo_wval;
+    end else if (wb_hilo_op.hilo_write_en) begin
+        hilo_data <= wb_hilo_op.hilo_wval;
+    end else begin
+        hilo_data <= {hi_out, lo_out};
+    end
 end
 
 logic branch_result;
@@ -155,6 +169,7 @@ always @(*) begin
     id_pipeline_data.tlbr <= 1'b0;
     id_pipeline_data.tlb_write_en <= 1'b0;
     id_pipeline_data.tlb_write_random <= 1'b0;
+    id_hilo_op.hilo_write_en <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
         `OP_ADDIU: begin                                    //ADDIU
@@ -285,6 +300,27 @@ always @(*) begin
                     is_branch    <= 1'b1;
                     new_pc       <= rdata1;
                     is_branch_op <= 1'b1;
+                    end
+                `FUNCT_MULTU: begin                         //MULTU
+                    alu_op       <= ALU_MULTU;
+                    end
+                `FUNCT_MFHI: begin                          //MFHI
+                    reg_write_en <= 1'b1;
+                    operand1     <= hilo_data[63:32];       //HI reg
+                    alu_op       <= ALU_NOP;                //ALU无需操作
+                    end
+                `FUNCT_MTHI: begin                          //MTHI
+                    id_hilo_op.hilo_wval <= {hilo_data[63:32], rdata1};
+                    id_hilo_op.hilo_write_en <= 1'b1;
+                    end
+                `FUNCT_MFLO: begin                          //MFLO
+                    reg_write_en <= 1'b1;
+                    operand1     <= hilo_data[31:0];        //LO reg
+                    alu_op       <= ALU_NOP;                //ALU无需操作
+                    end
+                `FUNCT_MTLO: begin                          //MTLO
+                    id_hilo_op.hilo_wval <= {rdata1, hilo_data[31:0]};
+                    id_hilo_op.hilo_write_en <= 1'b1;
                     end
                 `FUNCT_SYSCALL: begin                       //SYSCALL
                     id_excep_info.is_excep <= 1'b1;
@@ -473,10 +509,19 @@ always @(*) begin
         is_mem_data_read <= 1'b0;
         cp0_write_en <= 1'b0;
         id_excep_info.is_excep <= 1'b0;
+        id_excep_info.is_syscall <= 1'b0;
         id_excep_info.excep_code <= 8'd0;
         is_branch_op <= 1'b0;
         is_eret <= 1'b0;
         mem_data <= 32'h00000000;
+        from_random <= 1'b0;
+        tlb_write_en <= 1'b0;
+
+        id_pipeline_data.tlbp <= 1'b0;
+        id_pipeline_data.tlbr <= 1'b0;
+        id_pipeline_data.tlb_write_en <= 1'b0;
+        id_pipeline_data.tlb_write_random <= 1'b0;
+        id_hilo_op.hilo_write_en <= 1'b0;
     end
     /*
     if (stall == `STALL_BEF_ID) begin

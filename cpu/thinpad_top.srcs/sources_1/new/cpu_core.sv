@@ -32,6 +32,7 @@ logic[`REGID_WIDTH-1:0] raddr1, raddr2, cp0_raddr;
 logic[2:0] cp0_rsel;
 logic[7:0] excep_code;
 logic[`DATA_WIDTH-1:0] rdata1, rdata2, cp0_rdata;
+logic[`DATA_WIDTH-1:0] hi_out, lo_out;
 logic[31:0] index;
 logic from_random, tlb_write_en;
 assign index = mem_pipeline_data.tlb_write_random ? cp0_reg_r.Random : cp0_reg_r.Index;
@@ -50,6 +51,7 @@ logic pc_write_en, EPC_write_en, hw_int_o;
 logic[`DATA_WIDTH-1:0] EPC_in, EPC_out;
 
 cp0_op_t ex_cp0_op, mem_cp0_op, wb_cp0_op;
+hilo_op_t id_hilo_op, idex_hilo_op, ex_hilo_op, mem_hilo_op, wb_hilo_op;
 assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
@@ -117,6 +119,14 @@ reg_file reg_file_r (
     .wdata(wb_reg_wdata)
 );
 
+hilo_reg hilo_reg_r (
+    .clk(cpu_clk),
+    .rst(reset_btn),
+    .hi_out,
+    .lo_out,
+    .hilo_op(wb_hilo_op)
+);
+
 cp0_reg cp0_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn),
@@ -149,6 +159,8 @@ control_unit control_unit_r (
     .reg_rdata2(rdata2),
     .reg_raddr1(raddr1),
     .reg_raddr2(raddr2),
+    .hi_out,
+    .lo_out,
     .operand1(id_operand1),
     .operand2(id_operand2),
     .reg_waddr(id_reg_waddr),
@@ -187,6 +199,10 @@ control_unit control_unit_r (
     .new_pc(new_pc),
 
     .id_excep_info,
+    .id_hilo_op,
+    .ex_hilo_op,                                    //HILO旁通
+    .mem_hilo_op,
+    .wb_hilo_op,
 
     .load_from_mem(id_mem_ctrl_signal[4]),
     .mem_data_write_en(id_mem_ctrl_signal[3]),
@@ -212,6 +228,7 @@ id_ex_reg id_ex_reg_r (
     .id_cp0_write_en,
     .id_cp0_wsel,
     .id_excep_info,
+    .id_hilo_op,
     .id_mem_ctrl_signal(id_mem_ctrl_signal),
     .id_pipeline_data,
     .ex_alu_op(ex_alu_op),
@@ -224,6 +241,7 @@ id_ex_reg id_ex_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
+    .idex_hilo_op,
     .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .ex_pipeline_data
 );
@@ -232,6 +250,8 @@ alu_core alu_core_r (
     .alu_op(ex_alu_op),
     .operand1(ex_operand1),
     .operand2(ex_operand2),
+    .idex_hilo_op,
+    .ex_hilo_op,
     .alu_result(ex_alu_result)
 );
 
@@ -247,6 +267,7 @@ ex_mem_reg ex_mem_reg_r (
     .ex_cp0_write_en,
     .ex_cp0_wsel,
     .ex_excep_info,
+    .ex_hilo_op,
     .ex_pipeline_data,
     .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .mem_alu_result(mem_alu_result),
@@ -257,6 +278,7 @@ ex_mem_reg ex_mem_reg_r (
     .mem_cp0_write_en,
     .mem_cp0_wsel,
     .mem_excep_info,
+    .mem_hilo_op,
     .mem_pipeline_data,
     .mem_mem_ctrl_signal(mem_mem_ctrl_signal)
 );
@@ -320,6 +342,7 @@ mem_wb_reg mem_wb_reg_r (
     .mem_cp0_waddr,
     .mem_cp0_write_en,
     .mem_cp0_wsel,
+    .mem_hilo_op,
     .mem_pipeline_data,
     .wb_reg_waddr(wb_reg_waddr),
     .wb_reg_wdata(wb_reg_wdata),
@@ -327,6 +350,7 @@ mem_wb_reg mem_wb_reg_r (
     .wb_cp0_waddr,
     .wb_cp0_write_en,
     .wb_cp0_wsel,
+    .wb_hilo_op,
     .wb_pipeline_data
 );
 

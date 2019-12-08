@@ -3,15 +3,20 @@
 module alu_core (
     input   alu_op_t                    alu_op,                 //输入alu的指令
     input   logic[`DATA_WIDTH-1:0]      operand1, operand2,
+    input   hilo_op_t                   idex_hilo_op,
 
+    output  hilo_op_t                   ex_hilo_op,
     output  logic[`DATA_WIDTH-1:0]      alu_result
 );
 
 logic[`DATA_WIDTH-1:0] res_add, res_sub;
+logic[2*`DATA_WIDTH-1:0] res_multu;
 assign res_add = operand1 + operand2;
 assign res_sub = operand1 - operand2;
+assign res_multu = operand1 * operand2;
 
 always @(*) begin
+    ex_hilo_op <= idex_hilo_op;
     case(alu_op)
         ALU_ADD:    alu_result <= res_add;
         ALU_SUB:    alu_result <= res_sub;
@@ -26,6 +31,10 @@ always @(*) begin
                                     operand1[`DATA_WIDTH-1] : res_sub[`DATA_WIDTH-1];
         ALU_SLTU:   alu_result <= (operand1 < operand2) ? 1 : 0;
         ALU_NOP:    alu_result <= operand1;
+        ALU_MULTU:  begin
+            ex_hilo_op.hilo_wval <= res_multu;
+            ex_hilo_op.hilo_write_en <= 1'b1;
+            end
         default: begin
             
         end

@@ -11,7 +11,7 @@
 `define REGID_WIDTH 5
 
 typedef enum logic[3:0] { 
-    ALU_ADD, ALU_SUB, ALU_MULT,
+    ALU_ADD, ALU_SUB, ALU_MULTU,
     ALU_AND, ALU_NOR, ALU_OR, ALU_XOR,
     ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
     ALU_NOP
@@ -60,6 +60,10 @@ typedef enum logic[3:0] {
 `define FUNCT_TLBP      6'b001000
 `define FUNCT_JALR      6'b001001
 `define FUNCT_SYSCALL   6'b001100
+`define FUNCT_MFHI      6'b010000
+`define FUNCT_MTHI      6'b010001
+`define FUNCT_MFLO      6'b010010
+`define FUNCT_MTLO      6'b010011
 `define FUNCT_ERET      6'b011000
 `define FUNCT_ADDU      6'b100001
 `define FUNCT_SLT       6'b101010
@@ -96,6 +100,11 @@ typedef struct packed {
     logic           cp0_write_en;
     logic[31:0]     cp0_wval;
 } cp0_op_t;
+
+typedef struct packed {
+    logic           hilo_write_en;
+    logic[63:0]     hilo_wval;
+} hilo_op_t;
 
 typedef enum logic[6:0] {
     CP0_STATUS, CP0_EBASE, CP0_CAUSE, CP0_EPC,
