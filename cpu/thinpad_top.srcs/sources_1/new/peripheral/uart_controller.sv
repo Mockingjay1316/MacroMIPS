@@ -8,7 +8,7 @@ module uart_controller (
 logic[7:0] ext_uart_rx;
 logic[7:0] ext_uart_buffer, ext_uart_tx;
 logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
-logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
+logic ext_uart_start, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
 
 logic[`DATA_WIDTH-1:0] uart_rdata, mem_wdata;
@@ -30,13 +30,13 @@ assign main_clk = data_bus.clk.main_clk;
 assign reset_btn = data_bus.clk.reset_btn;
 assign rst = data_bus.clk.rst;
 
-async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块�?9600无检验位
+async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块�?9600无检验位
     ext_uart_r(
         .clk(peri_clk),                                 //外部时钟信号
         .RxD(rxd),                                      //外部串行信号输入
-        .RxD_data_ready(ext_uart_ready),                //数据接收到标�?
+        .RxD_data_ready(ext_uart_ready),                //数据接收到标�?
         .RxD_clear(ext_uart_clear),                     //清除接收标志
-        .RxD_data(ext_uart_rx)                          //接收到的�?字节数据
+        .RxD_data(ext_uart_rx)                          //接收到的�?字节数据
     );
 
 always @(posedge peri_clk) begin
@@ -67,7 +67,7 @@ always @(posedge peri_clk) begin
 end
 
 
-always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发�?�出�?
+always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发�?�出�?
     if (!ext_uart_busy && is_write_data) begin
         if (mem_addr[3:0] == 4'h8) begin
             ext_uart_start <= 1'b1;
@@ -89,7 +89,7 @@ always @(*) begin
     end
 end
 
-always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发�?�出�?
+always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发�?�出�?
     if (reset_btn | ~rst) begin
         ext_uart_already_read_status <= 1'b0;
     end else if (is_read_data && mem_addr[3:0] == 4'h8) begin
@@ -97,12 +97,12 @@ always @(posedge main_clk) begin                         //将缓冲区ext_uart_
     end
 end
 
-async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发�?�模块，9600无检验位
+async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发�?�模块，9600无检验位
     ext_uart_t(
         .clk(peri_clk),                                 //外部时钟信号
         .TxD(txd),                                      //串行信号输出
-        .TxD_busy(ext_uart_busy),                       //发�?�器忙状态指�?
-        .TxD_start(ext_uart_start),                     //�?始发送信�?
+        .TxD_busy(ext_uart_busy),                       //发�?�器忙状态指�?
+        .TxD_start(ext_uart_start),                     //�?始发送信�?
         .TxD_data(ext_uart_tx)                          //待发送的数据
     );
 

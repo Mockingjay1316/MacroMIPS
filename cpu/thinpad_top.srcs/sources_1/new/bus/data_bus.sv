@@ -16,7 +16,7 @@ module data_bus(
 	assign mem_addr = cpu.mem_addr;
 
 	always_comb begin
-		if(cpu.mem_addr[3:0] == 4'hc | cpu.mem_addr[3:0] == 4'h8) begin
+		if( cpu.mem_addr >= 32'hbfd003f8) begin
 			uart.mem_ctrl_signal = uart.mem_ctrl_signal;
 			cpu.mem_rdata = uart.mem_rdata;
 		end
