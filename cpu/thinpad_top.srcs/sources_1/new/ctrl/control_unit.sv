@@ -301,6 +301,9 @@ always @(*) begin
                     new_pc       <= rdata1;
                     is_branch_op <= 1'b1;
                     end
+                `FUNCT_MULTU: begin                         //MULTU
+                    alu_op       <= ALU_MULTU;
+                    end
                 `FUNCT_MFHI: begin                          //MFHI
                     reg_write_en <= 1'b1;
                     operand1     <= hilo_data[63:32];       //HI reg
@@ -506,10 +509,19 @@ always @(*) begin
         is_mem_data_read <= 1'b0;
         cp0_write_en <= 1'b0;
         id_excep_info.is_excep <= 1'b0;
+        id_excep_info.is_syscall <= 1'b0;
         id_excep_info.excep_code <= 8'd0;
         is_branch_op <= 1'b0;
         is_eret <= 1'b0;
         mem_data <= 32'h00000000;
+        from_random <= 1'b0;
+        tlb_write_en <= 1'b0;
+
+        id_pipeline_data.tlbp <= 1'b0;
+        id_pipeline_data.tlbr <= 1'b0;
+        id_pipeline_data.tlb_write_en <= 1'b0;
+        id_pipeline_data.tlb_write_random <= 1'b0;
+        id_hilo_op.hilo_write_en <= 1'b0;
     end
     /*
     if (stall == `STALL_BEF_ID) begin
