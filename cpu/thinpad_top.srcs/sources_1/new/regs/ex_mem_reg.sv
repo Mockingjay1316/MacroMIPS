@@ -10,6 +10,7 @@ module ex_mem_reg (
     input   logic[2:0]                  ex_cp0_wsel,
     input   logic[4:0]                  ex_mem_ctrl_signal,
     input   excep_info_t                ex_excep_info,
+    input   hilo_op_t                   ex_hilo_op,
     input   pipeline_data_t             ex_pipeline_data,
 
     output  logic[`REGID_WIDTH-1:0]     mem_reg_waddr, mem_cp0_waddr,
@@ -18,6 +19,7 @@ module ex_mem_reg (
     output  logic[2:0]                  mem_cp0_wsel,
     output  logic[4:0]                  mem_mem_ctrl_signal,
     output  excep_info_t                mem_excep_info,
+    output  hilo_op_t                   mem_hilo_op,
     output  pipeline_data_t             mem_pipeline_data
 );
 
@@ -32,6 +34,7 @@ always @(posedge clk) begin
         mem_cp0_wsel <= 3'b000;
         mem_mem_ctrl_signal <= 5'b00000;
         mem_excep_info <= {$bits(excep_info_t){1'b0}};
+        mem_hilo_op <= {$bits(hilo_op_t){1'b0}};
         mem_pipeline_data.tlb_write_en <= 1'b0;
         mem_pipeline_data.tlb_write_random <= 1'b0;
         mem_pipeline_data.tlbp <= 1'b0;
@@ -46,6 +49,7 @@ always @(posedge clk) begin
         mem_cp0_wsel <= 3'b000;
         mem_mem_ctrl_signal <= 5'b00000;
         mem_excep_info <= {$bits(excep_info_t){1'b0}};
+        mem_hilo_op <= {$bits(hilo_op_t){1'b0}};
         mem_pipeline_data.tlb_write_en <= 1'b0;
         mem_pipeline_data.tlb_write_random <= 1'b0;
         mem_pipeline_data.tlbp <= 1'b0;
@@ -60,6 +64,7 @@ always @(posedge clk) begin
         mem_cp0_wsel <= ex_cp0_wsel;
         mem_mem_ctrl_signal <= ex_mem_ctrl_signal;
         mem_excep_info <= ex_excep_info;
+        mem_hilo_op <= ex_hilo_op;
         mem_pipeline_data <= ex_pipeline_data;
     end
 end
