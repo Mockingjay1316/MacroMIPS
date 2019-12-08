@@ -13,11 +13,11 @@ module thinpad_top(
     output  wire[7:0]  dpy0,               //数码管低位信号，包括小数点，输出1点亮
     output  wire[7:0]  dpy1,               //数码管高位信号，包括小数点，输出1点亮
 
-    output  wire uart_rdn, // read
-    output  wire uart_wrn, // write
-    input   wire uart_dataready,
-    input   wire uart_tbre, // busy sending
-    input   wire uart_tsre,  // send done
+    output  wire       uart_rdn, // read
+    output  wire       uart_wrn, // write
+    input   wire       uart_dataready,
+    input   wire       uart_tbre, // busy sending
+    input   wire       uart_tsre,  // send done
 
     Sram.master        base_ram,
     Sram.master        ext_ram,
@@ -64,13 +64,14 @@ module thinpad_top(
     output  wire       video_de            //行数据有效信号，用于区分消隐�????
 );
 
-
+assign uart_rdn = 1'b1;
+assign uart_wrn = 1'b1;
 logic rst, peri_clk, bus_clk, main_clk;
 Clock clk;
 assign clk.clk_50M = clk_50M;
 assign clk.clk_11M0592 = clk_11M0592;
 assign clk.reset_btn = reset_btn;
-assign clk.rst= rst;
+assign clk.rst = rst;
 assign clk.peri_clk = peri_clk;
 assign clk.bus_clk = bus_clk;
 assign clk.main_clk = main_clk;
@@ -86,7 +87,7 @@ main_pll pll (
 Bus cpu_data_bus(.clk);
 Bus cpu_inst_bus(.clk);
 
-cpu_core cpu (
+cpu_core cpu(
     .inst_bus(cpu_inst_bus.master),
     .data_bus(cpu_data_bus.master)
 );

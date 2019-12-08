@@ -29,9 +29,10 @@ assign inst_bus.mem_stall = mem_stall;
 
 assign data_write = data_bus.mem_wdata;
 
-logic[31:0] base_ram_data, ext_ram_data;
-assign ext_ram.ram_data = ext_ram_data;
-assign base_ram.ram_data = base_ram_data;
+wire[31:0] base_ram_data, ext_ram_data;
+assign ext_ram_data = ext_ram.ram_data;
+assign base_ram_data = base_ram.ram_data;
+
 assign ext_ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 
@@ -56,7 +57,8 @@ assign base_ram.ram_addr = base_ram_addr;
 assign ext_ram.ram_addr = ext_ram_addr;
 
 logic rst;
-assign rst = inst_bus.clk.rst;
+assign rst = ~inst_bus.clk.rst;
+
 always_comb begin
     if (data_addr >= 32'h80000000 && data_addr <= 32'h80800000) begin
         mem_stall <= ~data_addr[22] & (load_from_mem | data_write_en);
