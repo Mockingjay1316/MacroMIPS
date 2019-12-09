@@ -65,14 +65,10 @@ always @(*) begin
             endcase
         end
     end
-    if (data_addr >= 32'hbfd003f8) begin
-        ext_ram_be_n <= 4'b0000;
-        base_ram_be_n <= 4'b0000;
-    end
 end
 
 always @(posedge peri_clk) begin
-    if (rst | ~sram_enable) begin
+    if (rst) begin
         base_ram_ce_n <= 1'b1;
         base_ram_oe_n <= 1'b1;
         base_ram_we_n <= 1'b1;
@@ -144,12 +140,6 @@ always @(posedge peri_clk) begin
         end else begin
             data_read <= 32'hzzzzzzzz;
         end
-    end
-
-    if (data_addr >= 32'hbfd003f8 && data_write_en) begin
-        ext_ram_ce_n  <= 1'b1;
-        ext_ram_oe_n  <= 1'b1;
-        ext_ram_we_n  <= 1'b1;
     end
 end
 

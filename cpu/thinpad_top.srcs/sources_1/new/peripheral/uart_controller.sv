@@ -18,13 +18,12 @@ logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_read_status, ext_uart_already_read_status;
 uart_rstate_t uart_rstate;
 
-logic[`DATA_WIDTH-1:0] mem_wdata;
+
 logic is_write_data, is_read_data;
 wire rxd, txd;
 
 assign hardware_int = {3'b000, ext_uart_already_read_status^ext_uart_read_status, 2'b00};
 
-assign mem_addr = mem_addr;
 assign is_write_data = mem_ctrl_signal[3];
 assign is_read_data = mem_ctrl_signal[2];
 
@@ -80,7 +79,7 @@ always @(*) begin
         uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
     end else if (mem_addr[3:0] == 4'h8) begin
         if (is_write_data) begin
-            ext_uart_tx <= mem_wdata[7:0];
+            ext_uart_tx <= uart_wdata[7:0];
         end else begin
             uart_rdata <= {24'b0, ext_uart_buffer};
         end

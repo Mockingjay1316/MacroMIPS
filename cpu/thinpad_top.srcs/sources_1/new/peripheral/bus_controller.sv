@@ -28,7 +28,8 @@ module bus_controller(
     always @ (*) begin 
         sram_enable <= 1'b0;
         uart_enable <= 1'b0;
-
+        instruction <= sram_inst;
+        sram_inst_addr <= pc;
 
         if( mem_addr >= 32'hbfd003f8) begin
             uart_enable <= 1'b1;
@@ -43,10 +44,9 @@ module bus_controller(
             sram_wdata <= mem_wdata;
             sram_data_addr <= mem_addr;
             mem_rdata <= sram_rdata;
-            sram_inst_addr <= pc;
+            
             sram_ctrl_signal <= mem_ctrl_signal;
             mem_stall <= sram_stall;
-            instruction <= sram_inst;
         end
     end
 endmodule

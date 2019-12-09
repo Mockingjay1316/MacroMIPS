@@ -91,10 +91,6 @@ logic[4:0] mem_ctrl_signal;
 logic mem_stall;
 logic[5:0] hardware_int, uart_request;
 
-
-assign uart_rdn = 1'b1;
-assign uart_wrn = 1'b1;
-
 logic[4:0] sram_ctrl_signal, uart_ctrl_signal;
 logic[`DATA_WIDTH-1:0] sram_wdata, sram_rdata, uart_rdata, uart_wdata;
 logic[`INST_WIDTH-1:0] sram_inst;
