@@ -44,9 +44,9 @@ always_comb begin                                                   //parsing in
         5'd4:       wname <= CP0_CONTEXT;
         5'd5:       wname <= CP0_PAGEMASK;
         5'd6:       wname <= CP0_WIRED;
-        5'd9:       rname <= CP0_COUNT;
+        5'd9:       wname <= CP0_COUNT;
         5'd10:      wname <= CP0_ENTRYHI;
-        5'd11:      rname <= CP0_COMPARE;
+        5'd11:      wname <= CP0_COMPARE;
         5'd12:      wname <= CP0_STATUS;
         5'd13:      wname <= CP0_CAUSE;
         5'd14:      wname <= CP0_EPC;
