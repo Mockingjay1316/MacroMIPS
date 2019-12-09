@@ -21,13 +21,10 @@ module bus_controller(
     input   logic[`DATA_WIDTH-1:0]      uart_rdata,
     output  logic[`DATA_WIDTH-1:0]      uart_wdata,
     output  logic                       uart_enable,
-    input logic[5:0]                    uart_request
+    input logic[5:0]                    uart_request,
+    output  logic[4:0]                  uart_ctrl_signal  
 
 );
-    assign uart_addr = mem_addr;
-    assign sram_data_addr = mem_addr;
-    assign sram_inst_addr = pc;
-
     always @ (*) begin 
         sram_enable <= 1'b0;
         uart_enable <= 1'b0;
@@ -37,12 +34,16 @@ module bus_controller(
             uart_enable <= 1'b1;
             uart_wdata <= mem_wdata;
             mem_rdata <= uart_rdata;
+            uart_addr <= mem_addr;
             hardware_request <= uart_request;
+            uart_ctrl_signal <= mem_ctrl_signal;
         end
         else begin
             sram_enable <= 1'b1;
             sram_wdata <= mem_wdata;
+            sram_data_addr <= mem_addr;
             mem_rdata <= sram_rdata;
+            sram_inst_addr <= pc;
             sram_ctrl_signal <= mem_ctrl_signal;
             mem_stall <= sram_stall;
             instruction <= sram_inst;

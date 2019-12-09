@@ -135,7 +135,8 @@ bus_controller bus_ctrl(
     .uart_rdata(uart_rdata),
     .uart_wdata(uart_wdata),
     .uart_enable(uart_enable),
-    .uart_request(uart_request)
+    .uart_request(uart_request),
+    .uart_ctrl_signal(uart_ctrl_signal)
 );
 cpu_core cpu (
     .clk_50M(main_clk),
