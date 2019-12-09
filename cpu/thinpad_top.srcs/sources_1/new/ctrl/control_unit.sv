@@ -374,7 +374,7 @@ always @(*) begin
             end
         `OP_BGTZ: begin                                     //BGTZ
             reg_write_en <= 1'b0;
-            branch_op    <= BRA_BLEZ;
+            branch_op    <= BRA_BGTZ;
             is_branch    <= branch_result;
             new_pc       <= branch_new_pc;
             is_branch_op <= 1'b1;
