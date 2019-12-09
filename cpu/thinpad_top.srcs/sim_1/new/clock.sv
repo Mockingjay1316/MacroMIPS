@@ -1,17 +1,14 @@
-`include "common_defs.svh"
 `timescale 1ps / 1ps
 
 module clock (
-    output Clock clk
+    output clk_50M,
+    output clk_11M0592
 );
 
-initial begin 
-    clk.reset_btn = 0;
-    clk.clk_50M = 0;
-    clk.clk_11M0592 = 0;
-end
+reg clk_50M = 0, clk_11M0592 = 0;
 
-always #(90422/2) clk.clk_11M0592 = ~clk.clk_11M0592;
-always #(20000/2) clk.clk_50M = ~clk.clk_50M;
+always #(90422/2) clk_11M0592 = ~clk_11M0592;
+always #(20000/2) clk_50M = ~clk_50M;
 
 endmodule
+

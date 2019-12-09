@@ -1,63 +1,41 @@
 `include "common_defs.svh"
 
 module sram_controller (
-    Bus.slave           data_bus,
-    Bus.slave           inst_bus,
-    Sram.master         base_ram,
-    Sram.master         ext_ram
+    input   logic        main_clk, rst,
+    input   logic        peri_clk,
+    input   logic        load_from_mem,
+    input   logic        is_data_read,       //1表示读数据，0表示写数据
+    input   logic        data_write_en,
+    input   logic        mem_byte_en,
+    input   logic        mem_sign_ext,
+    input   logic        sram_enable,
+    input   logic[31:0]  pc, data_addr,
+    input   logic[31:0]  data_write,
+    
+    output  logic[31:0]  data_read, instr_read,
+    output  logic        mem_stall,
+
+    //BaseRAM信号
+    inout   wire[31:0]  base_ram_data,      //BaseRAM数据，低8位与CPLD串口控制器共享
+    output  logic[19:0] base_ram_addr,      //BaseRAM地址
+    output  logic[3:0]  base_ram_be_n,      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    output  logic       base_ram_ce_n,      //BaseRAM片选，低有效
+    output  logic       base_ram_oe_n,      //BaseRAM读使能，低有效
+    output  logic       base_ram_we_n,      //BaseRAM写使能，低有效
+
+    //ExtRAM信号
+    inout   wire[31:0] ext_ram_data,       //ExtRAM数据
+    output  logic[19:0] ext_ram_addr,       //ExtRAM地址
+    output  logic[3:0]  ext_ram_be_n,       //ExtRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    output  logic       ext_ram_ce_n,       //ExtRAM片选，低有效
+    output  logic       ext_ram_oe_n,       //ExtRAM读使能，低有效
+    output  logic       ext_ram_we_n        //ExtRAM写使能，低有效
 );
 
-logic[31:0] base_wdata, ext_wdata, rdata, data_write, data_addr, pc, data_read, instr_read;
-logic is_data_read, data_write_en, mem_byte_en, mem_sign_ext, load_from_mem;
-logic mem_stall;
-
-logic peri_clk, main_clk;
-assign peri_clk = inst_bus.clk.peri_clk;
-assign main_clk = inst_bus.clk.main_clk;
-
-assign data_bus.mem_rdata = data_read;
-assign inst_bus.mem_rdata = instr_read;
-assign load_from_mem = inst_bus.mem_ctrl_signal[4];
-assign data_write_en = inst_bus.mem_ctrl_signal[3];
-assign is_data_read = inst_bus.mem_ctrl_signal[2];
-assign mem_byte_en = inst_bus.mem_ctrl_signal[1];
-assign mem_sign_ext = inst_bus.mem_ctrl_signal[0];
-
-assign data_addr = data_bus.mem_addr;
-assign pc = inst_bus.mem_addr;
-assign inst_bus.mem_stall = mem_stall;
-
-assign data_write = data_bus.mem_wdata;
-
-wire[31:0] base_ram_data, ext_ram_data;
-assign ext_ram_data = ext_ram.ram_data;
-assign base_ram_data = base_ram.ram_data;
-
+logic[31:0] base_wdata, ext_wdata, rdata;
 assign ext_ram_data = (data_addr[22] && ~is_data_read && data_write_en) ? ext_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
 assign base_ram_data = (~data_addr[22] && ~is_data_read && data_write_en) ? base_wdata : 32'bzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz;
-
-assign rdata = is_data_read ? (data_addr[22] ? ext_ram.ram_data : base_ram.ram_data) : 32'h00000000;
-
-logic[3:0] ext_ram_be_n, base_ram_be_n;
-assign ext_ram.ram_be_n = ext_ram_be_n;
-assign base_ram.ram_be_n = base_ram_be_n;
-
-logic base_ram_ce_n, base_ram_oe_n, base_ram_we_n;
-logic ext_ram_ce_n, ext_ram_oe_n, ext_ram_we_n;
-
-assign base_ram.ram_ce_n = base_ram_ce_n;
-assign base_ram.ram_oe_n = base_ram_oe_n;
-assign base_ram.ram_we_n = base_ram_we_n;
-assign ext_ram.ram_ce_n = ext_ram_ce_n;
-assign ext_ram.ram_oe_n = ext_ram_oe_n;
-assign ext_ram.ram_we_n = ext_ram_we_n;
-
-logic [19:0] base_ram_addr, ext_ram_addr;
-assign base_ram.ram_addr = base_ram_addr;
-assign ext_ram.ram_addr = ext_ram_addr;
-
-logic rst;
-assign rst = ~inst_bus.clk.rst;
+assign rdata = is_data_read ? (data_addr[22] ? ext_ram_data : base_ram_data) : 32'h00000000;
 
 always_comb begin
     if (data_addr >= 32'h80000000 && data_addr <= 32'h80800000) begin
@@ -87,10 +65,14 @@ always @(*) begin
             endcase
         end
     end
+    if (data_addr >= 32'hbfd003f8) begin
+        ext_ram_be_n <= 4'b0000;
+        base_ram_be_n <= 4'b0000;
+    end
 end
 
 always @(posedge peri_clk) begin
-    if (rst) begin
+    if (rst | ~sram_enable) begin
         base_ram_ce_n <= 1'b1;
         base_ram_oe_n <= 1'b1;
         base_ram_we_n <= 1'b1;

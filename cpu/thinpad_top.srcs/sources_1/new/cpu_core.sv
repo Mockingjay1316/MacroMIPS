@@ -1,29 +1,23 @@
 `include "common_defs.svh"
 
 module cpu_core (
-    Bus.master          inst_bus,
-    Bus.master          data_bus
+    input   logic       clk_50M,            //50MHz 时钟输入
+    input   logic       clk_11M0592,        //11.0592MHz 时钟输入
+
+    input   logic       clock_btn,          //BTN5手动时钟按钮开关，带消抖电路，按下时为1
+    input   logic       reset_btn,          //BTN6手动复位按钮开关，带消抖电路，按下时为1
+    input   logic       mem_stall,
+
+    output  logic[`ADDR_WIDTH-1:0]      pc_out, mem_addr,
+    output  logic[`DATA_WIDTH-1:0]      mem_wdata, reg_out,
+    output  logic[4:0]                  mem_ctrl_signal,
+    input   logic[5:0]                  hardware_int,               //硬件中断
+    input   logic[`DATA_WIDTH-1:0]      mem_rdata,
+    input   logic[`INST_WIDTH-1:0]      instruction     //调试信号，用来在不实现访存模块时输入指令
 );
 
-logic[`ADDR_WIDTH-1:0] pc_out, mem_addr;
-logic[`DATA_WIDTH-1:0] mem_wdata, reg_out, mem_rdata;
-logic[`INST_WIDTH-1:0] instruction;
-logic[4:0] mem_ctrl_signal;
-logic mem_stall;
-logic[5:0] hardware_int;
-
-assign inst_bus.mem_addr = pc_out;
-assign data_bus.mem_addr = mem_addr;
-assign data_bus.mem_wdata = mem_wdata;
-assign inst_bus.mem_ctrl_signal = mem_ctrl_signal;
-assign instruction = inst_bus.mem_rdata;
-assign mem_rdata = data_bus.mem_rdata;
-assign mem_stall = inst_bus.mem_stall;
-assign hardware_int = inst_bus.hardware_int;
-
-logic cpu_clk, reset_btn;
-assign cpu_clk = inst_bus.clk.clk_50M;
-assign reset_btn = (~inst_bus.clk.rst | inst_bus.clk.reset_btn);
+logic cpu_clk;
+assign cpu_clk = clk_50M;
 
 logic[`ADDR_WIDTH-1:0] if_pc, id_pc, new_pc;
 logic[`INST_WIDTH-1:0] if_inst, id_inst;
@@ -45,22 +39,18 @@ logic id_cp0_write_en, ex_cp0_write_en, mem_cp0_write_en, wb_cp0_write_en;
 logic pc_write_en, EPC_write_en, hw_int_o;
 logic[`DATA_WIDTH-1:0] EPC_in, EPC_out;
 
-logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
-logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
-logic[`REGID_WIDTH-1:0] wb_waddr;
-logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
-logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
-
-
 cp0_op_t ex_cp0_op, mem_cp0_op, wb_cp0_op;
 assign ex_cp0_op = {ex_cp0_waddr, ex_cp0_wsel, ex_cp0_write_en, ex_operand1};
 assign mem_cp0_op = {mem_cp0_waddr, mem_cp0_wsel, mem_cp0_write_en, mem_alu_result};
 assign wb_cp0_op = {wb_cp0_waddr, wb_cp0_wsel, wb_cp0_write_en, wb_reg_wdata};
 excep_info_t id_excep_info, ex_excep_info, mem_excep_info;
 
+logic[`DATA_WIDTH-1:0] ex_alu_result, mem_alu_result;
+logic[`DATA_WIDTH-1:0] id_mem_data, ex_mem_data, mem_mem_data;
 
-
-
+logic[`REGID_WIDTH-1:0] wb_waddr;
+logic[`DATA_WIDTH-1:0] mem_reg_wdata, wb_reg_wdata;
+logic[4:0] stall, id_mem_ctrl_signal, ex_mem_ctrl_signal, mem_mem_ctrl_signal, flush;
 //stall
 //4 -> load_from_mem
 //3 -> mem_data_write_en
