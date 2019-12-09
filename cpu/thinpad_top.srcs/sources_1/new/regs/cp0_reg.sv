@@ -99,7 +99,7 @@ always_comb begin                                                   //parsing in
 end
 
 always_comb begin
-    hw_int <= {hardware_int[5:1], timer_int};
+    hw_int <= {timer_int, hardware_int[4:0]};
     hw_int_o <= 1'b0;
     if ((hw_int & Status[15:10]) != 6'b000000) begin            //把Cause[15:10](也就是h_int)和中断屏蔽与一下
         hw_int_o <= 1'b1;                                       //硬件中断号统一由handler管理
