@@ -44,9 +44,9 @@ always_comb begin                                                   //parsing in
         5'd4:       wname <= CP0_CONTEXT;
         5'd5:       wname <= CP0_PAGEMASK;
         5'd6:       wname <= CP0_WIRED;
-        5'd9:       rname <= CP0_COUNT;
+        5'd9:       wname <= CP0_COUNT;
         5'd10:      wname <= CP0_ENTRYHI;
-        5'd11:      rname <= CP0_COMPARE;
+        5'd11:      wname <= CP0_COMPARE;
         5'd12:      wname <= CP0_STATUS;
         5'd13:      wname <= CP0_CAUSE;
         5'd14:      wname <= CP0_EPC;
@@ -99,7 +99,7 @@ always_comb begin                                                   //parsing in
 end
 
 always_comb begin
-    hw_int <= {hardware_int[5:1], timer_int};
+    hw_int <= {timer_int, hardware_int[4:0]};
     hw_int_o <= 1'b0;
     if ((hw_int & Status[15:10]) != 6'b000000) begin            //把Cause[15:10](也就是h_int)和中断屏蔽与一下
         hw_int_o <= 1'b1;                                       //硬件中断号统一由handler管理
@@ -184,6 +184,7 @@ always @(posedge clk) begin
         EntryLo1 <= 32'h00000000;
         Wired <= 32'h00000000;
         Context <= 32'h00000000;
+        Config1 <= {1'b0, 6'd16, 25'd0};
         Count <= 32'h00000000;
         Compare <= 32'h00000000;
         timer_int <= 1'b0;
