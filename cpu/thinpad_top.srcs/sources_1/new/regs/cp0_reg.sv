@@ -8,7 +8,7 @@ module cp0_reg (
     input   logic[`REGID_WIDTH-1:0]     raddr, waddr,               //读和写的地址
     input   logic[2:0]                  wsel, rsel,                 //select字段
     input   logic[5:0]                  hardware_int,               //硬件中断
-    input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in, BadVAddr,
+    input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in, BadVAddr_in,
     input   logic                       is_eret,                    //收到eret时需要进行一系列原子操作
     output  logic[`DATA_WIDTH-1:0]      EPC_out,
     input   logic                       tlbp, tlbr,
@@ -25,7 +25,7 @@ module cp0_reg (
 logic[`DATA_WIDTH-1:0] Status, EBase, Cause, EPC;
 logic[`DATA_WIDTH-1:0] Index, Random, Context, PageMask;
 logic[`DATA_WIDTH-1:0] EntryHi, EntryLo0, EntryLo1, Config1, Wired;
-logic[`DATA_WIDTH-1:0] Count, Compare;
+logic[`DATA_WIDTH-1:0] Count, Compare, BadVAddr;
 logic[5:0] hw_int;
 logic timer_int;
 integer iter;
@@ -44,6 +44,7 @@ always_comb begin                                                   //parsing in
         5'd4:       wname <= CP0_CONTEXT;
         5'd5:       wname <= CP0_PAGEMASK;
         5'd6:       wname <= CP0_WIRED;
+        5'd8:       wname <= CP0_BADVADDR;
         5'd9:       wname <= CP0_COUNT;
         5'd10:      wname <= CP0_ENTRYHI;
         5'd11:      wname <= CP0_COMPARE;
@@ -74,6 +75,7 @@ always_comb begin                                                   //parsing in
         5'd4:       rname <= CP0_CONTEXT;
         5'd5:       rname <= CP0_PAGEMASK;
         5'd6:       rname <= CP0_WIRED;
+        5'd8:       rname <= CP0_BADVADDR;
         5'd9:       rname <= CP0_COUNT;
         5'd10:      rname <= CP0_ENTRYHI;
         5'd11:      rname <= CP0_COMPARE;
@@ -133,6 +135,7 @@ always @(posedge clk) begin
                 Random <= `MMU_SIZE;     //写Wired寄存器同时会置Random为最大值
                 end
             CP0_COUNT:      Count <= wdata;
+            CP0_BADVADDR:   BadVAddr <= wdata;
             CP0_ENTRYHI:    EntryHi  <= wdata;
             CP0_COMPARE: begin
                 Compare <= wdata;
@@ -156,8 +159,9 @@ always @(posedge clk) begin
         Status[1]   <= 1'b1;                    //EXL置位表示发生异常，这样也会禁用硬件中断
         Cause[6:2]  <= excep_code[6:2];         //保存中断号,中断号统一由handler管理
         if (excep_code[6:2] == 5'd3) begin      //为了TLB快速重填，需要设置Context和EntryHi寄存器
-            Context[22:4]  <= BadVAddr[31:13];
-            EntryHi[31:13] <= BadVAddr[31:13];
+            Context[22:4]  <= BadVAddr_in[31:13];
+            EntryHi[31:13] <= BadVAddr_in[31:13];
+            BadVAddr       <= BadVAddr_in;
         end
     end
     if (is_eret) begin
@@ -185,6 +189,7 @@ always @(posedge clk) begin
         Wired <= 32'h00000000;
         Context <= 32'h00000000;
         Config1 <= {1'b0, 6'd16, 25'd0};
+        BadVAddr <= 32'h00000000;
         Count <= 32'h00000000;
         Compare <= 32'h00000000;
         timer_int <= 1'b0;
@@ -200,6 +205,7 @@ always_comb begin
         CP0_PAGEMASK:   rdata   <= PageMask;
         CP0_WIRED:      rdata   <= Wired;
         CP0_COUNT:      rdata   <= Count;
+        CP0_BADVADDR:   rdata   <= BadVAddr;
         CP0_COMPARE:    rdata   <= Compare;
         CP0_ENTRYHI:    rdata   <= EntryHi;
         CP0_CONFIG1:    rdata   <= {1'b0, `MMU_SIZE, 25'd0};
@@ -220,6 +226,7 @@ always_comb begin
             CP0_PAGEMASK:   rdata   <= wdata;
             CP0_WIRED:      rdata   <= wdata;
             CP0_COUNT:      rdata   <= wdata;
+            CP0_BADVADDR:   rdata   <= wdata;
             CP0_COMPARE:    rdata   <= wdata;
             CP0_ENTRYHI:    rdata   <= wdata;
             CP0_STATUS:     rdata   <= wdata;   //Status寄存器
