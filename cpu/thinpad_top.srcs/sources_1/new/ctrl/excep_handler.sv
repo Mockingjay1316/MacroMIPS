@@ -50,7 +50,7 @@ always_comb begin
         is_excep <= 1'b0;
         flush <= 5'b00000;
         excep_code <= 8'b00000000;
-    end else if (Status[0] == 1'b0) begin
+    end else if (Status[0] == 1'b0 && hardware_int) begin
         is_excep <= 1'b0;
         flush <= 5'b00000;
         excep_code <= 8'b00000000;
