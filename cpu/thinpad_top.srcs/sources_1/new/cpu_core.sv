@@ -136,7 +136,7 @@ cp0_reg cp0_reg_r (
     .EPC_write_en(is_excep),
     .is_eret,
     .EPC_in,
-    .BadVAddr,
+    .BadVAddr_in(BadVAddr),
     .EPC_out,
     .excep_code,
     .hw_int_o,
