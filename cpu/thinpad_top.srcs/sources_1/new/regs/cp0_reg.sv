@@ -184,6 +184,7 @@ always @(posedge clk) begin
         EntryLo1 <= 32'h00000000;
         Wired <= 32'h00000000;
         Context <= 32'h00000000;
+        Config1 <= {1'b0, 6'd16, 25'd0};
         Count <= 32'h00000000;
         Compare <= 32'h00000000;
         timer_int <= 1'b0;
