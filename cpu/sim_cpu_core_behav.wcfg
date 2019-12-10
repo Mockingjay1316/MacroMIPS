@@ -12,13 +12,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1240552875574fs"></ZoomStartTime>
-      <ZoomEndTime time="1241224484136fs"></ZoomEndTime>
-      <Cursor1Time time="1240830000000fs"></Cursor1Time>
+      <ZoomStartTime time="4799401190628fs"></ZoomStartTime>
+      <ZoomEndTime time="4800443761875fs"></ZoomEndTime>
+      <Cursor1Time time="4799950000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="205"></NameColumnWidth>
-      <ValueColumnWidth column_width="80"></ValueColumnWidth>
+      <ValueColumnWidth column_width="75"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="76" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
