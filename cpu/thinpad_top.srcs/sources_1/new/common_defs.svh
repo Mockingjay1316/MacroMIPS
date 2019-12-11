@@ -11,7 +11,7 @@
 `define REGID_WIDTH 5
 
 typedef enum logic[3:0] { 
-    ALU_ADD, ALU_SUB, ALU_MULTU,
+    ALU_ADD, ALU_SUB, ALU_MULTU, ALU_MULT,
     ALU_AND, ALU_NOR, ALU_OR, ALU_XOR,
     ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
     ALU_NOP
@@ -69,6 +69,7 @@ typedef enum logic[3:0] {
 `define FUNCT_SLT       6'b101010
 `define FUNCT_SLTU      6'b101011
 `define FUNCT_SUBU      6'b100011
+`define FUNCT_MULT      6'b011000
 `define FUNCT_MULTU     6'b011001
 `define FUNCT_AND       6'b100100
 `define FUNCT_NOR       6'b100111
