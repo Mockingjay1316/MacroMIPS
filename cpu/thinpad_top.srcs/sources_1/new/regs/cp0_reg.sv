@@ -31,7 +31,7 @@ logic timer_int;
 integer iter;
 cp0_name_t wname, rname;
 
-assign EPC_out = EPC;                                              //这里单纯读出EPC，是否EPC旁通在control处理
+//assign EPC_out = EPC;                                              //这里单纯读出EPC，是否EPC旁通在control处理
 
 //assign reg_out = regs[16];
 
@@ -249,6 +249,10 @@ always_comb begin
     end
     if (rname == CP0_ENTRYLO1 && tlbr) begin
         rdata <= {tlb_rdata.PFN1, tlb_rdata.PFN1_fl, tlb_rdata.G};
+    end
+    EPC_out <= EPC;
+    if (wname == CP0_EPC && write_en) begin
+        EPC_out <= wdata;
     end
 end
 

@@ -75,7 +75,6 @@ assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                  
 assign id_excep_info.tlb_pc_miss = ifid_excep_info.tlb_pc_miss;
 
 always @(*) begin
-    real_EPC <= cp0_EPC;
     stall <= 5'b00000;
     if ((reg_raddr1 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
@@ -113,18 +112,21 @@ always @(*) begin
         && (cp0_rsel == ex_cp0_op.cp0_sel)
         && (ex_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= ex_cp0_op.cp0_wval;
-        if (ex_cp0_op.cp0_waddr == 5'd14) begin
-            real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
-        end
     end else if ((cp0_raddr == mem_cp0_op.cp0_waddr)
         && (cp0_rsel == mem_cp0_op.cp0_sel)
         && (mem_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= mem_cp0_op.cp0_wval;
-        if (mem_cp0_op.cp0_waddr == 5'd14) begin
-            real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
-        end
     end else begin
         cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
+    end
+
+    real_EPC <= cp0_EPC;
+    if ((ex_cp0_op.cp0_waddr == 5'd14)
+        && (ex_cp0_op.cp0_write_en == 1'b1)) begin
+        real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
+    end else if ((mem_cp0_op.cp0_waddr == 5'd14)
+        && (mem_cp0_op.cp0_write_en == 1'b1)) begin
+        real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
     end
 
     if (ex_hilo_op.hilo_write_en) begin
