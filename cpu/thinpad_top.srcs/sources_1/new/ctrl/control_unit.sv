@@ -304,6 +304,9 @@ always @(*) begin
                 `FUNCT_MULTU: begin                         //MULTU
                     alu_op       <= ALU_MULTU;
                     end
+                `FUNCT_MULT: begin                          //MULT
+                    alu_op       <= ALU_MULT;
+                    end
                 `FUNCT_MFHI: begin                          //MFHI
                     reg_write_en <= 1'b1;
                     operand1     <= hilo_data[63:32];       //HI reg
