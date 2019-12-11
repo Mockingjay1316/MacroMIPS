@@ -123,10 +123,10 @@ always @(*) begin
     real_EPC <= cp0_EPC;
     if ((ex_cp0_op.cp0_waddr == 5'd14)
         && (ex_cp0_op.cp0_write_en == 1'b1)) begin
-        real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
+        real_EPC <= ex_cp0_op.cp0_wval;                     //cp0 EPC的旁通
     end else if ((mem_cp0_op.cp0_waddr == 5'd14)
         && (mem_cp0_op.cp0_write_en == 1'b1)) begin
-        real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
+        real_EPC <= mem_cp0_op.cp0_wval;                    //cp0 EPC的旁通
     end
 
     if (ex_hilo_op.hilo_write_en) begin

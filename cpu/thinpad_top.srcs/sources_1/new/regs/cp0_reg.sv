@@ -89,7 +89,7 @@ always_comb begin                                                   //parsing in
             endcase
             end
         5'd16: begin
-            case(wsel)
+            case(rsel)
                 3'd1:       rname <= CP0_CONFIG1;
                 default:    rname <= CP0_UNKNOW;
             endcase
