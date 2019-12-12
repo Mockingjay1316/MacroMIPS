@@ -120,6 +120,8 @@ typedef struct packed {
     logic[31:0]     EPC;
     logic           is_excep;
     logic           is_syscall;
+    logic           is_eret;
+    logic           instr_valid;
     logic           tlb_pc_miss;
     logic[7:0]      excep_code;
 } excep_info_t;
@@ -152,6 +154,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic           tlb_write_en, tlb_write_random, tlbp, tlbr;
+    logic           instr_valid;
     tlb_entry_t     tlb_rdata;
     logic[31:0]     tlbp_index;
 } pipeline_data_t;
