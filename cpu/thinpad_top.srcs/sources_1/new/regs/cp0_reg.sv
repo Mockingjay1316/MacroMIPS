@@ -9,7 +9,7 @@ module cp0_reg (
     input   logic[2:0]                  wsel, rsel,                 //select字段
     input   logic[5:0]                  hardware_int,               //硬件中断
     input   logic[`DATA_WIDTH-1:0]      wdata, EPC_in, BadVAddr_in,
-    input   logic                       is_eret,                    //收到eret时需要进行一系列原子操作
+    input   logic                       is_mem_eret,                    //收到eret时需要进行一系列原子操作
     output  logic[`DATA_WIDTH-1:0]      EPC_out,
     input   logic                       tlbp, tlbr,
     input   tlb_entry_t                 tlb_rdata,
@@ -112,6 +112,7 @@ always_comb begin
 end
 
 always @(posedge clk) begin
+    Cause[15:10] <= hw_int;
     Count <= Count + 1;
     if (Compare != 32'h00000000 && Count == Compare) begin
         timer_int <= 1'b1;
@@ -164,7 +165,7 @@ always @(posedge clk) begin
             BadVAddr       <= BadVAddr_in;
         end
     end
-    if (is_eret) begin
+    if (is_mem_eret) begin
         Status[1]   <= 1'b0;                    //清除EXL位
     end
     if (tlbp) begin
