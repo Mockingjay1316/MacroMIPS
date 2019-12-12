@@ -42,7 +42,8 @@ initial begin
 end
 
 initial begin
-    #1530;
+    instr = {32'h000000000}; #20;
+    #1730;
     //instr = {`OP_LUI, 5'b00000, 5'b00001, 16'd23300}; #20;
     instr = {`OP_ORI, 5'b00000, 5'b00001, 16'd23300}; #20;
     //instr = {`OP_ORI, 5'b00000, 5'b00010, 16'd34467}; #20;
@@ -54,7 +55,7 @@ initial begin
     //instr = {`OP_ORI, 5'b00000, 5'b00010, 16'h0002}; #20;
     instr = {`OP_COP0, 5'b00100, 5'b00001, 5'd14, 11'd0}; #20;
     instr = {32'h000000000}; #20;
-    instr = {32'h000000000}; #20;
+    //instr = {32'h000000000}; #20;
     instr = {`OP_COP0, 1'b1, 19'd0, `FUNCT_ERET}; #20;
     instr = {32'h000000000}; #20;
     //instr = {`OP_ORI, 5'b00000, 5'b00101, 16'h0002}; #20;

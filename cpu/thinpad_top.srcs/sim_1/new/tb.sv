@@ -14,7 +14,7 @@ wire[7:0]  dpy0;       //数码管低位信号，包括小数点，输出1点亮
 wire[7:0]  dpy1;       //数码管高位信号，包括小数点，输出1点亮
 
 wire txd;  //直连串口发送端
-wire rxd;  //直连串口接收端
+logic rxd;  //直连串口接收端
 
 wire[31:0] base_ram_data; //BaseRAM数据，低8位与CPLD串口控制器共享
 wire[19:0] base_ram_addr; //BaseRAM地址
@@ -46,14 +46,16 @@ wire uart_tbre;          //发送数据标志
 wire uart_tsre;          //数据发送完毕标志
 
 //Windows需要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
-parameter BASE_RAM_INIT_FILE = "/tmp/main.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
+//parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\ucore-kernel.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
+parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\MarcoMips\\cpu\\thinpad_top.srcs\\sim_1\\kernel_y_y_n.bin";
 parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";    //ExtRAM初始化文件，请修改为实际的绝对路径
 parameter FLASH_INIT_FILE = "/tmp/kernel.elf";    //Flash初始化文件，请修改为实际的绝对路径
 
-assign rxd = 1'b1; //idle state
+//assign rxd = 1'b1; //idle state
 
 initial begin 
     //在这里可以自定义测试输入序列，例如：
+    /*
     dip_sw = 32'h2;
     touch_btn = 0;
     for (integer i = 0; i < 20; i = i+1) begin
@@ -66,6 +68,10 @@ initial begin
     cpld.pc_send_byte(8'h32);
     #10000;
     cpld.pc_send_byte(8'h33);
+    */
+    //rxd = 1'b1; #48000;
+    //rxd = 1'b0; #10;
+    //rxd = 1'b1;
 end
 
 // 待测试用户设计
@@ -198,6 +204,7 @@ initial begin
         base1.mem_array1[i] = tmp_array[i][16+:8];
         base2.mem_array0[i] = tmp_array[i][8+:8];
         base2.mem_array1[i] = tmp_array[i][0+:8];
+        $display("BaseRAM Addr: 0x8000%04x, 0x%x", i*4, {base2.mem_array1[i], base2.mem_array0[i], base1.mem_array1[i], base1.mem_array0[i]});
     end
 end
 
