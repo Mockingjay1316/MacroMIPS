@@ -155,9 +155,17 @@ sram_controller sram_ctrl (
     .ext_ram_we_n(ext_ram_we_n)
 );
 /*
+logic ila_tri;
+always_comb begin
+    ila_tri <= 1'b0;
+    if (pc == 32'h80024be0) begin
+        ila_tri <= 1'b1;
+    end
+end
+
 ila_0 ila (
     .clk(main_clk),
-    .trig_in(cpu.is_excep | cpu.is_tlb_refill),
+    .trig_in(ila_tri),
     .probe0(cpu.is_tlb_refill),
     .probe1(cpu.is_excep),
     .probe2(cpu.cp0_reg_r.Status),
@@ -169,7 +177,7 @@ ila_0 ila (
     .probe8(mem_ctrl_signal),
     .probe9(pc),
     .probe10(mem_addr),
-    .probe11(reg_out),
+    .probe11(cpu.cp0_reg_r.EPC),
     .probe12(instr)
 );
 */
