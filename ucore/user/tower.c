@@ -53,6 +53,17 @@
 #define MONSTER_SKELETON_GENERAL    3
 #define MONSTER_WIZARD              4
 
+char maps[9][121] = {
+    "t mmm      ########## h  y #pk #  g # #oh # #y## ###y# k  # yfsf#  j # ##### #y##          ##y###y#h k#k  # f hxk#   #mlm", 
+    "w b          ##     ## ##### #### #kk#   # q #k r   r   ####   ### @  #   # u #  r   r   ####   ### #ll#   #  t#l r   r  ",
+    "ko#klk# # h h#lkl# yf s #kek# ###y### ## # q  f   m    y##   # ##@g ## ## # h k#   # yskhp#   # ####### ##m#  w     # y t",
+    " e #i  # q h k#   #k l   #   # j #y###b###y# s y m  g     ########m m        y##y###y##y # f # s #  #m k#p h# t#kmk# m #w",
+    "t# my #  y  #  #k#mm#m ym # #kk# ###y#f#kk# k s # #### k  f# m    #j### ####m    #m#    okh # #y######## # #  w     # @ a",
+    "w#kk# s km  #kk# ####y ##m# #h g  yy y #u  f #### #####  ms k gj  ##### #### s  q# yy y  f o# ##m#my#### #  #  m  g #hh#t",
+    "t#p# u #k#m #h#   #k#m #f#m#j#h#m # # # # # y#y#b#y#g#y j s       y#y#y#y#j#y # # # # #  # #f#m#l# m#m#k#f#k#  m #k#l#k#w",
+    "w yy t #k k  ##  m# d y####y##l h #kkk  ##r#h#####s#    mmm # #   ####y#f##y#   f g s   y#########ym #pk#eh# g fbko#k yj ",
+    "  gy w ym h k #   # m j####b####  k #k kyy  o f# p ##@#######m#  jk yjk# #c# j #  # ###yy###y# #k s h# g#f# g   b  y ys h"
+};
 typedef struct Hero {
     int x;
     int y;
@@ -229,89 +240,91 @@ void print_conversation(char* words) {
     printf("%s", words);
 }
 
-void import(char* file_name) {
+void import() {
     // FILE* file = fopen(file_name, "r");
-    int file = open(file_name, O_RDONLY);
-    char buffer[BOARD_SIZE - 1];
-    if (file >= 0) {
-        int ret;
-        for (int i = 0; i < BOARD_SIZE; ++i) {
-            strcpy(map[layer-1][i][0], "██");
-            strcpy(map[layer-1][0][i], "██");
-            strcpy(map[layer-1][BOARD_SIZE-1][i], "██");
-            strcpy(map[layer-1][i][BOARD_SIZE-1], "██");
-            raw_map[layer-1][i][0] = WALL;
-            raw_map[layer-1][0][i] = WALL;
-            raw_map[layer-1][BOARD_SIZE-1][i] = WALL;
-            raw_map[layer-1][i][BOARD_SIZE-1] = WALL;
-        }
-        int y = 0;
-        while ((ret = read(file, buffer, sizeof(buffer))) != 0) {
-        // while((ret = fread(buffer, sizeof(char), BOARD_SIZE-1, file)) != 0) {
-            // printf("%d\n", y);
-            for (int x = 0; x < BOARD_SIZE - 2; ++x) {  
-                raw_map[layer-1][y + 1][x + 1] = buffer[x];
-                if (WALL == buffer[x] || FAKE_WALL == buffer[x]) {        // 墙壁或假墙壁
-                    strcpy(map[layer-1][y + 1][x + 1], "██");
-                } else if (BLUE_BOTTLE == buffer[x]) {                    // 蓝血瓶
-                    print_blue(x + 1, y + 1, "血");
-                } else if (RED_BOTTLE == buffer[x]) {                     // 红血瓶
-                    print_red(x + 1, y + 1, "血");
-                } else if (RED_GATE == buffer[x]) {                       // 红门
-                    print_red(x + 1, y + 1, "〓");
-                } else if (BLUE_GATE == buffer[x]) {                      // 蓝门
-                    print_blue(x + 1, y + 1, "〓");
-                } else if (YELLOW_GATE == buffer[x]) {                    // 黄门
-                    print_yellow(x + 1, y + 1, "〓");
-                } else if (YELLOW_KEY == buffer[x]) {                     // 黄钥匙
-                    print_yellow(x + 1, y + 1, "♀ ");
-                } else if (BLUE_KEY == buffer[x]) {                       // 蓝钥匙
-                    print_blue(x + 1, y + 1, "♀ ");
-                } else if (RED_KEY == buffer[x]) {                        // 红钥匙
-                    print_red(x + 1, y + 1, "♀ ");
-                } else if (BLUE_GEM == buffer[x]) {                       // 蓝宝石
-                    print_blue(x + 1, y + 1, "◆ ");
-                } else if (RED_GEM == buffer[x]) {                        // 红宝石
-                    print_red(x + 1, y + 1, "◆ ");
-                } else if (SLIME == buffer[x]) {                          // 史莱姆
-                    strcpy(map[layer-1][y + 1][x + 1], "史");
-                } else if (BAT == buffer[x]) {                            // 蝙蝠
-                    strcpy(map[layer-1][y + 1][x + 1], "蝠");
-                } else if (SKELETON == buffer[x]) {                       // 骷髅
-                    strcpy(map[layer-1][y + 1][x + 1], "骷");
-                } else if (SKELETON_GENERAL == buffer[x]) {               // 骷髅将军
-                    strcpy(map[layer-1][y + 1][x + 1], "军");
-                } else if (WIZARD == buffer[x]) {                         // 法师
-                    strcpy(map[layer-1][y + 1][x + 1], "法");
-                } else if (ROAD == buffer[x]) {                           // 道路
-                    strcpy(map[layer-1][y + 1][x + 1], "  ");
-                } else if (UP_STAIR == buffer[x]) {                       // 上楼梯
-                    strcpy(map[layer-1][y + 1][x + 1], "↑ ");
-                } else if (DOWN_STAIR == buffer[x]) {                     // 下楼梯
-                    strcpy(map[layer-1][y + 1][x + 1], "↓ ");
-                } else if (SHOP == buffer[x]) {
-                    // strcpy(map[layer-1][y + 1][x + 1], "商");
-                    // strcpy(map[layer-1][y + 1][x + 2], "店");
-                    print_green(x + 1, y + 1, "商");
-                    print_green(x + 2, y + 1, "店");
-                    ++x;
-                } else if (SWORD == buffer[x]) {
-                    // strcpy(map[y + 1][x + 1], "⚔ ");
-                    print_green(x + 1, y + 1, "⚔ ");
-                } else if (SHIELD == buffer[x]) {
-                    // strcpy(map[y + 1][x + 1], "⍟ ");
-                    print_green(x + 1, y + 1, "⍟ ");
-                } else if (OLD_MAN == buffer[x]) {
-                    print_green(x + 1, y + 1, "老");
-                } else if (SHOP_MAN == buffer[x]) {
-                    print_green(x + 1, y + 1, "商");
-                } else if (UPDOWN == buffer[x]) {
-                    print_green(x + 1, y + 1, "⇅ ");
-                }
-            }
-            ++y;
-        }    
+    // int file = open(file_name, O_RDONLY);
+    // char buffer[BOARD_SIZE - 1];
+    // if (file >= 0) {
+    int ret;
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        strcpy(map[layer-1][i][0], "██");
+        strcpy(map[layer-1][0][i], "██");
+        strcpy(map[layer-1][BOARD_SIZE-1][i], "██");
+        strcpy(map[layer-1][i][BOARD_SIZE-1], "██");
+        raw_map[layer-1][i][0] = WALL;
+        raw_map[layer-1][0][i] = WALL;
+        raw_map[layer-1][BOARD_SIZE-1][i] = WALL;
+        raw_map[layer-1][i][BOARD_SIZE-1] = WALL;
     }
+    int y = 0;
+    // while ((ret = read(file, buffer, sizeof(buffer))) != 0) {
+    // while((ret = fread(buffer, sizeof(char), BOARD_SIZE-1, file)) != 0) {
+        // printf("%d\n", y);
+    for (int y = 0; y < BOARD_SIZE - 2; ++y) 
+        for (int x = 0; x < BOARD_SIZE - 2; ++x) {  
+            char curr = maps[layer - 1][y * (BOARD_SIZE - 2) + x];
+            raw_map[layer-1][y + 1][x + 1] = curr;
+            if (WALL == curr || FAKE_WALL == curr) {        // 墙壁或假墙壁
+                strcpy(map[layer-1][y + 1][x + 1], "██");
+            } else if (BLUE_BOTTLE == curr) {                    // 蓝血瓶
+                print_blue(x + 1, y + 1, "血");
+            } else if (RED_BOTTLE == curr) {                     // 红血瓶
+                print_red(x + 1, y + 1, "血");
+            } else if (RED_GATE == curr) {                       // 红门
+                print_red(x + 1, y + 1, "〓");
+            } else if (BLUE_GATE == curr) {                      // 蓝门
+                print_blue(x + 1, y + 1, "〓");
+            } else if (YELLOW_GATE == curr) {                    // 黄门
+                print_yellow(x + 1, y + 1, "〓");
+            } else if (YELLOW_KEY == curr) {                     // 黄钥匙
+                print_yellow(x + 1, y + 1, "♀ ");
+            } else if (BLUE_KEY == curr) {                       // 蓝钥匙
+                print_blue(x + 1, y + 1, "♀ ");
+            } else if (RED_KEY == curr) {                        // 红钥匙
+                print_red(x + 1, y + 1, "♀ ");
+            } else if (BLUE_GEM == curr) {                       // 蓝宝石
+                print_blue(x + 1, y + 1, "◆ ");
+            } else if (RED_GEM == curr) {                        // 红宝石
+                print_red(x + 1, y + 1, "◆ ");
+            } else if (SLIME == curr) {                          // 史莱姆
+                strcpy(map[layer-1][y + 1][x + 1], "史");
+            } else if (BAT == curr) {                            // 蝙蝠
+                strcpy(map[layer-1][y + 1][x + 1], "蝠");
+            } else if (SKELETON == curr) {                       // 骷髅
+                strcpy(map[layer-1][y + 1][x + 1], "骷");
+            } else if (SKELETON_GENERAL == curr) {               // 骷髅将军
+                strcpy(map[layer-1][y + 1][x + 1], "军");
+            } else if (WIZARD == curr) {                         // 法师
+                strcpy(map[layer-1][y + 1][x + 1], "法");
+            } else if (ROAD == curr) {                           // 道路
+                strcpy(map[layer-1][y + 1][x + 1], "  ");
+            } else if (UP_STAIR == curr) {                       // 上楼梯
+                strcpy(map[layer-1][y + 1][x + 1], "↑ ");
+            } else if (DOWN_STAIR == curr) {                     // 下楼梯
+                strcpy(map[layer-1][y + 1][x + 1], "↓ ");
+            } else if (SHOP == curr) {
+                // strcpy(map[layer-1][y + 1][x + 1], "商");
+                // strcpy(map[layer-1][y + 1][x + 2], "店");
+                print_green(x + 1, y + 1, "商");
+                print_green(x + 2, y + 1, "店");
+                ++x;
+            } else if (SWORD == curr) {
+                // strcpy(map[y + 1][x + 1], "⚔ ");
+                print_green(x + 1, y + 1, "⚔ ");
+            } else if (SHIELD == curr) {
+                // strcpy(map[y + 1][x + 1], "⍟ ");
+                print_green(x + 1, y + 1, "⍟ ");
+            } else if (OLD_MAN == curr) {
+                print_green(x + 1, y + 1, "老");
+            } else if (SHOP_MAN == curr) {
+                print_green(x + 1, y + 1, "商");
+            } else if (UPDOWN == curr) {
+                print_green(x + 1, y + 1, "⇅ ");
+            }
+        }
+    //     ++y;
+    // }    
+    // }
     map_has_load[layer - 1] = true;
 }
 
@@ -532,9 +545,9 @@ void update_layer(int delta) {
     tmp[0] = '0' + layer;
     tmp[1] = '\0';
     if (!map_has_load[layer - 1]) {
-        strcat("map_", tmp, file_name);
-        strcat(file_name, ".txt", file_name);
-        import(file_name);
+        // strcat("map_", tmp, file_name);
+        // strcat(file_name, ".txt", file_name);
+        import();
     }
     if (delta > 0) {
         hero.x = up_x[layer - 1];
@@ -582,8 +595,10 @@ void buy() {
             default:
                 break;
         }
-        if (!success) 
-            printf("金钱不足");
+        if (!success) {
+            printf("金钱不足\n");
+            get_user_input();
+        }
         draw();
     }
     screen_clear();
@@ -742,9 +757,10 @@ bool move() {
     case WIZARD:
     case BAT:
         if (!battle(raw_map[layer-1][y_result][x_result])) {
-            printf("\n与其战斗将会死亡           \n");
-            // printf("%c[%d;%dH",27,19,1);
+            print_conversation("血量不足，与其战斗将会死亡\n");
+            get_user_input();
             move_print(19);
+            // printf("%c[%d;%dH",27,19,1);
             can_move = false;
         } else {
             ret = true;
@@ -756,7 +772,9 @@ bool move() {
     case BLUE_GATE:
     case YELLOW_GATE:
         if (!open_door(raw_map[layer-1][y_result][x_result])){
-            printf("\n钥匙数量不足              \n");
+            // printf("\n钥匙数量不足              \n");
+            print_conversation("钥匙数量不足\n");
+            get_user_input();
             move_print(19);
             can_move = false;
         } else {
@@ -869,8 +887,9 @@ bool move() {
 int main() {
     screen_clear();
     init_game();
-    import("map_1.txt");
+    import();
     print_green(hero.x, hero.y, "勇");
+    // screen_clear();
     draw();
     int input;
     init_monsters();
