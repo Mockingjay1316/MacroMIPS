@@ -52,14 +52,14 @@ always_comb begin
         flush <= 5'b00000;
         excep_code <= 8'b00000000;
     end
+        if (mem_excep_info.is_eret) begin
+        flush <= 5'b01110;
+        excep_code[6:2] <= 5'd0;
+    end
     if (~mem_pipeline_data.instr_valid) begin
         is_excep <= 1'b0;
         flush <= 5'b00000;
         excep_code <= 8'b00000000;
-    end
-    if (mem_excep_info.is_eret) begin
-        flush <= 5'b01110;
-        excep_code[6:2] <= 5'd0;
     end
 end
 
