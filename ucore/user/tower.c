@@ -62,7 +62,7 @@ char maps[9][121] = {
     "w#kk# s km  #kk# ####y ##m# #h g  yy y #u  f #### #####  ms k gj  ##### #### s  q# yy y  f o# ##m#my#### #  #  m  g #hh#t",
     "t#p# u #k#m #h#   #k#m #f#m#j#h#m # # # # # y#y#b#y#g#y j s       y#y#y#y#j#y # # # # #  # #f#m#l# m#m#k#f#k#  m #k#l#k#w",
     "w yy t #k k  ##  m# d y####y##l h #kkk  ##r#h#####s#    mmm # #   ####y#f##y#   f g s   y#########ym #pk#eh# g fbko#k yj ",
-    "  gy w ym h k #   # m j####b####  k #k kyy  o f# p ##@#######m#  jk yjk# #c# j #  # ###yy###y# #k s h# g#f# g   b  y ys h"
+    "  gy w ym h k #   # m j####b####  k #k kyy  o fy p ##@#######m#  jk yjk# #c# j #  # ###yy###y# #k s h# g#f# g   b  y ys h"
 };
 typedef struct Hero {
     int x;
@@ -203,7 +203,7 @@ X!``````*'````Q#F^`^Q@*~`?Q#*'````~Q$[``Q#*~````~7#$7``^#$`?#F[*'`X!```~Q$[`\n")
 }
 
 void init_monsters() {
-    monsters[MONSTER_SLIME].hp = 60;
+    monsters[MONSTER_SLIME].hp = 35;
     monsters[MONSTER_SLIME].attack = 18;
     monsters[MONSTER_SLIME].defence = 1;
     monsters[MONSTER_SLIME].money = 2;
@@ -448,6 +448,8 @@ int compute_hp_loss(Monster monster) {
         return 0;
     }
     int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
+    if (hero.hp % (monster.attack - hero.defence) != 0)
+        round_hero++;
     int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
     if (round_hero <= round_monster)      // 如果英雄先死，不能打
         return -1;
@@ -578,17 +580,17 @@ void buy() {
         switch (ret)
         {
             case '1':
-                if ((success = update_money(-100)) == true)
+                if ((success = update_money(-shop_cost)) == true)
                     shop_cost *= 2;
                     update_attack(2);
                 break;
             case '2':
-                if ((success = update_money(-100)) == true)
+                if ((success = update_money(-shop_cost)) == true)
                     shop_cost *= 2;
                     update_defence(4);
                 break;
             case '3':
-                if ((success = update_money(-100)) == true)
+                if ((success = update_money(-shop_cost)) == true)
                     shop_cost *= 2;
                     update_hp(100);
                 break;
@@ -795,7 +797,7 @@ bool move() {
         update = true;
         break;
     case BLUE_BOTTLE:
-        update_hp(100);
+        update_hp(200);
         update = true;
         break;
     case RED_GEM:
