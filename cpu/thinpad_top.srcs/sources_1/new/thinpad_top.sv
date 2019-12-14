@@ -80,7 +80,7 @@ module thinpad_top(
     output  wire       video_de            //行数据有效信号，用于区分消隐区
 );
 
-logic rst, peri_clk, bus_clk, main_clk;
+logic rst, peri_clk, bus_clk, main_clk, main_shift_clk;
 logic[`INST_WIDTH-1:0] instr;
 logic[`ADDR_WIDTH-1:0] pc, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, sram_rdata, uart_rdata, reg_out, mem_rdata;
@@ -98,6 +98,7 @@ main_pll pll (
     .clk_out1(bus_clk),
     .clk_out2(peri_clk),
     .clk_out3(main_clk),
+    .clk_out4(main_shift_clk),
     .locked(rst)
 );
 
