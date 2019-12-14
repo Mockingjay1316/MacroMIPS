@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="665600002fs"></ZoomEndTime>
-      <Cursor1Time time="1000000000fs"></Cursor1Time>
+      <ZoomStartTime time="1404993938fs"></ZoomStartTime>
+      <ZoomEndTime time="2119001213fs"></ZoomEndTime>
+      <Cursor1Time time="2000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="203"></NameColumnWidth>
-      <ValueColumnWidth column_width="68"></ValueColumnWidth>
+      <ValueColumnWidth column_width="64"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="72" />
+   <WVObjectSize size="73" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
       <obj_property name="ElementShortName">reset_btn</obj_property>
       <obj_property name="ObjectShortName">reset_btn</obj_property>
@@ -32,6 +32,10 @@
    <wvobject fp_name="/tb/dut/peri_clk" type="logic">
       <obj_property name="ElementShortName">peri_clk</obj_property>
       <obj_property name="ObjectShortName">peri_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/main_shift_clk" type="logic">
+      <obj_property name="ElementShortName">main_shift_clk</obj_property>
+      <obj_property name="ObjectShortName">main_shift_clk</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/sram_ctrl/rst" type="logic">
       <obj_property name="ElementShortName">rst</obj_property>
