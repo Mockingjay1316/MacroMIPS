@@ -52,6 +52,7 @@ task judge(input integer fans, input integer cycle, input string out, input chec
 	begin
 		$display("[%0d] %s", cycle, out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
+		//$stop;
 	end else begin
 		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
@@ -59,9 +60,12 @@ endtask
 
 logic[4:0] reg_addr;
 logic[31:0] reg_data;
+logic[31:0] hi_out, lo_out;
 
 assign reg_addr = cpu.wb_reg_waddr;
 assign reg_data = cpu.wb_reg_wdata;
+assign hi_out = cpu.hilo_reg_r.hi_out;
+assign lo_out = cpu.hilo_reg_r.lo_out;
 
 task unittest(
 	input [128*8 - 1:0] file_name,
@@ -89,11 +93,15 @@ task unittest(
 	//instr = inst_mem[count];
 	while(!$feof(fans))
 	begin @(negedge clk_50M);
-		begin_count = begin_count + 1;
 		count = count + 1;
-	    if (cpu.wb_reg_waddr && cpu.wb_reg_wdata)
+	    if (reg_addr && reg_data)
 	    begin
-			$sformat(out, "$%0d=0x%x", cpu.wb_reg_waddr, cpu.wb_reg_wdata);
+			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
+			judge(fans, count, out, check_cyc);
+		end	
+		if (hi_out | lo_out)
+		begin
+			$sformat(out, "$hilo=0x%x%x", hi_out, lo_out);
 			judge(fans, count, out, check_cyc);
 		end
 	end
@@ -101,11 +109,19 @@ task unittest(
 endtask
 
 initial begin
-    unittest("inst_move",0,0);
-    rst = 1'b1;
-    unittest("inst_shift",0,0);
+	rst = 1'b1;
     rst = 1'b1;
     unittest("inst_ori",0,0);
+	rst = 1'b1;
+	unittest("inst_logic",0,0);
+	rst = 1'b1;
+	unittest("inst_ori",0,0);
+	rst = 1'b1;
+	unittest("inst_arith",0,0);
+	rst = 1'b1;
+	//unittest("inst_jump",0,0);
+	rst = 1'b1;
+	unittest("inst_multi",0,0);
 end
 
 endmodule

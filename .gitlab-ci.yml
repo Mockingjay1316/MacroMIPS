@@ -13,7 +13,7 @@ bitstream:
     - vivado
   script:
     - env
-    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/build.tcl cpu/thinpad_top.xpr
+    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/script/build.tcl cpu/thinpad_top.xpr
 
   artifacts:
     paths:
@@ -28,7 +28,7 @@ unit-test:
     - vivado
   script:
     - export SIMULATION=sim_1
-    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source script/test_cpu.tcl cpu/thinpad_top.xpr
+    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/script/test_cpu.tcl cpu/thinpad_top.xpr
 
 sonar-scanner:
   stage: test
