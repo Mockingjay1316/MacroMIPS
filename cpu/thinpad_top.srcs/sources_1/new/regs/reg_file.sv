@@ -28,13 +28,13 @@ always @(posedge clk) begin
 end
 
 always @(*) begin                                                   //读寄存器是不等时钟信号的
-    if (write_en && raddr1 === waddr) begin
+    if (write_en && raddr1 == waddr) begin
         rdata1 <= wdata;
     end else begin
         rdata1 <= (raddr1 == 0) ? 0 : regs[raddr1];
     end
 
-    if (write_en && raddr2 === waddr) begin
+    if (write_en && raddr2 == waddr) begin
         rdata2 <= wdata;
     end else begin
         rdata2 <= (raddr2 == 0) ? 0 : regs[raddr2];

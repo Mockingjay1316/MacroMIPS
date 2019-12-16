@@ -88,7 +88,9 @@ logic[4:0] mem_ctrl_signal;
 logic is_uart, mem_stall;
 logic[5:0] hardware_int;
 
-assign hardware_int = 6'b000000;        //禁用掉了硬件中断
+assign hardware_int = {3'b000, ext_uart_already_read_status^ext_uart_read_status, 2'b00};        //打开了硬件中断
+assign uart_rdn = 1'b1;
+assign uart_wrn = 1'b1;
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -154,9 +156,9 @@ sram_controller sram_ctrl (
 /*
 ila_0 ila (
     .clk(main_clk),
-    .probe0(is_uart),
-    .probe1(ext_uart_busy),
-    .probe2(mem_rdata),
+    .probe0(ext_uart_already_read_status),
+    .probe1(ext_uart_read_status),
+    .probe2(cpu.cp0_reg_r.Status),
     .probe3(uart_rdata),
     .probe4(ext_uart_wavai),
     .probe5(ext_uart_start),
@@ -174,35 +176,57 @@ assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
 //直连串口接收发送演示，从直连串口收到的数据再发送出去
 logic[7:0] ext_uart_rx;
 logic[7:0] ext_uart_buffer, ext_uart_tx;
-logic ext_uart_ready, ext_uart_busy;
+logic ext_uart_ready, ext_uart_busy, ext_uart_clear;
 logic ext_uart_start, ext_uart_wavai, ext_uart_ravai, ext_uart_read_status, ext_uart_already_read_status;
+uart_rstate_t uart_rstate;
 
-async_receiver #(.ClkFrequency(60000000),.Baud(9600))   //接收模块，9600无检验位
+async_receiver #(.ClkFrequency(50000000),.Baud(9600))   //接收模块，9600无检验位
     ext_uart_r(
         .clk(peri_clk),                                 //外部时钟信号
         .RxD(rxd),                                      //外部串行信号输入
         .RxD_data_ready(ext_uart_ready),                //数据接收到标志
-        .RxD_clear(ext_uart_ready),                     //清除接收标志
+        .RxD_clear(ext_uart_clear),                     //清除接收标志
         .RxD_data(ext_uart_rx)                          //接收到的一字节数据
     );
 
 assign ext_uart_wavai = mem_ctrl_signal[3] & is_uart;
 logic[1:0] counter;
 
-always @(posedge ext_uart_ready) begin                         //接收到缓冲区ext_uart_buffer
-    if (reset_btn) begin
-        ext_uart_read_status <= 1'b0;
+always @(posedge peri_clk) begin
+    if (reset_btn | ~rst) begin
+        uart_rstate <= UART_RWAIT;
+        ext_uart_read_status <= ext_uart_already_read_status;
     end else begin
-        ext_uart_read_status <= ~ext_uart_read_status;
-        ext_uart_buffer <= ext_uart_rx;
+        case(uart_rstate)
+            UART_RWAIT: begin
+                ext_uart_clear <= 1'b0;
+                if (ext_uart_ready & ~ext_uart_clear) begin
+                    uart_rstate <= UART_RREAD;
+                end
+                end
+            UART_RREAD: begin
+                uart_rstate <= UART_RACK;
+                ext_uart_buffer <= ext_uart_rx;         //读入数据
+                ext_uart_read_status <= ~ext_uart_read_status;
+                end
+            UART_RACK: begin
+                uart_rstate <= UART_RWAIT;
+                ext_uart_clear <= 1'b1;
+                end
+            default: begin
+                
+                end
+        endcase
     end
 end
 
 always @(posedge peri_clk) begin                         //将缓冲区ext_uart_buffer发送出去
     if (!ext_uart_busy && ext_uart_wavai) begin
-        ext_uart_start <= 1;
+        if (mem_addr[3:0] == 4'h8) begin
+            ext_uart_start <= 1'b1;
+        end
     end else begin
-        ext_uart_start <= 0;
+        ext_uart_start <= 1'b0;
     end
 end
 
@@ -211,16 +235,22 @@ always @(*) begin
         uart_rdata <= {30'b0, ext_uart_already_read_status^ext_uart_read_status, ~ext_uart_busy};
     end else if (mem_addr[3:0] == 4'h8) begin
         if (mem_ctrl_signal[3] & is_uart) begin
-            //ext_uart_wavai <= 1;
             ext_uart_tx <= mem_wdata[7:0];
-        end else begin
-            ext_uart_already_read_status <= ext_uart_read_status;
+        end else if (is_uart) begin
             uart_rdata <= {24'b0, ext_uart_buffer};
         end
     end
 end
 
-async_transmitter #(.ClkFrequency(60000000),.Baud(9600)) //发送模块，9600无检验位
+always @(posedge main_clk) begin                         //将缓冲区ext_uart_buffer发送出去
+    if (reset_btn | ~rst) begin
+        ext_uart_already_read_status <= 1'b0;
+    end else if (is_uart & mem_ctrl_signal[2] && mem_addr[3:0] == 4'h8) begin
+        ext_uart_already_read_status <= ext_uart_read_status;
+    end
+end
+
+async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发送模块，9600无检验位
     ext_uart_t(
         .clk(peri_clk),                                 //外部时钟信号
         .TxD(txd),                                      //串行信号输出
