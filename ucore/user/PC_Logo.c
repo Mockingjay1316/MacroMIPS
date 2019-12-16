@@ -36,7 +36,7 @@ void op()
 				for(l=0;l<10;l++)
 					tmp+=Map[i+k][j-l];
 			tmp/=100;
-			if(tmp!=255)printf(".");
+			if(tmp!=255)printf("#");
 			else printf(" ");
 		}
 		printf("\n");
@@ -315,12 +315,14 @@ int getres(int a,int x,int b)
 	if(x==40)return (a>>8)!=0||(b>>8)!=0?1:0;
 }
 int getexpr()
-{	for(skip_space();;skip_space())
-	{	if(com[l]>='0'&&com[l]<='9'||com[l]==':')
+{	int last_is_num=0;
+	for(skip_space();;skip_space())
+	{	if(!last_is_num&&(com[l]>='0'&&com[l]<='9'||com[l]==':'))
 		{	num_stack[topn]=getnumber();
 			topn++;
+			last_is_num=1;
 		}
-		else if(com[l]=='*'||com[l]=='/')//8 9
+		else if(last_is_num&&(com[l]=='*'||com[l]=='/'))//8 9
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=1)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -331,8 +333,9 @@ int getexpr()
 			oper_stack[topo]=com[l]=='*'?8:9;
 			topo++;
 			l+=1;
+			last_is_num=0;
 		}
-		else if(com[l]=='+'||com[l]=='-')//16 17
+		else if(last_is_num&&(com[l]=='+'||com[l]=='-'))//16 17
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=2)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -343,8 +346,9 @@ int getexpr()
 			oper_stack[topo]=com[l]=='+'?16:17;
 			topo++;
 			l+=1;
+			last_is_num=0;
 		}
-		else if(com[l]=='>'&&com[l+1]=='='||com[l]=='<'&&com[l+1]=='='||com[l]=='<'&&com[l+1]=='>')//24 25 26
+		else if(last_is_num&&(com[l]=='>'&&com[l+1]=='='||com[l]=='<'&&com[l+1]=='='||com[l]=='<'&&com[l+1]=='>'))//24 25 26
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=3)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -357,8 +361,9 @@ int getexpr()
 			else if(com[l]=='<'&&com[l+1]=='>')oper_stack[topo]=26;
 			topo++;
 			l+=2;
+			last_is_num=0;
 		}
-		else if(com[l]=='>'||com[l]=='<'||com[l]=='=')//27 28 29
+		else if(last_is_num&&(com[l]=='>'||com[l]=='<'||com[l]=='='))//27 28 29
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=3)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -371,8 +376,9 @@ int getexpr()
 			else if(com[l]=='=')oper_stack[topo]=29;
 			topo++;
 			l+=1;
+			last_is_num=0;
 		}
-		else if(getname()==3&&com[l]=='a'&&com[l+1]=='n'&&com[l+2]=='d')//32
+		else if(last_is_num&&(getname()==3&&com[l]=='a'&&com[l+1]=='n'&&com[l+2]=='d'))//32
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=4)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -383,8 +389,9 @@ int getexpr()
 			oper_stack[topo]=32;
 			topo++;
 			l+=3;
+			last_is_num=0;
 		}
-		else if(getname()==2&&com[l]=='o'&&com[l+1]=='r')//40
+		else if(last_is_num&&(getname()==2&&com[l]=='o'&&com[l+1]=='r'))//40
 		{	while(topo>0&&(oper_stack[topo-1]>>3)<=5)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -395,13 +402,15 @@ int getexpr()
 			oper_stack[topo]=40;
 			topo++;
 			l+=2;
+			last_is_num=0;
 		}
-		else if(com[l]=='(')//48
+		else if(!last_is_num&&com[l]=='(')//48
 		{	oper_stack[topo]=48;
 			topo++;
 			l+=1;
+			last_is_num=0;
 		} 
-		else if(com[l]==')')//49
+		else if(last_is_num&&com[l]==')')//49
 		{	while(topo>0&&oper_stack[topo-1]!=48)
 			{	int tmp;
 				tmp=getres(num_stack[topn-2],oper_stack[topo-1],num_stack[topn-1]);
@@ -411,6 +420,7 @@ int getexpr()
 			}
 			topo--;
 			l+=1;
+			last_is_num=1;
 		}
 		else break;
 	}
