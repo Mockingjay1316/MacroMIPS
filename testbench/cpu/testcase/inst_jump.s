@@ -6,13 +6,13 @@
 _start:
 	ori $1, $0, 0xf000  # ans: $1=0x0000f000
 	j   j1
-	ori $1, $1, 0x0f00  # ans: $1=0x0000ff00
+	nop
 	ori $1, $1, 0x00f0  # not reached
 	ori $1, $1, 0x000f  # not reached
 
 j1:
 	.org 0x20
-	ori $1, $1, 0x0010  # ans: $1=0x0000ff10
+	ori $1, $1, 0x0010  # ans: $1=0x0000f010
 	ori $3, $0, 0x0005  # ans: $3=0x00000005
 	jal j_with_link31   # ans: skip
 	nop
@@ -44,7 +44,7 @@ j2:
 j4:
 	bltz $2, j3  # no jump
 	bne $2, $1, j4
-	ori $2, $1, 0x0000  # ans: $2=0x0000ff10
+	ori $2, $1, 0x0000  # ans: $2=0x0000f010
 	# ans: $2=0x0000ff10
 
 	blez $2, j4

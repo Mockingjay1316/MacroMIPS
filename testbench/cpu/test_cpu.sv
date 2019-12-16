@@ -53,19 +53,20 @@ task judge(input integer fans, input integer cycle, input string out, input chec
 		$display("[%0d] %s", cycle, out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
-	end else begin
-		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
+	//end else begin
+		//$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
 logic[4:0] reg_addr;
 logic[31:0] reg_data;
-logic[31:0] hi_out, lo_out;
+logic[63:0] hilo;
+logic hilo_write_en;
 
 assign reg_addr = cpu.wb_reg_waddr;
 assign reg_data = cpu.wb_reg_wdata;
-assign hi_out = cpu.hilo_reg_r.hi_out;
-assign lo_out = cpu.hilo_reg_r.lo_out;
+assign hilo = cpu.hilo_reg_r.hilo_op.hilo_wval;
+assign hilo_write_en = cpu.hilo_reg_r.hilo_op.hilo_write_en;
 
 task unittest(
 	input [128*8 - 1:0] file_name,
@@ -94,24 +95,24 @@ task unittest(
 	while(!$feof(fans))
 	begin @(negedge clk_50M);
 		count = count + 1;
-	    if (reg_addr && reg_data)
+		if (hilo_write_en)
+		begin
+			$sformat(out, "$hilo=0x%x%x", hilo[31:0], hilo[63:32]);
+			judge(fans, count, out, check_cyc);
+		end
+	    else if (reg_addr && reg_data)
 	    begin
 			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
 			judge(fans, count, out, check_cyc);
 		end	
-		if (hi_out | lo_out)
-		begin
-			$sformat(out, "$hilo=0x%x%x", hi_out, lo_out);
-			judge(fans, count, out, check_cyc);
-		end
+		
 	end
 	$display("[OK] %0s\n", file_name);
 endtask
 
 initial begin
-	rst = 1'b1;
     rst = 1'b1;
-    unittest("inst_ori",0,0);
+    /*unittest("inst_ori",0,0);
 	rst = 1'b1;
 	unittest("inst_logic",0,0);
 	rst = 1'b1;
@@ -119,9 +120,11 @@ initial begin
 	rst = 1'b1;
 	unittest("inst_arith",0,0);
 	rst = 1'b1;
-	//unittest("inst_jump",0,0);
+	unittest("inst_shift",0,0);
+	rst = 1'b1;*/
+	unittest("inst_jump", 0, 0);
 	rst = 1'b1;
-	unittest("inst_multi",0,0);
+	unittest("across_tlb1",0,0);
 end
 
 endmodule

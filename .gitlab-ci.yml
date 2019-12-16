@@ -6,6 +6,19 @@ stages:
   - run_testbench
   - test
 
+unit-test:
+  stage: run_testbench
+  image: vivado2018:2018.3
+  tags:
+    - vivado
+  script:
+    - export SIMULATION=sim_1
+    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/script/test_cpu.tcl cpu/thinpad_top.xpr
+  artifacts:
+    paths:
+      - cpu/thinpad_top.sim/*/behav/xsim/simulate.log
+    when: always
+
 bitstream:
   stage: build
   image: vivado2018:2018.3
@@ -21,14 +34,7 @@ bitstream:
       - cpu/thinpad_top.runs/impl_1/runme.log
       - cpu/thinpad_top.runs/synth_1/runme.log
 
-unit-test:
-  stage: run_testbench
-  image: vivado2018:2018.3
-  tags:
-    - vivado
-  script:
-    - export SIMULATION=sim_1
-    - /opt/Xilinx/Vivado/2018.3/bin/vivado -mode tcl -source cpu/script/test_cpu.tcl cpu/thinpad_top.xpr
+
 
 sonar-scanner:
   stage: test
