@@ -447,13 +447,29 @@ int compute_hp_loss(Monster monster) {
         // return true;
         return 0;
     }
-    int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
-    if (hero.hp % (monster.attack - hero.defence) != 0)
-        round_hero++;
-    int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
-    if (round_hero <= round_monster)      // 如果英雄先死，不能打
-        return -1;
-    return round_monster * (monster.attack - hero.defence);
+    // int round_hero = 0;
+    // int round_monster = 0;
+    int hero_hp = hero.hp;
+    int monster_hp = monster.hp;
+    while (1) {
+        if (monster_hp > (hero.attack - monster.defence)) {
+            // ++round_monster;
+            monster_hp -= (hero.attack - monster.defence);
+        } else {
+            return hero.hp - hero_hp;
+        }
+        if (hero_hp > (monster.attack - hero.defence)) {
+            // ++round_hero;
+            hero_hp -= (monster.attack - hero.defence);
+        } else {
+            return -1;
+        }
+        // int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
+        // int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
+    }
+    // if (round_hero <= round_monster)      // 如果英雄先死，不能打
+    //     return -1;
+    // return round_monster * (monster.attack - hero.defence);
 }
 
 // 可以战斗，且战斗完毕返回true;无法战斗返回false
