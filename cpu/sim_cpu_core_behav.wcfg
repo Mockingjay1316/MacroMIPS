@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="111588333333fs"></ZoomStartTime>
-      <ZoomEndTime time="111944333334fs"></ZoomEndTime>
-      <Cursor1Time time="111885000000fs"></Cursor1Time>
+      <ZoomStartTime time="2774885632324fs"></ZoomStartTime>
+      <ZoomEndTime time="2775271838386fs"></ZoomEndTime>
+      <Cursor1Time time="2774950000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="203"></NameColumnWidth>
-      <ValueColumnWidth column_width="60"></ValueColumnWidth>
+      <NameColumnWidth column_width="201"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="91" />
+   <WVObjectSize size="95" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
       <obj_property name="ElementShortName">reset_btn</obj_property>
       <obj_property name="ObjectShortName">reset_btn</obj_property>
@@ -221,6 +221,22 @@
       <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
       <obj_property name="ObjectShortName">ext_uart_tx[7:0]</obj_property>
       <obj_property name="Radix">ASCIIRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/ext_wdata" type="array">
+      <obj_property name="ElementShortName">ext_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/base_wdata" type="array">
+      <obj_property name="ElementShortName">base_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">base_wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/mem_byte_en" type="logic">
+      <obj_property name="ElementShortName">mem_byte_en</obj_property>
+      <obj_property name="ObjectShortName">mem_byte_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/data_write_en" type="logic">
+      <obj_property name="ElementShortName">data_write_en</obj_property>
+      <obj_property name="ObjectShortName">data_write_en</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/base_ram_data" type="array">
       <obj_property name="ElementShortName">base_ram_data[31:0]</obj_property>
