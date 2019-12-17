@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1404993938fs"></ZoomStartTime>
-      <ZoomEndTime time="2119001213fs"></ZoomEndTime>
-      <Cursor1Time time="2000000000fs"></Cursor1Time>
+      <ZoomStartTime time="111588333333fs"></ZoomStartTime>
+      <ZoomEndTime time="111944333334fs"></ZoomEndTime>
+      <Cursor1Time time="111885000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="203"></NameColumnWidth>
-      <ValueColumnWidth column_width="64"></ValueColumnWidth>
+      <ValueColumnWidth column_width="60"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="73" />
+   <WVObjectSize size="91" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
       <obj_property name="ElementShortName">reset_btn</obj_property>
       <obj_property name="ObjectShortName">reset_btn</obj_property>
@@ -216,7 +216,6 @@
    <wvobject fp_name="/tb/dut/cpu/reg_file_r/regs" type="array">
       <obj_property name="ElementShortName">regs[31:0][31:0]</obj_property>
       <obj_property name="ObjectShortName">regs[31:0][31:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/uart_ctrl/ext_uart_tx" type="array">
       <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
@@ -247,9 +246,78 @@
       <obj_property name="ElementShortName">base_ram_we_n</obj_property>
       <obj_property name="ObjectShortName">base_ram_we_n</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/ext1/DataIO" type="array">
+      <obj_property name="ElementShortName">DataIO[15:0]</obj_property>
+      <obj_property name="ObjectShortName">DataIO[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext1/initiate_write2" type="logic">
+      <obj_property name="ElementShortName">initiate_write2</obj_property>
+      <obj_property name="ObjectShortName">initiate_write2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext1/Address" type="array">
+      <obj_property name="ElementShortName">Address[19:0]</obj_property>
+      <obj_property name="ObjectShortName">Address[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext1/OE_n" type="logic">
+      <obj_property name="ElementShortName">OE_n</obj_property>
+      <obj_property name="ObjectShortName">OE_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext1/CE_n" type="logic">
+      <obj_property name="ElementShortName">CE_n</obj_property>
+      <obj_property name="ObjectShortName">CE_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext1/WE_n" type="logic">
+      <obj_property name="ElementShortName">WE_n</obj_property>
+      <obj_property name="ObjectShortName">WE_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_data" type="array">
+      <obj_property name="ElementShortName">ext_ram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_addr" type="array">
+      <obj_property name="ElementShortName">ext_ram_addr[19:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_addr[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_be_n" type="array">
+      <obj_property name="ElementShortName">ext_ram_be_n[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_be_n[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_ce_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_ce_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_oe_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_oe_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/ext_ram_we_n" type="logic">
+      <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
+      <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/load_from_mem" type="logic">
+      <obj_property name="ElementShortName">load_from_mem</obj_property>
+      <obj_property name="ObjectShortName">load_from_mem</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/is_data_read" type="logic">
+      <obj_property name="ElementShortName">is_data_read</obj_property>
+      <obj_property name="ObjectShortName">is_data_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/data_write_en" type="logic">
+      <obj_property name="ElementShortName">data_write_en</obj_property>
+      <obj_property name="ObjectShortName">data_write_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/mem_byte_en" type="logic">
+      <obj_property name="ElementShortName">mem_byte_en</obj_property>
+      <obj_property name="ObjectShortName">mem_byte_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_ctrl/mem_sign_ext" type="logic">
+      <obj_property name="ElementShortName">mem_sign_ext</obj_property>
+      <obj_property name="ObjectShortName">mem_sign_ext</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mem_mem_ctrl_signal" type="array">
       <obj_property name="ElementShortName">mem_mem_ctrl_signal[4:0]</obj_property>
       <obj_property name="ObjectShortName">mem_mem_ctrl_signal[4:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mem_wdata" type="array">
       <obj_property name="ElementShortName">mem_wdata[31:0]</obj_property>
@@ -291,6 +359,10 @@
       <obj_property name="ElementShortName">rxd</obj_property>
       <obj_property name="ObjectShortName">rxd</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/ext_uart_tx" type="array">
+      <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ext_uart_tx[7:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mem_rdata" type="array">
       <obj_property name="ElementShortName">mem_rdata[31:0]</obj_property>
       <obj_property name="ObjectShortName">mem_rdata[31:0]</obj_property>
@@ -306,7 +378,6 @@
    <wvobject fp_name="/tb/dut/cpu/mmu/pc_mmu_result" type="array">
       <obj_property name="ElementShortName">pc_mmu_result</obj_property>
       <obj_property name="ObjectShortName">pc_mmu_result</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mmu/data_mapped" type="logic">
       <obj_property name="ElementShortName">data_mapped</obj_property>
@@ -319,6 +390,5 @@
    <wvobject fp_name="/tb/dut/cpu/mmu/data_mmu_result" type="array">
       <obj_property name="ElementShortName">data_mmu_result</obj_property>
       <obj_property name="ObjectShortName">data_mmu_result</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
 </wave_config>
