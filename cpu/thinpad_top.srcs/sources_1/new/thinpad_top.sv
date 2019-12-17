@@ -128,6 +128,8 @@ cpu_core cpu (
 sram_controller sram_ctrl (
     .main_clk(main_clk),
     .peri_clk(peri_clk),
+    .main_shift_clk,
+    .sram_en(~is_uart),
     .rst(~rst),
     .pc(pc),
     .instr_read(instr),
