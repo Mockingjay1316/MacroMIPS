@@ -131,6 +131,18 @@ typedef enum logic[2:0] {
 } uart_rstate_t;
 
 typedef struct packed {
+    logic[31:0]     addr;
+    logic[4:0]      ctrl_signal;
+    logic[31:0]     wdata;
+    logic           enable;
+} mem_control_info;
+
+typedef struct packed {
+    logic           data_not_ready;
+    logic[31:0]     rdata;
+} mem_data;
+
+typedef struct packed {
     logic[18:0]     VPN2;
     logic[7:0]      ASID;
     logic[31:0]     PageMask;
