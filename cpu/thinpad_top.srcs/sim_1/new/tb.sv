@@ -46,12 +46,22 @@ wire uart_tbre;          //发送数据标志
 wire uart_tsre;          //数据发送完毕标志
 
 //Windows需要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
-//parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\ucore-kernel.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
-parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\MarcoMips\\cpu\\thinpad_top.srcs\\sim_1\\kernel_y_y_n.bin";
+parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\ucore-thumips\\obj\\ucore-kernel-initrd.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
+//parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\MarcoMips\\cpu\\thinpad_top.srcs\\sim_1\\kernel_y_y_n.bin";
 parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";    //ExtRAM初始化文件，请修改为实际的绝对路径
 parameter FLASH_INIT_FILE = "/tmp/kernel.elf";    //Flash初始化文件，请修改为实际的绝对路径
 
 //assign rxd = 1'b1; //idle state
+logic ext_uart_busy, ext_uart_start;
+logic[7:0] ext_uart_tx;
+async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发送模块，9600无检验位
+    ext_uart_t(
+        .clk(dut.peri_clk),                                 //外部时钟信号
+        .TxD(rxd),                                      //串行信号输出
+        .TxD_busy(ext_uart_busy),                       //发送器忙状态指示
+        .TxD_start(ext_uart_start),                     //开始发送信号
+        .TxD_data(ext_uart_tx)                          //待发送的数据
+    );
 
 initial begin 
     //在这里可以自定义测试输入序列，例如：
@@ -72,6 +82,12 @@ initial begin
     //rxd = 1'b1; #48000;
     //rxd = 1'b0; #10;
     //rxd = 1'b1;
+    ext_uart_start <= 1'b0;
+    #99980;
+    ext_uart_tx <= 8'h52;
+    ext_uart_start <= 1'b1;
+    #20;
+    ext_uart_start <= 1'b0;
 end
 
 // 待测试用户设计
