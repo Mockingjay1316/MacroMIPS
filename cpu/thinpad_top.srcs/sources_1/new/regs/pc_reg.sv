@@ -27,9 +27,9 @@ always @(posedge clk) begin
         end
     end
     if (rst) begin
-        pc_out <= 32'hbfc00000;                         //程序入口
+        pc_out <= 32'h80000000;                         //程序入口
     end else if (cnt > 0) begin
-        pc_out <= 32'hbfc00000;                         //程序入口
+        pc_out <= 32'h80000000;                         //程序入口
     end else if (is_tlb_refill & is_excep) begin
         pc_out <= ebase;                                //重填异常入口
     end else if (is_excep) begin
