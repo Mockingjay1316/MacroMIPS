@@ -88,6 +88,9 @@ logic[4:0] mem_ctrl_signal;
 logic is_uart, mem_stall, sram_mem_stall;
 logic uart_hard_int;
 logic[5:0] hardware_int;
+logic data_not_ready;
+mem_control_info sram_ctrl, uart_ctrl, flash_ctrl;
+mem_data sram_data, uart_data, flash_data;
 
 assign hardware_int = {3'b000, uart_hard_int, 2'b00};        //打开了硬件中断
 assign uart_rdn = 1'b1;
@@ -136,27 +139,40 @@ instr_bus instr_bus_r (
     .sram_mem_stall
 );
 
+data_bus data_bus_r (
+    .data_addr(mem_addr),
+    .wdata(mem_wdata),
+    .ctrl_signal(mem_ctrl_signal),
+    .rdata(mem_rdata),
+    .sram_ctrl,
+    .uart_ctrl,
+    .flash_ctrl,
+    .sram_data,
+    .uart_data,
+    .flash_data
+);
+
 boot_rom boot_rom_r (
     .a(rom_pc[11:2]),
     .spo(rom_instr)
 );
 
-sram_controller sram_ctrl (
+sram_controller sram_ctrl_r (
     .main_clk(main_clk),
     .peri_clk(peri_clk),
     .main_shift_clk,
-    .sram_en(~is_uart),
+    .sram_en(sram_ctrl.enable),
     .rst(~rst),
     .pc(sram_pc),
     .instr_read(sram_instr),
-    .data_write_en(mem_ctrl_signal[3]),
-    .load_from_mem(mem_ctrl_signal[4]),
-    .is_data_read(mem_ctrl_signal[2]),
-    .mem_byte_en(mem_ctrl_signal[1]),
-    .mem_sign_ext(mem_ctrl_signal[0]),
-    .data_addr(mem_addr),
-    .data_write(mem_wdata),
-    .data_read(sram_rdata),
+    .data_write_en(sram_ctrl.ctrl_signal[3]),
+    .load_from_mem(sram_ctrl.ctrl_signal[4]),
+    .is_data_read(sram_ctrl.ctrl_signal[2]),
+    .mem_byte_en(sram_ctrl.ctrl_signal[1]),
+    .mem_sign_ext(sram_ctrl.ctrl_signal[0]),
+    .data_addr(sram_ctrl.addr),
+    .data_write(sram_ctrl.wdata),
+    .data_read(sram_data.rdata),
     .mem_stall(sram_mem_stall),
 
     .base_ram_data(base_ram_data),
@@ -200,21 +216,22 @@ ila_0 ila (
     .probe12(instr)
 );
 */
-assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
+// Moved to data bus.
+//assign mem_rdata = is_uart ? uart_rdata : sram_rdata;
 
-uart_controller uart_ctrl (
+uart_controller uart_ctrl_r (
     .main_clk(main_clk),
     .peri_clk(peri_clk),
     .rst(reset_btn | ~rst),
-    .uart_en(is_uart),
-    .data_write_en(mem_ctrl_signal[3]),
-    .load_from_mem(mem_ctrl_signal[4]),
-    .is_data_read(mem_ctrl_signal[2]),
-    .mem_byte_en(mem_ctrl_signal[1]),
-    .mem_sign_ext(mem_ctrl_signal[0]),
-    .data_addr(mem_addr),
-    .data_write(mem_wdata),
-    .data_read(uart_rdata),
+    .uart_en(uart_ctrl.enable),
+    .data_write_en(uart_ctrl.ctrl_signal[3]),
+    .load_from_mem(uart_ctrl.ctrl_signal[4]),
+    .is_data_read(uart_ctrl.ctrl_signal[2]),
+    .mem_byte_en(uart_ctrl.ctrl_signal[1]),
+    .mem_sign_ext(uart_ctrl.ctrl_signal[0]),
+    .data_addr(uart_ctrl.addr),
+    .data_write(uart_ctrl.wdata),
+    .data_read(uart_data.rdata),
     .hard_int(uart_hard_int),
 
     .txd,
