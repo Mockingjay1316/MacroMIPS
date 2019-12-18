@@ -11,7 +11,7 @@
 `define REGID_WIDTH 5
 
 typedef enum logic[3:0] { 
-    ALU_ADD, ALU_SUB, ALU_MULTU,
+    ALU_ADD, ALU_SUB, ALU_MULTU, ALU_MULT,
     ALU_AND, ALU_NOR, ALU_OR, ALU_XOR,
     ALU_SLL, ALU_SRL, ALU_SRA, ALU_SLT, ALU_SLTU,
     ALU_NOP
@@ -69,6 +69,7 @@ typedef enum logic[3:0] {
 `define FUNCT_SLT       6'b101010
 `define FUNCT_SLTU      6'b101011
 `define FUNCT_SUBU      6'b100011
+`define FUNCT_MULT      6'b011000
 `define FUNCT_MULTU     6'b011001
 `define FUNCT_AND       6'b100100
 `define FUNCT_NOR       6'b100111
@@ -111,7 +112,7 @@ typedef enum logic[6:0] {
     CP0_ENTRYHI, CP0_ENTRYLO0, CP0_ENTRYLO1,
     CP0_PAGEMASK, CP0_INDEX, CP0_RANDOM, CP0_CONTEXT,
     CP0_CONFIG1, CP0_WIRED,
-    CP0_COUNT, CP0_COMPARE,
+    CP0_COUNT, CP0_COMPARE, CP0_BADVADDR,
     CP0_UNKNOW
 } cp0_name_t;
 
@@ -119,6 +120,8 @@ typedef struct packed {
     logic[31:0]     EPC;
     logic           is_excep;
     logic           is_syscall;
+    logic           is_eret;
+    logic           instr_valid;
     logic           tlb_pc_miss;
     logic[7:0]      excep_code;
 } excep_info_t;
@@ -151,6 +154,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic           tlb_write_en, tlb_write_random, tlbp, tlbr;
+    logic           instr_valid;
     tlb_entry_t     tlb_rdata;
     logic[31:0]     tlbp_index;
 } pipeline_data_t;
