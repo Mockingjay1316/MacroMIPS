@@ -4,6 +4,7 @@ set simulations [get_fileset $env(SIMULATION)]
 
 if { [llength simulations] != 0} {
 	foreach sim $simulations {
+        puts $sim
         update_compile_order -fileset $sim
         launch_simulation -simset $sim
         # make simulation complete
