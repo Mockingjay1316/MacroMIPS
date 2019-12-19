@@ -1,6 +1,6 @@
 `include "common_defs.svh"
 
-`define PATH_PREFIX1 "//Mac/Home/Desktop/MarcoMips/testbench/cpu/testcase/"
+`define PATH_PREFIX1 "../../../../../testbench/cpu/testcase/"
 module test_cpu();
 
 logic rst, mem_stall;
@@ -112,7 +112,7 @@ endtask
 
 initial begin
     rst = 1'b1;
-    /*unittest("inst_ori",0,0);
+    unittest("inst_ori",0,0);
 	rst = 1'b1;
 	unittest("inst_logic",0,0);
 	rst = 1'b1;
@@ -121,10 +121,10 @@ initial begin
 	unittest("inst_arith",0,0);
 	rst = 1'b1;
 	unittest("inst_shift",0,0);
-	rst = 1'b1;*/
-	unittest("inst_jump", 0, 0);
 	rst = 1'b1;
-	unittest("across_tlb1",0,0);
+	//unittest("inst_jump", 0, 0);
+	//rst = 1'b1;
+	//unittest("across_tlb1",0,0);
 end
 
 endmodule
