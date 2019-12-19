@@ -41,6 +41,7 @@ always @(posedge clk) begin
         idex_hilo_op <= {$bits(hilo_op_t){1'b0}};
         ex_pipeline_data.tlb_write_en <= 1'b0;
         ex_pipeline_data.tlb_write_random <= 1'b0;
+        ex_pipeline_data.instr_valid <= 1'b0;
         ex_pipeline_data.tlbp <= 1'b0;
         ex_pipeline_data.tlbr <= 1'b0;
     end else if (stall == `STALL_BEF_ID) begin
@@ -58,6 +59,7 @@ always @(posedge clk) begin
         idex_hilo_op <= {$bits(hilo_op_t){1'b0}};
         ex_pipeline_data.tlb_write_en <= 1'b0;
         ex_pipeline_data.tlb_write_random <= 1'b0;
+        ex_pipeline_data.instr_valid <= 1'b0;
         ex_pipeline_data.tlbp <= 1'b0;
         ex_pipeline_data.tlbr <= 1'b0;
     end else begin                      //否则将上一级的信号传递下去

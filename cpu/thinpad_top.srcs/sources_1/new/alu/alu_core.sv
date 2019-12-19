@@ -35,6 +35,14 @@ always @(*) begin
             ex_hilo_op.hilo_wval <= res_multu;
             ex_hilo_op.hilo_write_en <= 1'b1;
             end
+        ALU_MULT:  begin
+            if (operand1[31] ^ operand2[31] == 1'b1) begin
+                ex_hilo_op.hilo_wval <= ~res_multu + 1;
+            end else begin
+                ex_hilo_op.hilo_wval <= res_multu;
+            end
+            ex_hilo_op.hilo_write_en <= 1'b1;
+            end
         default: begin
             
         end

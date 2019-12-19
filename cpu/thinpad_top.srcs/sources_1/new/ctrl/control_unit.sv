@@ -73,9 +73,9 @@ assign branch_new_pc = {{14{imm_unext[15]}}, imm_unext[15:0], 2'b00} + delay_slo
 assign jump_new_pc   = {delay_slot_pc[31:28],  instr[25:0], 2'b00};                     //Jump指令的新pc
 assign id_excep_info.EPC = after_branch ? old_pc - 4 : old_pc;                          //延迟槽内的指令EPC为分支指令
 assign id_excep_info.tlb_pc_miss = ifid_excep_info.tlb_pc_miss;
+assign id_excep_info.instr_valid = ifid_excep_info.instr_valid;
 
 always @(*) begin
-    real_EPC <= cp0_EPC;
     stall <= 5'b00000;
     if ((reg_raddr1 == ex_reg_waddr)
         && (ex_reg_write_en == 1'b1)) begin
@@ -113,18 +113,21 @@ always @(*) begin
         && (cp0_rsel == ex_cp0_op.cp0_sel)
         && (ex_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= ex_cp0_op.cp0_wval;
-        if (ex_cp0_op.cp0_waddr == 5'd14) begin
-            real_EPC <= ex_cp0_op.cp0_wval;                 //cp0 EPC的旁通
-        end
     end else if ((cp0_raddr == mem_cp0_op.cp0_waddr)
         && (cp0_rsel == mem_cp0_op.cp0_sel)
         && (mem_cp0_op.cp0_write_en == 1'b1)) begin
         cp0_rdata_r <= mem_cp0_op.cp0_wval;
-        if (mem_cp0_op.cp0_waddr == 5'd14) begin
-            real_EPC <= mem_cp0_op.cp0_wval;                //cp0 EPC的旁通
-        end
     end else begin
         cp0_rdata_r <= cp0_rdata;                           //理论上wb段的旁通在cp0里做了
+    end
+
+    real_EPC <= cp0_EPC;
+    if ((ex_cp0_op.cp0_waddr == 5'd14)
+        && (ex_cp0_op.cp0_write_en == 1'b1)) begin
+        real_EPC <= ex_cp0_op.cp0_wval;                     //cp0 EPC的旁通
+    end else if ((mem_cp0_op.cp0_waddr == 5'd14)
+        && (mem_cp0_op.cp0_write_en == 1'b1)) begin
+        real_EPC <= mem_cp0_op.cp0_wval;                    //cp0 EPC的旁通
     end
 
     if (ex_hilo_op.hilo_write_en) begin
@@ -157,6 +160,7 @@ always @(*) begin
     is_mem_data_read <= 1'b0;
     cp0_write_en <= 1'b0;
     id_excep_info.is_excep <= 1'b0;
+    id_excep_info.is_eret <= 1'b0;
     id_excep_info.is_syscall <= 1'b0;
     id_excep_info.excep_code <= 8'd0;
     is_branch_op <= 1'b0;
@@ -166,9 +170,13 @@ always @(*) begin
     tlb_write_en <= 1'b0;
 
     id_pipeline_data.tlbp <= 1'b0;
+    id_pipeline_data.instr_valid <= 1'b1;
     id_pipeline_data.tlbr <= 1'b0;
     id_pipeline_data.tlb_write_en <= 1'b0;
     id_pipeline_data.tlb_write_random <= 1'b0;
+    if (ifid_excep_info.instr_valid == 1'b0) begin
+        id_pipeline_data.instr_valid <= 1'b0;
+    end
     id_hilo_op.hilo_write_en <= 1'b0;
     case(op)
         /****************   Immediate   ********************/
@@ -303,6 +311,9 @@ always @(*) begin
                     end
                 `FUNCT_MULTU: begin                         //MULTU
                     alu_op       <= ALU_MULTU;
+                    end
+                `FUNCT_MULT: begin                          //MULT
+                    alu_op       <= ALU_MULT;
                     end
                 `FUNCT_MFHI: begin                          //MFHI
                     reg_write_en <= 1'b1;
@@ -472,9 +483,10 @@ always @(*) begin
             endcase
             case(funct)
                 `FUNCT_ERET: begin                          //ERET
-                    is_eret <= 1'b1;
-                    is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
-                    new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
+                    //is_eret <= 1'b1;
+                    //is_branch <= 1'b1;                      //这里处理的和分支语句一样，跳转到EPC(处理了旁通)
+                    //new_pc <= real_EPC;                     //需要注意的时eret没有延迟槽，所以flush了if-id寄存器
+                    id_excep_info.is_eret <= 1'b1;
                     end
                 `FUNCT_TLBP: begin                          //TLBP
                     id_pipeline_data.tlbp <= 1'b1;
@@ -509,6 +521,7 @@ always @(*) begin
         is_mem_data_read <= 1'b0;
         cp0_write_en <= 1'b0;
         id_excep_info.is_excep <= 1'b0;
+        id_excep_info.is_eret <= 1'b0;
         id_excep_info.is_syscall <= 1'b0;
         id_excep_info.excep_code <= 8'd0;
         is_branch_op <= 1'b0;
@@ -518,6 +531,7 @@ always @(*) begin
         tlb_write_en <= 1'b0;
 
         id_pipeline_data.tlbp <= 1'b0;
+        id_pipeline_data.instr_valid <= 1'b0;
         id_pipeline_data.tlbr <= 1'b0;
         id_pipeline_data.tlb_write_en <= 1'b0;
         id_pipeline_data.tlb_write_random <= 1'b0;

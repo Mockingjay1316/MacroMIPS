@@ -36,7 +36,7 @@ logic[`DATA_WIDTH-1:0] hi_out, lo_out;
 logic[31:0] index;
 logic from_random, tlb_write_en;
 assign index = mem_pipeline_data.tlb_write_random ? cp0_reg_r.Random : cp0_reg_r.Index;
-assign if_inst = instruction;
+assign if_inst = (if_excep_info.tlb_pc_miss | mem_excep_info.is_eret) ? 32'h00000000 : instruction;
 
 logic if_after_branch, id_after_branch, is_excep, is_eret, is_tlb_refill;
 
@@ -85,13 +85,16 @@ pc_reg pc_reg_r (
     .mem_stall(mem_stall),
     .is_excep,
     .is_tlb_refill,
+    .is_eret(mem_excep_info.is_eret),
+    .epc(EPC_out),
     .ebase(cp0_reg_r.EBase),
     .pc_out(if_pc),
     .write_en(pc_write_en),
     .pc_in(new_pc)
 );
 
-assign if_excep_info.tlb_pc_miss = pc_mmu_result.miss;
+assign if_excep_info.tlb_pc_miss = pc_mmu_result.miss | ~pc_mmu_result.valid;
+assign if_excep_info.instr_valid = ~mem_stall;
 if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
@@ -134,9 +137,9 @@ cp0_reg cp0_reg_r (
     .rsel(cp0_rsel),
     .rdata(cp0_rdata),
     .EPC_write_en(is_excep),
-    .is_eret,
+    .is_mem_eret(mem_excep_info.is_eret),
     .EPC_in,
-    .BadVAddr,
+    .BadVAddr_in(BadVAddr),
     .EPC_out,
     .excep_code,
     .hw_int_o,
@@ -285,6 +288,7 @@ ex_mem_reg ex_mem_reg_r (
 
 excep_handler excep_handler_r (
     .mem_excep_info,
+    .mem_pipeline_data,
     .Status(cp0_reg_r.Status),
     .pc_mmu_result,
     .data_mmu_result,
