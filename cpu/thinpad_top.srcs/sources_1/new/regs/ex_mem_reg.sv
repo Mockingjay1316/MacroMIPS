@@ -4,6 +4,7 @@ module ex_mem_reg (
     input   logic                       clk,            //时钟信号
     input   logic                       rst,            //复位信号
     input   logic                       stall,
+    input   logic                       data_not_ready,
     input   logic[`REGID_WIDTH-1:0]     ex_reg_waddr, ex_cp0_waddr,
     input   logic[`DATA_WIDTH-1:0]      ex_alu_result, ex_mem_data,
     input   logic                       ex_reg_write_en, ex_cp0_write_en,
@@ -68,6 +69,20 @@ always @(posedge clk) begin
         mem_excep_info <= ex_excep_info;
         mem_hilo_op <= ex_hilo_op;
         mem_pipeline_data <= ex_pipeline_data;
+    end
+
+    if (data_not_ready) begin           //Hold signal
+        mem_alu_result <= mem_alu_result;
+        mem_reg_write_en <= mem_reg_write_en;
+        mem_reg_waddr <= mem_reg_waddr;
+        mem_mem_data <= mem_mem_data;
+        mem_cp0_write_en <= mem_cp0_write_en;
+        mem_cp0_waddr <= mem_cp0_waddr;
+        mem_cp0_wsel <= mem_cp0_wsel;
+        mem_mem_ctrl_signal <= mem_mem_ctrl_signal;
+        mem_excep_info <= mem_excep_info;
+        mem_hilo_op <= mem_hilo_op;
+        mem_pipeline_data <= mem_pipeline_data;
     end
 end
 

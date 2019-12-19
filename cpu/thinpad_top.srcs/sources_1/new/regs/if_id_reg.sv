@@ -4,6 +4,7 @@ module if_id_reg (
     input   logic                       clk,            //时钟信号
     input   logic                       rst,            //复位信号,也接受flush信号
     input   logic                       stall,
+    input   logic                       data_not_ready,
     input   logic[`ADDR_WIDTH-1:0]      if_pc,          //if段的pc
     input   logic[`INST_WIDTH-1:0]      if_inst,        //if段取到的指令
     input   logic                       if_after_branch,
@@ -31,6 +32,13 @@ always @(posedge clk) begin
         id_inst <= if_inst;
         id_after_branch <= if_after_branch;
         ifid_excep_info <= if_excep_info;
+    end
+
+    if (data_not_ready) begin
+        id_pc <= id_pc;
+        id_inst <= id_inst;
+        id_after_branch <= id_after_branch;
+        ifid_excep_info <= ifid_excep_info;
     end
 end
 

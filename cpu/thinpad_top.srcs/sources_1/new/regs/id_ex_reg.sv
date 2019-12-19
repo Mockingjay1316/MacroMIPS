@@ -4,6 +4,7 @@ module id_ex_reg (
     input   logic                       clk,            //时钟信号
     input   logic                       rst,            //复位信号
     input   logic[4:0]                  stall,
+    input   logic                       data_not_ready,
     input   alu_op_t                    id_alu_op,
     input   logic[`DATA_WIDTH-1:0]      id_operand1, id_operand2, id_mem_data,
     input   logic[`REGID_WIDTH-1:0]     id_reg_waddr, id_cp0_waddr,
@@ -76,6 +77,22 @@ always @(posedge clk) begin
         ex_excep_info <= id_excep_info;
         idex_hilo_op <= id_hilo_op;
         ex_pipeline_data <= id_pipeline_data;
+    end
+
+    if (data_not_ready) begin
+        ex_alu_op <= ex_alu_op;
+        ex_operand1 <= ex_operand1;
+        ex_operand2 <= ex_operand2;
+        ex_reg_write_en <= ex_reg_write_en;
+        ex_reg_waddr <= ex_reg_waddr;
+        ex_cp0_write_en <= ex_cp0_write_en;
+        ex_cp0_waddr <= ex_cp0_waddr;
+        ex_cp0_wsel <= ex_cp0_wsel;
+        ex_mem_data <= ex_mem_data;
+        ex_mem_ctrl_signal <= ex_mem_ctrl_signal;
+        ex_excep_info <= ex_excep_info;
+        idex_hilo_op <= idex_hilo_op;
+        ex_pipeline_data <= ex_pipeline_data;
     end
 end
 
