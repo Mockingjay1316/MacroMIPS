@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="50879780717fs"></ZoomStartTime>
-      <ZoomEndTime time="51301096421fs"></ZoomEndTime>
-      <Cursor1Time time="50950000000fs"></Cursor1Time>
+      <ZoomStartTime time="1614857866fs"></ZoomStartTime>
+      <ZoomEndTime time="2077028427fs"></ZoomEndTime>
+      <Cursor1Time time="2000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="197"></NameColumnWidth>
+      <NameColumnWidth column_width="193"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="81" />
+   <WVObjectSize size="83" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
       <obj_property name="ElementShortName">reset_btn</obj_property>
       <obj_property name="ObjectShortName">reset_btn</obj_property>
@@ -304,12 +304,10 @@
    <wvobject fp_name="/tb/dut/data_bus_r/sram_ctrl" type="array">
       <obj_property name="ElementShortName">sram_ctrl</obj_property>
       <obj_property name="ObjectShortName">sram_ctrl</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/data_bus_r/uart_ctrl" type="array">
       <obj_property name="ElementShortName">uart_ctrl</obj_property>
       <obj_property name="ObjectShortName">uart_ctrl</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/txd" type="logic">
       <obj_property name="ElementShortName">txd</obj_property>
@@ -318,6 +316,14 @@
    <wvobject fp_name="/tb/rxd" type="logic">
       <obj_property name="ElementShortName">rxd</obj_property>
       <obj_property name="ObjectShortName">rxd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/flash_ctrl" type="array">
+      <obj_property name="ElementShortName">flash_ctrl</obj_property>
+      <obj_property name="ObjectShortName">flash_ctrl</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/flash_data" type="array">
+      <obj_property name="ElementShortName">flash_data</obj_property>
+      <obj_property name="ObjectShortName">flash_data</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/ext_uart_tx" type="array">
       <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
