@@ -10,7 +10,7 @@ logic[`ADDR_WIDTH-1:0] pc, mem_addr;
 logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
 logic[4:0] mem_ctrl_signal;
 
-logic [`INST_WIDTH - 1:0] inst_mem[256:0];
+logic [`INST_WIDTH - 1:0] inst_mem[4095:0];
 
 initial begin
     clk_50M = 1'b0; # 10;
@@ -53,8 +53,8 @@ task judge(input integer fans, input integer cycle, input string out, input chec
 		$display("[%0d] %s", cycle, out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
-	//end else begin
-		//$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
+	end else begin
+		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
@@ -67,6 +67,14 @@ assign reg_addr = cpu.wb_reg_waddr;
 assign reg_data = cpu.wb_reg_wdata;
 assign hilo = cpu.hilo_reg_r.hilo_op.hilo_wval;
 assign hilo_write_en = cpu.hilo_reg_r.hilo_op.hilo_write_en;
+
+logic write_en;
+logic read_en;
+logic[31:0] write_data;
+
+assign write_en = mem_ctrl_signal[3];
+assign load_from_en = mem_ctrl_signal[4];
+
 
 task unittest(
 	input [128*8 - 1:0] file_name,
@@ -99,12 +107,18 @@ task unittest(
 		begin
 			$sformat(out, "$hilo=0x%x%x", hilo[31:0], hilo[63:32]);
 			judge(fans, count, out, check_cyc);
-		end
-	    else if (reg_addr && reg_data)
+		end else begin
+		if (reg_addr && reg_data)
 	    begin
 			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
 			judge(fans, count, out, check_cyc);
-		end	
+		end
+		if(write_en) 
+		begin
+			$sformat(out, "[0x%x]=0x%x", mem_addr[15:0], mem_wdata);
+			judge(fans, count, out, check_cyc);
+		end 
+		end
 		
 	end
 	$display("[OK] %0s\n", file_name);
@@ -114,20 +128,21 @@ initial begin
     rst = 1'b1;
     unittest("inst_ori",0,0);
 	rst = 1'b1;
-	unittest("inst_logic",0,0);
+	unittest("inst_logic", 0, 0);
 	rst = 1'b1;
-	unittest("inst_ori",0,0);
+	unittest("inst_ori", 0, 0);
 	rst = 1'b1;
-	unittest("inst_arith",0,0);
+	unittest("inst_arith", 0, 0);
 	rst = 1'b1;
-	unittest("inst_shift",0,0);
+	unittest("inst_shift", 0, 0);
 	rst = 1'b1;
-	//unittest("inst_jump", 0, 0);
+	unittest("inst_multi", 0, 0);
+	rst = 1'b1;
+	//unittest("inst_mem_aligned", 0, 0);
 	//rst = 1'b1;
 	//unittest("across_tlb1",0,0);
 	$finish;
 end
-
 endmodule
 
 	
