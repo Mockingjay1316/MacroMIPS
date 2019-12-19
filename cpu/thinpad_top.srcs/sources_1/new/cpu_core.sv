@@ -6,7 +6,7 @@ module cpu_core (
 
     input   logic       clock_btn,          //BTN5手动时钟按钮开关，带消抖电路，按下时为1
     input   logic       reset_btn,          //BTN6手动复位按钮开关，带消抖电路，按下时为1
-    input   logic       mem_stall,
+    input   logic       mem_stall, data_not_ready,
 
     output  logic[15:0] leds,               //16位LED，输出时1点亮
     output  logic[7:0]  dpy0,               //数码管低位信号，包括小数点，输出1点亮
@@ -84,6 +84,7 @@ pc_reg pc_reg_r (
     .stall(stall[4]),
     .mem_stall(mem_stall),
     .is_excep,
+    .data_not_ready,
     .is_tlb_refill,
     .is_eret(mem_excep_info.is_eret),
     .epc(EPC_out),
@@ -99,6 +100,7 @@ if_id_reg if_id_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[3] | is_eret),       //eret没有延迟槽，需要刷掉if-id寄存器
     .stall(stall[3] | mem_stall),
+    .data_not_ready,
     .if_pc(if_pc),
     .id_pc(id_pc),
     .if_after_branch,
@@ -221,6 +223,7 @@ id_ex_reg id_ex_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[2]),
     .stall(stall),
+    .data_not_ready,
     .id_alu_op(id_alu_op),
     .id_operand1(id_operand1),
     .id_operand2(id_operand2),
@@ -262,6 +265,7 @@ ex_mem_reg ex_mem_reg_r (
     .clk(cpu_clk),
     .rst(reset_btn | flush[1]),
     .stall(stall[1]),
+    .data_not_ready,
     .ex_alu_result(ex_alu_result),
     .ex_reg_waddr(ex_reg_waddr),
     .ex_reg_write_en(ex_reg_write_en),

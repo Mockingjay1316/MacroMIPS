@@ -112,6 +112,7 @@ cpu_core cpu (
     .clock_btn(clock_btn),
     .reset_btn(reset_btn | ~rst),
     .mem_stall(mem_stall),
+    .data_not_ready,
 
     .leds(leds),
     .dpy0(dpy0),
@@ -144,6 +145,7 @@ data_bus data_bus_r (
     .wdata(mem_wdata),
     .ctrl_signal(mem_ctrl_signal),
     .rdata(mem_rdata),
+    .data_not_ready,
     .sram_ctrl,
     .uart_ctrl,
     .flash_ctrl,
@@ -188,6 +190,32 @@ sram_controller sram_ctrl_r (
     .ext_ram_ce_n(ext_ram_ce_n),
     .ext_ram_oe_n(ext_ram_oe_n),
     .ext_ram_we_n(ext_ram_we_n)
+);
+
+flash_controller flash_ctrl_r (
+    .main_clk(main_clk),
+    .peri_clk(peri_clk),
+    .main_shift_clk,
+    .rst(~rst),
+    .flash_en(flash_ctrl.enable),
+    .data_write_en(flash_ctrl.ctrl_signal[3]),
+    .load_from_mem(flash_ctrl.ctrl_signal[4]),
+    .is_data_read(flash_ctrl.ctrl_signal[2]),
+    .mem_byte_en(flash_ctrl.ctrl_signal[1]),
+    .mem_sign_ext(flash_ctrl.ctrl_signal[0]),
+    .data_addr(flash_ctrl.addr),
+    .data_write(flash_ctrl.wdata),
+    .data_read(flash_data.rdata),
+    .data_not_ready(flash_data.data_not_ready),
+
+    .flash_a,
+    .flash_d,
+    .flash_rp_n,
+    .flash_vpen,
+    .flash_ce_n,
+    .flash_oe_n,
+    .flash_we_n,
+    .flash_byte_n
 );
 /*
 logic ila_tri;

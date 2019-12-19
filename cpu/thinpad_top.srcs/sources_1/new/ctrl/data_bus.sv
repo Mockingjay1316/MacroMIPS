@@ -31,7 +31,7 @@ always_comb begin
             sram_ctrl.enable        <= 1'b1;
             data_not_ready          <= 1'b0;
             rdata                   <= sram_data.rdata;
-        end else if (data_addr[27:24] == 4'h1) begin
+        end else if (data_addr[27:24] == 4'he) begin
             flash_ctrl.ctrl_signal  <= ctrl_signal;
             flash_ctrl.enable       <= 1'b1;
             data_not_ready          <= flash_data.data_not_ready;

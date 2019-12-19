@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2774885632324fs"></ZoomStartTime>
-      <ZoomEndTime time="2775271838386fs"></ZoomEndTime>
-      <Cursor1Time time="2774950000000fs"></Cursor1Time>
+      <ZoomStartTime time="1614857866fs"></ZoomStartTime>
+      <ZoomEndTime time="2077028427fs"></ZoomEndTime>
+      <Cursor1Time time="2000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="201"></NameColumnWidth>
+      <NameColumnWidth column_width="193"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="95" />
+   <WVObjectSize size="83" />
    <wvobject fp_name="/tb/dut/cpu/reset_btn" type="logic">
       <obj_property name="ElementShortName">reset_btn</obj_property>
       <obj_property name="ObjectShortName">reset_btn</obj_property>
@@ -36,10 +36,6 @@
    <wvobject fp_name="/tb/dut/main_shift_clk" type="logic">
       <obj_property name="ElementShortName">main_shift_clk</obj_property>
       <obj_property name="ObjectShortName">main_shift_clk</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/rst" type="logic">
-      <obj_property name="ElementShortName">rst</obj_property>
-      <obj_property name="ObjectShortName">rst</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/cpu/pc_write_en" type="logic">
       <obj_property name="ElementShortName">pc_write_en</obj_property>
@@ -217,27 +213,6 @@
       <obj_property name="ElementShortName">regs[31:0][31:0]</obj_property>
       <obj_property name="ObjectShortName">regs[31:0][31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/uart_ctrl/ext_uart_tx" type="array">
-      <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
-      <obj_property name="ObjectShortName">ext_uart_tx[7:0]</obj_property>
-      <obj_property name="Radix">ASCIIRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/ext_wdata" type="array">
-      <obj_property name="ElementShortName">ext_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ext_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/base_wdata" type="array">
-      <obj_property name="ElementShortName">base_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">base_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/mem_byte_en" type="logic">
-      <obj_property name="ElementShortName">mem_byte_en</obj_property>
-      <obj_property name="ObjectShortName">mem_byte_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/data_write_en" type="logic">
-      <obj_property name="ElementShortName">data_write_en</obj_property>
-      <obj_property name="ObjectShortName">data_write_en</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/base_ram_data" type="array">
       <obj_property name="ElementShortName">base_ram_data[31:0]</obj_property>
       <obj_property name="ObjectShortName">base_ram_data[31:0]</obj_property>
@@ -261,30 +236,6 @@
    <wvobject fp_name="/tb/base_ram_we_n" type="logic">
       <obj_property name="ElementShortName">base_ram_we_n</obj_property>
       <obj_property name="ObjectShortName">base_ram_we_n</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/DataIO" type="array">
-      <obj_property name="ElementShortName">DataIO[15:0]</obj_property>
-      <obj_property name="ObjectShortName">DataIO[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/initiate_write2" type="logic">
-      <obj_property name="ElementShortName">initiate_write2</obj_property>
-      <obj_property name="ObjectShortName">initiate_write2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/Address" type="array">
-      <obj_property name="ElementShortName">Address[19:0]</obj_property>
-      <obj_property name="ObjectShortName">Address[19:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/OE_n" type="logic">
-      <obj_property name="ElementShortName">OE_n</obj_property>
-      <obj_property name="ObjectShortName">OE_n</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/CE_n" type="logic">
-      <obj_property name="ElementShortName">CE_n</obj_property>
-      <obj_property name="ObjectShortName">CE_n</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/ext1/WE_n" type="logic">
-      <obj_property name="ElementShortName">WE_n</obj_property>
-      <obj_property name="ObjectShortName">WE_n</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/ext_ram_data" type="array">
       <obj_property name="ElementShortName">ext_ram_data[31:0]</obj_property>
@@ -310,30 +261,9 @@
       <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
       <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/load_from_mem" type="logic">
-      <obj_property name="ElementShortName">load_from_mem</obj_property>
-      <obj_property name="ObjectShortName">load_from_mem</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/is_data_read" type="logic">
-      <obj_property name="ElementShortName">is_data_read</obj_property>
-      <obj_property name="ObjectShortName">is_data_read</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/data_write_en" type="logic">
-      <obj_property name="ElementShortName">data_write_en</obj_property>
-      <obj_property name="ObjectShortName">data_write_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/mem_byte_en" type="logic">
-      <obj_property name="ElementShortName">mem_byte_en</obj_property>
-      <obj_property name="ObjectShortName">mem_byte_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/sram_ctrl/mem_sign_ext" type="logic">
-      <obj_property name="ElementShortName">mem_sign_ext</obj_property>
-      <obj_property name="ObjectShortName">mem_sign_ext</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mem_mem_ctrl_signal" type="array">
       <obj_property name="ElementShortName">mem_mem_ctrl_signal[4:0]</obj_property>
       <obj_property name="ObjectShortName">mem_mem_ctrl_signal[4:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/cpu/mem_wdata" type="array">
       <obj_property name="ElementShortName">mem_wdata[31:0]</obj_property>
@@ -367,6 +297,18 @@
       <obj_property name="ElementShortName">mem_excep_info</obj_property>
       <obj_property name="ObjectShortName">mem_excep_info</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/rdata" type="array">
+      <obj_property name="ElementShortName">rdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/sram_ctrl" type="array">
+      <obj_property name="ElementShortName">sram_ctrl</obj_property>
+      <obj_property name="ObjectShortName">sram_ctrl</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/uart_ctrl" type="array">
+      <obj_property name="ElementShortName">uart_ctrl</obj_property>
+      <obj_property name="ObjectShortName">uart_ctrl</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/txd" type="logic">
       <obj_property name="ElementShortName">txd</obj_property>
       <obj_property name="ObjectShortName">txd</obj_property>
@@ -374,6 +316,14 @@
    <wvobject fp_name="/tb/rxd" type="logic">
       <obj_property name="ElementShortName">rxd</obj_property>
       <obj_property name="ObjectShortName">rxd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/flash_ctrl" type="array">
+      <obj_property name="ElementShortName">flash_ctrl</obj_property>
+      <obj_property name="ObjectShortName">flash_ctrl</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/data_bus_r/flash_data" type="array">
+      <obj_property name="ElementShortName">flash_data</obj_property>
+      <obj_property name="ObjectShortName">flash_data</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/ext_uart_tx" type="array">
       <obj_property name="ElementShortName">ext_uart_tx[7:0]</obj_property>
