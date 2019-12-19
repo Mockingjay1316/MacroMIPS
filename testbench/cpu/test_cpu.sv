@@ -125,6 +125,7 @@ initial begin
 	//unittest("inst_jump", 0, 0);
 	//rst = 1'b1;
 	//unittest("across_tlb1",0,0);
+	$finish;
 end
 
 endmodule
