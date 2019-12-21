@@ -62,12 +62,14 @@ always_comb begin
     end
 end
 
-logic wr_char;
+logic wr_char, is_slash_n, is_slash_r;
 
 always @(posedge wr_clk) begin
     if (rst) begin
         not_full_yet <= 1'b1;
         start_line <= 0;
+        is_slash_n <= 1'b0;
+        is_slash_r <= 1'b0;
         hptr <= 0;
         vptr <= 0;
     end else begin
@@ -89,8 +91,10 @@ always @(posedge wr_clk) begin
                         start_line <= 0;
                     end
                 end
+                is_slash_n <= 1'b1;
             end else if (wdata[7:0] == 8'd13) begin     // \r
                 hptr <= 0;
+                //is_slash_r <= 1'b1;
             end else begin
                 hptr <= hptr + 1;
                 if (hptr == 99) begin
@@ -105,6 +109,21 @@ always @(posedge wr_clk) begin
                         start_line <= start_line + 1;
                     end
                 end
+            end
+        end
+
+        if (is_slash_n) begin
+            hptr <= hptr + 1;
+            if (hptr == 99) begin
+                hptr <= 0;
+                is_slash_n <= 1'b0;
+            end
+        end
+        if (is_slash_r) begin
+            hptr <= hptr + 1;
+            if (hptr == 99) begin
+                hptr <= 0;
+                is_slash_r <= 1'b0;
             end
         end
     end
@@ -126,6 +145,10 @@ always_comb begin
                 wr_char <= 1'b0;
             end
         end
+    end else if (is_slash_n | is_slash_r) begin
+        wchar   <= 0;
+        wcolor  <= 0;
+        wr_char <= 1'b1;
     end
 end
 
