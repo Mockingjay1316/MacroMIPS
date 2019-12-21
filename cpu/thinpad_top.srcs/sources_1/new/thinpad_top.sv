@@ -150,9 +150,11 @@ data_bus data_bus_r (
     .sram_ctrl,
     .uart_ctrl,
     .flash_ctrl,
+    .vga_ctrl,
     .sram_data,
     .uart_data,
-    .flash_data
+    .flash_data,
+    .vga_data
 );
 
 boot_rom boot_rom_r (
@@ -219,6 +221,7 @@ flash_controller flash_ctrl_r (
     .flash_byte_n
 );
 
+// write only
 vga_controller vga_ctrl_r (
     .main_clk(main_clk),
     .peri_clk(peri_clk),
