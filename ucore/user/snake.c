@@ -56,7 +56,7 @@ int randint() {
 
     seed *= 1103515245;
     seed += 12345;
-    result = (unsigned int) (seed / 65536) % 2048;
+    result = (unsigned int) (seed >> 16) % 2048;
 
     // seed *= 1103515245;
     // seed += 12345;
@@ -244,7 +244,7 @@ int main() {
                 draw_canvas();
 
                 
-                sleep(400);//0.4s
+                sleep(512);//0.4s
             }
         }
         else//father
@@ -256,7 +256,7 @@ int main() {
 
 
             kill(fpid);
-            move=(gettime_msec()-time)/400;
+            move=(gettime_msec()-time) >> 9;
             
             int game_status;
             for(int i=0;i<=move;i++)

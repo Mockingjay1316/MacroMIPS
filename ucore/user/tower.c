@@ -31,6 +31,7 @@
 #define SKELETON            'g'
 #define SKELETON_GENERAL    'j'
 #define WIZARD              's'
+#define DEVIL               'z'
 #define ROAD                ' '
 #define UP_STAIR            't'
 #define DOWN_STAIR          'w'
@@ -40,6 +41,41 @@
 #define SWORD               'a'
 #define SHIELD              'c'
 #define UPDOWN              'x'
+#define BAR                 'n'
+#define SPECIAL_GATE        'v'
+
+#define PIC_RED_GATE        0
+#define PIC_YELLOW_GATE     1
+#define PIC_BAR             2
+#define PIC_BAT             3
+#define PIC_WALL            4
+#define PIC_BLUE_BOTTLE     5
+#define PIC_BLUE_GATE       6
+#define PIC_BLUE_GEM        7
+#define PIC_BLUE_KEY        8
+#define PIC_DEVIL           9
+#define PIC_DOWN_STAIR      10
+#define PIC_GENERAL         11
+#define PIC_HERO            12
+#define PIC_OLDMAN          13
+#define PIC_UPDOWN          14
+#define PIC_RED_BOTTLE      15
+#define PIC_RED_GEM         16
+#define PIC_RED_KEY         17
+#define PIC_ROAD            18
+#define PIC_SHIELD          19
+#define PIC_SHOPMAN         20
+#define PIC_SHOP_LEFT       21
+#define PIC_SHOP_MID        22
+#define PIC_SHOP_RIGHT      23
+#define PIC_SKELETON        24
+#define PIC_SLIME           25
+#define PIC_SPECIAL_DOOR    26
+#define PIC_SWORD           27
+#define PIC_THIEF           28
+#define PIC_UP_STAIR        29
+#define PIC_WIZARD          30
+#define PIC_YELLOW_KEY      31
 
 // 道具
 #define UP_LAYER            0       // 快速上楼
@@ -55,7 +91,7 @@
 
 char maps[9][121] = {
     "t mmm      ########## h  y #pk #  g # #oh # #y## ###y# k  # yfsf#  j # ##### #y##          ##y###y#h k#k  # f hxk#   #mlm", 
-    "w b          ##     ## ##### #### #kk#   # q #k r   r   ####   ### @  #   # u #  r   r   ####   ### #ll#   #  t#l r   r  ",
+    "w b          ##     ## ##### #### #kk#   # q #k n   n   ####   ### @  #   # u #  n   n   ####   ### #ll#   #  t#l n   n  ",
     "ko#klk# # h h#lkl# yf s #kek# ###y### ## # q  f   m    y##   # ##@g ## ## # h k#   # yskhp#   # ####### ##m#  w     # y t",
     " e #i  # q h k#   #k l   #   # j #y###b###y# s y m  g     ########m m        y##y###y##y # f # s #  #m k#p h# t#kmk# m #w",
     "t# my #  y  #  #k#mm#m ym # #kk# ###y#f#kk# k s # #### k  f# m    #j### ####m    #m#    okh # #y######## # #  w     # @ a",
@@ -276,6 +312,8 @@ void import() {
                 print_blue(x + 1, y + 1, "〓");
             } else if (YELLOW_GATE == curr) {                    // 黄门
                 print_yellow(x + 1, y + 1, "〓");
+            } else if (SPECIAL_GATE == curr) {                   // 特殊门
+                print_green(x + 1, y + 1, "〓");
             } else if (YELLOW_KEY == curr) {                     // 黄钥匙
                 print_yellow(x + 1, y + 1, "♀ ");
             } else if (BLUE_KEY == curr) {                       // 蓝钥匙
@@ -303,11 +341,10 @@ void import() {
             } else if (DOWN_STAIR == curr) {                     // 下楼梯
                 strcpy(map[layer-1][y + 1][x + 1], "↓ ");
             } else if (SHOP == curr) {
-                // strcpy(map[layer-1][y + 1][x + 1], "商");
-                // strcpy(map[layer-1][y + 1][x + 2], "店");
-                print_green(x + 1, y + 1, "商");
-                print_green(x + 2, y + 1, "店");
-                ++x;
+                print_green(x + 1, y + 1, "大");
+                print_green(x + 2, y + 1, "商");
+                print_green(x + 3, y + 1, "店");
+                x += 2;
             } else if (SWORD == curr) {
                 // strcpy(map[y + 1][x + 1], "⚔ ");
                 print_green(x + 1, y + 1, "⚔ ");
@@ -320,11 +357,10 @@ void import() {
                 print_green(x + 1, y + 1, "商");
             } else if (UPDOWN == curr) {
                 print_green(x + 1, y + 1, "⇅ ");
+            } else if (BAR == curr) {
+                strcpy(map[layer-1][y+1][x+1], "栅");
             }
         }
-    //     ++y;
-    // }    
-    // }
     map_has_load[layer - 1] = true;
 }
 
@@ -717,7 +753,7 @@ void meet_king(int x, int y) {
         hero.has_shield = false;
         hero.has_sword = false;
         print_green(hero.x, hero.y, "勇");
-        print_blue(hero.x, hero.y - 1, "偷");
+        print_green(hero.x, hero.y - 1, "偷");
         draw();
         sleep(2000);
         print_conversation("小偷：你清醒了吗？你到监狱时还处在昏迷中，魔法警卫把你扔到了我这个房间。\n但你很幸运，我刚完成逃跑的暗道你就清醒了，我们一起越狱吧。");
@@ -867,8 +903,15 @@ bool move() {
         has_prop[UP_LAYER] = true;
         has_prop[DOWN_LAYER] = true;
         break;
+    case BAR:
+        can_move = false;
+        break;
+    case SPECIAL_GATE:
+        print_conversation("你需要打败两个守卫才能打开门");
+        can_move = false;
+        break;
     default:
-        if (raw_map[layer-1][y_result][x_result-1] == SHOP) {
+        if (raw_map[layer-1][y_result][x_result-1] == SHOP || raw_map[layer-1][y_result][x_result-2] == SHOP) {
             buy();
             can_move = false;
         }

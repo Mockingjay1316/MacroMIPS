@@ -20,7 +20,7 @@ void op(int *a) {
 }
 int getrand(int *t) {
     *t=(*t)*(*t)+(*t)+3;
-    return ((*t)/10)&3;
+    return ((*t) >> 3)&3;
 }
 int check(int*a,int*t,int*s) {
     int flag=1,i;
