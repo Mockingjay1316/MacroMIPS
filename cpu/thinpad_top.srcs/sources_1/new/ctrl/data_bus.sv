@@ -49,6 +49,9 @@ always_comb begin
                 vga_ctrl.ctrl_signal   <= ctrl_signal;
                 vga_ctrl.enable        <= 1'b1;
             end
+        end else if (data_addr[27:24] == 4'h2) begin
+            vga_ctrl.ctrl_signal    <= ctrl_signal;
+            vga_ctrl.enable         <= 1'b1;
         end
     end
     
