@@ -21,22 +21,44 @@ int variable_value[1234][123],topv[1234];
 int tmp_variable[1234][123],lv[1234];
 int return_stack[1234],topr;
 int oper_stack[1234],topo,num_stack[1234],topn;
-int Mx,My,Map[1234][1234],img[1234][1234];
+int Mx,My,Map[1234][1234];
 
 int abs(int x)
 {   return x>0?x:-x;
+}
+int getsign(int x)
+{	return x<0?1:0;
+}
+int division(int a, int b)//https://blog.csdn.net/ojshilu/article/details/11179911
+{	if(b==0)return 0;
+	int flag=1;
+	if(getsign(a)==getsign(b))flag=0;
+	a=abs(a);
+	b=abs(b);
+	int n=0;
+	a=a-b;
+	while(a>=0)
+	{	n=n+1;
+		a=a-b;
+	}
+	if(flag)n=-n;
+	return n;
 }
 void op()
 {	printf("\e[1;1H\e[2J");                        //把输入移至第一行
     int i,j,k,l;
     for(j=My-1;j>=0;j-=10){
 		for(i=0;i<Mx;i+=10)
-		{	int tmp=0;
+		{	int tmp=255;
 			for(k=0;k<10;k++)
 				for(l=0;l<10;l++)
-					tmp+=Map[i+k][j-l];
-			tmp/=100;
-			if(tmp!=255)printf("#");
+					tmp=tmp<Map[i+k][j-l]?tmp:Map[i+k][j-l];
+			//tmp=division(tmp,100);//tmp/=100;
+			if(tmp==0)printf("#");
+			else if(tmp==1)printf("$");
+			else if(tmp==2)printf("&");
+			else if(tmp==3)printf("*");
+			else if(tmp==4)printf(".");
 			else printf(" ");
 		}
 		printf("\n");
@@ -127,15 +149,20 @@ void readAll() {
             flag=0;
         }
         else if (c >= ' ' && c < deleteKey && i < 100000 - 1) {
-            for(j=0;j<x;j++)com[i-j]=com[i-j-1];
-            com[i-x] = c;
-            i++;
-			printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
-            for(j=0;j<i;j++)printf("%c",com[j]);
-            printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
-		    for(j=0;j<i-x;j++)
-                if(com[j]=='\n')printf("\n");
-                else printf("%c",com[j]);
+            if(x==0) {
+				com[i++]=c;
+				printf("%c",com[i-1]);
+			} else {
+				for(j=0;j<x;j++)com[i-j]=com[i-j-1];
+				com[i-x] = c;
+				i++;
+				printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
+				for(j=0;j<i;j++)printf("%c",com[j]);
+				printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
+				for(j=0;j<i-x;j++)
+					if(com[j]=='\n')printf("\n");
+					else printf("%c",com[j]);
+			}
         }
         else if ((c == '\n' || c == '\r') && i < 100000 - 1) {
             printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
@@ -168,7 +195,7 @@ void init()
 	memset(return_stack,0,sizeof(return_stack));
 	memset(oper_stack,0,sizeof(oper_stack));
 	memset(num_stack,0,sizeof(num_stack));
-	int i,j;for(i=0;i<1234;i++)for(j=0;j<1234;j++)Map[i][j]=img[i][j]=255;
+	int i,j;for(i=0;i<1234;i++)for(j=0;j<1234;j++)Map[i][j]=255;
     printf("\e[1;1H\e[2J");                        //把输入移至第一行
     readAll();
 	com[--len]='\0';
@@ -177,12 +204,9 @@ void init()
 void paint(int x,int y,int z)
 {	Map[x][y]=z;
 }
-void paint_img(int x,int y,int z)
-{	img[x][y]=z;
-}
 void draw_line(int x0,int y0,int x1,int y1,int z)
 {	int i,x,y,dx,dy,e;
-	x0+=Mx/2,y0+=My/2,x1+=Mx/2,y1+=My/2;
+	x0+=Mx>>1,y0+=My>>1,x1+=Mx>>1,y1+=My>>1;
 	if (abs(x1-x0)>=abs(y1-y0))
 	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dx;
 		x=x0,y=y0;
@@ -201,49 +225,6 @@ void draw_line(int x0,int y0,int x1,int y1,int z)
 			if(e>=0)x+=x1>x0?1:-1,e-=2*dy;
 		}
 	}
-}
-void draw_line_img(int x0,int y0,int x1,int y1,int z)
-{	int i,x,y,dx,dy,e;
-	x0+=Mx/2,y0+=My/2,x1+=Mx/2,y1+=My/2;
-	if (abs(x1-x0)>=abs(y1-y0))
-	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dx;
-		x=x0,y=y0;
-		for(i=0;i<=dx;i++)
-		{	paint_img(x,y,z);
-			x+=x1>x0?1:-1,e+=2*dy;
-			if(e>=0)y+=y1>y0?1:-1,e-=2*dx;
-		}
-	}
-	else
-	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dy;
-		x=x0,y=y0;
-		for(i=0;i<=dy;i++)
-		{	paint_img(x,y,z);
-			y+=y1>y0?1:-1,e+=2*dx;
-			if(e>=0)x+=x1>x0?1:-1,e-=2*dy;
-		}
-	}
-}
-void reflesh()
-{	int i,j,siz=10,nx1,ny1,nx2,ny2,nx3,ny3;
-	//for(i=0;i<800;i++)
-	//	for(j=0;j<600;j++)
-	//		img[i][j]=Map[i][j];
-	nx1=(nx+siz*Cos[ang]+32768>>16);
-	ny1=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	nx2=(nx+siz*Cos[ang]+32768>>16);
-	ny2=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	nx3=(nx+siz*Cos[ang]+32768>>16);
-	ny3=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	draw_line_img(nx1,ny1,nx2,ny2,0);
-	draw_line_img(nx2,ny2,nx3,ny3,0);
-	draw_line_img(nx3,ny3,nx1,ny1,0);
 }
 void skip_space()							//skip_space space and enter
 {	while(l<len&&(com[l]==' '||com[l]=='\n'||com[l]=='\r'||com[l]=='\t'))l++;
@@ -302,7 +283,7 @@ int getnumber()						//parse a int or variable(start at l)
 }
 int getres(int a,int x,int b)
 {	if(x==8)return (a>>8)*(b>>8);
-	if(x==9)return a/(b>>16);
+	if(x==9)return division(a,b>>16);//a/(b>>16);
 	if(x==16)return a+b;
 	if(x==17)return a-b;
 	if(x==24)return a>=b?1:0;
@@ -461,7 +442,6 @@ void getcomm()
 			    ny+=(x>>8)*Sin[ang]>>8;
             }
 			if(is_down)draw_line(tmpx+32768>>16,tmpy+32768>>16,nx+32768>>16,ny+32768>>16,col);
-			reflesh();
 			return;
 		}
 		else if(com[l]=='b'&&com[l+1]=='k')
@@ -478,7 +458,6 @@ void getcomm()
 			    ny-=(x>>8)*Sin[ang]>>8;
             }
 			if(is_down)draw_line(tmpx+32768>>16,tmpy+32768>>16,nx+32768>>16,ny+32768>>16,col);
-			reflesh();
 			return;
 		}
 		else if(com[l]=='r'&&com[l+1]=='t')
@@ -488,7 +467,6 @@ void getcomm()
 			ang-=(x>>16);
 			while(ang<0)ang+=360;
 			while(ang>=360)ang-=360;
-			reflesh();
 			return;
 		}
 		else if(com[l]=='l'&&com[l+1]=='t')
@@ -498,7 +476,6 @@ void getcomm()
 			ang+=(x>>16);
 			while(ang<0)ang+=360;
 			while(ang>=360)ang-=360;
-			reflesh();
 			return;
 		}
 		else if(com[l]=='i'&&com[l+1]=='f')
@@ -562,6 +539,16 @@ void getcomm()
 			int x;
 			x=getexpr();
 			variable_value[tmp][topv[tmp]-1]=x;
+			return;
+		}
+	}
+	else if(tmp==5)
+	{	if(com[l]=='c'&&com[l+1]=='o'&&com[l+2]=='l'&&com[l+3]=='o'&&com[l+4]=='r')
+		{	l+=5;
+			skip_space();
+			int x;
+			x=getexpr();
+			col=(x>>16);
 			return;
 		}
 	}

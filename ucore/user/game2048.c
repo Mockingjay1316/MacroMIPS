@@ -8,6 +8,8 @@
 
 #define printf(...)                     fprintf(1, __VA_ARGS__)
 
+int seed = 42;
+
 void op(int *a) {
     printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
     printf("_____________________\n");
@@ -18,11 +20,18 @@ void op(int *a) {
         printf("\n|____|____|____|____|\n");
     }
 }
-int getrand(int *t) {
-    *t=(*t)*(*t)+(*t)+3;
-    return ((*t) >> 3)&3;
+int getrand() {
+    int result;
+
+    seed *= 1103515245;
+    seed += 12345;
+    result = (unsigned int) (seed >> 16) % 2048;
+
+    seed = result;
+
+    return result & 3;
 }
-int check(int*a,int*t,int*s) {
+int check(int*a,int*s) {
     int flag=1,i;
     for(i=0;i<16;i++)
         if(a[i]>=2048) {
@@ -30,9 +39,9 @@ int check(int*a,int*t,int*s) {
             printf("win!\n");
             return 1;
         }
-    int x=getrand(t),y=getrand(t);
-    while(a[x*4+y]!=-1)x=getrand(t),y=getrand(t);
-    a[x*4+y]=(getrand(t)==0?4:2);
+    int x=getrand(),y=getrand();
+    while(a[x*4+y]!=-1)x=getrand(),y=getrand();
+    a[x*4+y]=(getrand()==0?4:2);
     for(i=0;i<4;i++)s[i]=0;
     for(i=4;i<16;i++)if(a[i]!=-1&&(a[i]==a[i-4]||a[i-4]==-1))flag=0,s[0]=1;
     for(i=0;i<16;i++)if((i&3)>0&&(a[i]!=-1&&(a[i]==a[i-1]||a[i-1]==-1)))flag=0,s[1]=1;
@@ -63,13 +72,13 @@ void move(int*a,int k) {
 int
 main(int argc, char **argv) {
     char c;
-    int i,j,ret,t=233;                             //t随机数种子
+    int i,j,ret;                             //t随机数种子
     int a[16],s[4];
     for(i=0;i<4;i++)
         for(j=0;j<4;j++)
             a[i*4+j]=-1;
     printf("\e[1;1H\e[2J");                        //把输入移至第一行
-    if(check(a,&t,s))return 0;
+    if(check(a,s))return 0;
     op(a);
     while(1) {
         int flag=0;
@@ -82,7 +91,7 @@ main(int argc, char **argv) {
         else if(c=='d'&&s[3])move(a,3);             //wasd操控
         else if(c==27)return 0;                     //esc退出
         else flag=1;
-        if(flag==0&&check(a,&t,s))return 0;
+        if(flag==0&&check(a,s))return 0;
         op(a);
     }
     return 0;

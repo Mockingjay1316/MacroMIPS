@@ -56,17 +56,7 @@ int randint() {
 
     seed *= 1103515245;
     seed += 12345;
-    result = (unsigned int) (seed >> 16) % 2048;
-
-    // seed *= 1103515245;
-    // seed += 12345;
-    // result <<= 10;
-    // result ^= (unsigned int) (seed / 65536) % 1024;
-
-    // seed *= 1103515245;
-    // seed += 12345;
-    // result <<= 10;
-    // result ^= (unsigned int) (seed / 65536) % 1024;
+    result = (unsigned int) (seed >> 16) & ((1 << 11) - 1);
 
     seed = result;
 
@@ -75,7 +65,10 @@ int randint() {
 
 void generate_food(int *x_food, int *y_food) {
     int remain = (WIDTH - 2) * (HEIGHT - 2) - snake_length;
-    int random_cnt = randint() % remain;
+    int random_cnt = randint();
+    while(random_cnt >= remain)
+        random_cnt -= remain;
+    // int random_cnt = randint() % remain;
     int current_cnt = 0;
     for(int i = 0; i < WIDTH - 2; ++i) {
         for(int j = 0; j < HEIGHT - 2; ++j) {
@@ -90,7 +83,7 @@ void generate_food(int *x_food, int *y_food) {
                 }
         }
     }
-    printf("NOTE!!!Error!!!!!!\n");
+    printf("remain:%d, random_cnt:%d, NOTE!!!Error!!!!!!\n", remain, random_cnt);
 }
 
 bool get_user_input(int *x_direction, int *y_direction) {
@@ -214,10 +207,9 @@ int main() {
             {
                 int game_status = update_snake(snake, &x_direction, &y_direction, &x_food, &y_food);
                 printf("%c[%d;%dH",27,1,1);
-                printf("贪吃蛇小游戏\n");
-                printf("WASD控制上下左右\n");
-                printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
-                printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", x_direction, y_direction, x_food, y_food);
+                printf("use [WASD] to control the direction\n");
+                printf("press any key to start\n");
+                printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d     \n", x_direction, y_direction, x_food, y_food);
                 printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
                 switch (game_status)
                 {
@@ -244,7 +236,7 @@ int main() {
                 draw_canvas();
 
                 
-                sleep(512);//0.4s
+                sleep(128);     //0.512s
             }
         }
         else//father
@@ -256,7 +248,7 @@ int main() {
 
 
             kill(fpid);
-            move=(gettime_msec()-time) >> 9;
+            move=(gettime_msec()-time) >> 7;
             
             int game_status;
             for(int i=0;i<=move;i++)
@@ -265,10 +257,9 @@ int main() {
                 if(game_status==GAME_OVER||game_status==WIN)break;
             }
             printf("%c[%d;%dH",27,1,1);
-            printf("贪吃蛇小游戏\n");
-            printf("WASD控制上下左右\n");
-            printf("蛇头碰触墙壁或身体则游戏结束，按WASD任意键开始\n");
-            printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d\n", bef_x_direction, bef_y_direction, x_food, y_food);
+            printf("use [WASD] to control the direction\n");
+            printf("press any key to start\n");
+            printf("X_Direction:%d Y_Direction:%d X_food:%d y_food:%d     \n", x_direction, y_direction, x_food, y_food);
             printf("X_Head:%d Y_Head:%d\n", snake[0].m_x, snake[0].m_y);
             switch (game_status)
             {
