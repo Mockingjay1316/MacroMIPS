@@ -43,39 +43,43 @@
 #define UPDOWN              'x'
 #define BAR                 'n'
 #define SPECIAL_GATE        'v'
+#define HERO                '*'
+#define GUARD               '$'
+#define THIEF               '%'
 
-#define PIC_RED_GATE        0
-#define PIC_YELLOW_GATE     1
-#define PIC_BAR             2
-#define PIC_BAT             3
-#define PIC_WALL            4
-#define PIC_BLUE_BOTTLE     5
-#define PIC_BLUE_GATE       6
-#define PIC_BLUE_GEM        7
-#define PIC_BLUE_KEY        8
-#define PIC_DEVIL           9
-#define PIC_DOWN_STAIR      10
-#define PIC_GENERAL         11
-#define PIC_HERO            12
-#define PIC_OLDMAN          13
-#define PIC_UPDOWN          14
-#define PIC_RED_BOTTLE      15
-#define PIC_RED_GEM         16
-#define PIC_RED_KEY         17
-#define PIC_ROAD            18
-#define PIC_SHIELD          19
-#define PIC_SHOPMAN         20
-#define PIC_SHOP_LEFT       21
-#define PIC_SHOP_MID        22
-#define PIC_SHOP_RIGHT      23
-#define PIC_SKELETON        24
-#define PIC_SLIME           25
-#define PIC_SPECIAL_DOOR    26
-#define PIC_SWORD           27
-#define PIC_THIEF           28
-#define PIC_UP_STAIR        29
+#define PIC_BAR             0
+#define PIC_BAT             1
+#define PIC_BLUE_BOTTLE     2
+#define PIC_BLUE_GATE       3
+#define PIC_BLUE_GEM        4
+#define PIC_BLUE_KEY        5
+#define PIC_DEVIL           6
+#define PIC_DOWN_STAIR      7
+#define PIC_GENERAL         8
+#define PIC_GUARD           9
+#define PIC_HERO            10
+#define PIC_OLDMAN          11
+#define PIC_RED_BOTTLE      12
+#define PIC_RED_GATE        13
+#define PIC_RED_GEM         14
+#define PIC_RED_KEY         15
+#define PIC_ROAD            16
+#define PIC_SHIELD          17
+#define PIC_SHOPMAN         18
+#define PIC_SHOP_LEFT       19
+#define PIC_SHOP_MID        20
+#define PIC_SHOP_RIGHT      21
+#define PIC_SKELETON        22
+#define PIC_SLIME           23
+#define PIC_SPECIAL_DOOR    24
+#define PIC_SWORD           25
+#define PIC_THIEF           26
+#define PIC_UPDOWN          27
+#define PIC_UP_STAIR        28
+#define PIC_WALL            29
 #define PIC_WIZARD          30
-#define PIC_YELLOW_KEY      31
+#define PIC_YELLOW_GATE     31
+#define PIC_YELLOW_KEY      32
 
 // 道具
 #define UP_LAYER            0       // 快速上楼
@@ -141,6 +145,8 @@ Hero hero = {6, 11, 0, 0, 1000, 100, 100, 4, 0, 0, 0, 1, 1};
 int layer = 1;
 int shop_cost = 20;
 bool meet = true;   // 是否要遇到大魔王
+int *ucore_status;
+int *vga_output;
 
 void move_print(int line) {
     printf("%c[%d;%dH",27,line,1);
@@ -296,69 +302,97 @@ void import() {
     // while ((ret = read(file, buffer, sizeof(buffer))) != 0) {
     // while((ret = fread(buffer, sizeof(char), BOARD_SIZE-1, file)) != 0) {
         // printf("%d\n", y);
+    int *output = vga_output;
     for (int y = 0; y < BOARD_SIZE - 2; ++y) 
         for (int x = 0; x < BOARD_SIZE - 2; ++x) {  
             char curr = maps[layer - 1][y * (BOARD_SIZE - 2) + x];
             raw_map[layer-1][y + 1][x + 1] = curr;
             if (WALL == curr || FAKE_WALL == curr) {        // 墙壁或假墙壁
                 strcpy(map[layer-1][y + 1][x + 1], "██");
+                // *(output++) = PIC_WALL;
             } else if (BLUE_BOTTLE == curr) {                    // 蓝血瓶
                 print_blue(x + 1, y + 1, "血");
+                // *(output++) = PIC_BLUE_BOTTLE
             } else if (RED_BOTTLE == curr) {                     // 红血瓶
                 print_red(x + 1, y + 1, "血");
+                // *(output++) = PIC_RED_BOTTLE;
             } else if (RED_GATE == curr) {                       // 红门
                 print_red(x + 1, y + 1, "〓");
+                // *(output++) = PIC_RED_GATE;
             } else if (BLUE_GATE == curr) {                      // 蓝门
                 print_blue(x + 1, y + 1, "〓");
+                // *(output++) = PIC_BLUE_GATE;
             } else if (YELLOW_GATE == curr) {                    // 黄门
                 print_yellow(x + 1, y + 1, "〓");
+                // *(output++) = PIC_YELLOW_GATE;
             } else if (SPECIAL_GATE == curr) {                   // 特殊门
                 print_green(x + 1, y + 1, "〓");
+                // *(output++) = PIC_SPECIAL_DOOR;
             } else if (YELLOW_KEY == curr) {                     // 黄钥匙
                 print_yellow(x + 1, y + 1, "♀ ");
+                // *(output++) = PIC_YELLOW_KEY;
             } else if (BLUE_KEY == curr) {                       // 蓝钥匙
                 print_blue(x + 1, y + 1, "♀ ");
+                // *(output++) = PIC_BLUE_KEY;
             } else if (RED_KEY == curr) {                        // 红钥匙
                 print_red(x + 1, y + 1, "♀ ");
+                // *(output++) = PIC_RED_KEY;
             } else if (BLUE_GEM == curr) {                       // 蓝宝石
                 print_blue(x + 1, y + 1, "◆ ");
+                // *(output++) = PIC_BLUE_GEM;
             } else if (RED_GEM == curr) {                        // 红宝石
                 print_red(x + 1, y + 1, "◆ ");
+                // *(output++) = PIC_RED_GEM;
             } else if (SLIME == curr) {                          // 史莱姆
                 strcpy(map[layer-1][y + 1][x + 1], "史");
+                // *(output++) = PIC_SLIME;
             } else if (BAT == curr) {                            // 蝙蝠
                 strcpy(map[layer-1][y + 1][x + 1], "蝠");
+                // *(output++) = PIC_BAT;
             } else if (SKELETON == curr) {                       // 骷髅
                 strcpy(map[layer-1][y + 1][x + 1], "骷");
+                // *(output++) = PIC_SKELETON;
             } else if (SKELETON_GENERAL == curr) {               // 骷髅将军
                 strcpy(map[layer-1][y + 1][x + 1], "军");
+                // *(output++) = PIC_GENERAL;
             } else if (WIZARD == curr) {                         // 法师
                 strcpy(map[layer-1][y + 1][x + 1], "法");
+                // *(output++) = PIC_WIZARD;
             } else if (ROAD == curr) {                           // 道路
                 strcpy(map[layer-1][y + 1][x + 1], "  ");
+                // *(output++) = PIC_ROAD;
             } else if (UP_STAIR == curr) {                       // 上楼梯
                 strcpy(map[layer-1][y + 1][x + 1], "↑ ");
+                // *(output++) = PIC_UP_STAIR;
             } else if (DOWN_STAIR == curr) {                     // 下楼梯
                 strcpy(map[layer-1][y + 1][x + 1], "↓ ");
+                // *(output++) = PIC_DOWN_STAIR;
             } else if (SHOP == curr) {
                 print_green(x + 1, y + 1, "大");
                 print_green(x + 2, y + 1, "商");
                 print_green(x + 3, y + 1, "店");
+                // *(output++) = PIC_SHOP_LEFT;
+                // *(output++) = PIC_SHOP_MID;
+                // *(output++) = PIC_SHOP_RIGHT;
                 x += 2;
             } else if (SWORD == curr) {
-                // strcpy(map[y + 1][x + 1], "⚔ ");
                 print_green(x + 1, y + 1, "⚔ ");
+                // *(output++) = PIC_SWORD;
             } else if (SHIELD == curr) {
-                // strcpy(map[y + 1][x + 1], "⍟ ");
                 print_green(x + 1, y + 1, "⍟ ");
+                // *(output++) = PIC_SHIELD;
             } else if (OLD_MAN == curr) {
                 print_green(x + 1, y + 1, "老");
+                // *(output++) = PIC_OLDMAN;
             } else if (SHOP_MAN == curr) {
                 print_green(x + 1, y + 1, "商");
+                // *(output++) = PIC_SHOPMAN;
             } else if (UPDOWN == curr) {
                 print_green(x + 1, y + 1, "⇅ ");
+                // *(output++) = PIC_UPDOWN;
             } else if (BAR == curr) {
                 strcpy(map[layer-1][y+1][x+1], "栅");
+                // *(output++) = PIC_BAR;
             }
         }
     map_has_load[layer - 1] = true;
@@ -375,10 +409,117 @@ void print_prop() {
     printf("\n");
 }
 
+void update_vga() {
+    int *output = vga_output;
+    for (int y = 0; y < BOARD_SIZE; ++y) {
+        for (int x = 0; x < BOARD_SIZE; ++x) {
+            switch (raw_map[layer-1][y][x])
+            {
+            case WALL:
+            case FAKE_WALL:
+                *(output++) = PIC_WALL;
+                break;
+            case BLUE_BOTTLE:
+                *(output++) = PIC_BLUE_BOTTLE;
+                break;
+            case RED_BOTTLE:
+                *(output++) = PIC_RED_BOTTLE;
+                break;
+            case RED_GATE:
+                *(output++) = PIC_RED_GATE;
+                break;
+            case BLUE_GATE:
+                *(output++) = PIC_BLUE_GATE;
+                break;
+            case YELLOW_GATE:
+                *(output++) = PIC_YELLOW_GATE;
+                break;
+            case YELLOW_KEY:
+                *(output++) = PIC_YELLOW_KEY;
+                break;
+            case BLUE_KEY:
+                *(output++) = PIC_BLUE_KEY;
+                break;
+            case RED_KEY:
+                *(output++) = PIC_RED_KEY;
+                break;
+            case BLUE_GEM:
+                *(output++) = PIC_BLUE_GEM;
+                break;
+            case RED_GEM:
+                *(output++) = PIC_RED_GEM;
+                break;
+            case SLIME:
+                *(output++) = PIC_SLIME;
+                break;
+            case BAT:
+                *(output++) = PIC_BAT;
+                break;
+            case SKELETON:
+                *(output++) = PIC_SKELETON;
+                break;
+            case SKELETON_GENERAL:
+                *(output++) = PIC_GENERAL;
+                break;
+            case WIZARD:
+                *(output++) = PIC_WIZARD;
+                break;
+            case DEVIL:
+                *(output++) = PIC_DEVIL;
+                break;
+            case ROAD:
+                *(output++) = PIC_ROAD;
+                break;
+            case UP_STAIR:
+                *(output++) = PIC_UP_STAIR;
+                break;
+            case DOWN_STAIR:
+                *(output++) = PIC_DOWN_STAIR;
+                break;
+            case SHOP:
+                *(output++) = PIC_SHOP_LEFT;
+                *(output++) = PIC_SHOP_MID;
+                *(output++) = PIC_SHOP_RIGHT;
+                break;
+            case OLD_MAN:
+                *(output++) = PIC_OLDMAN;
+                break;
+            case SHOP_MAN:
+                *(output++) = PIC_SHOPMAN;
+                break;
+            case SWORD:
+                *(output++) = PIC_SWORD;
+                break;
+            case SHIELD:
+                *(output++) = PIC_SHIELD;
+                break;
+            case UPDOWN:
+                *(output++) = PIC_UPDOWN;
+                break;
+            case BAR:
+                *(output++) = PIC_BAR;
+                break;
+            case SPECIAL_GATE:
+                *(output++) = PIC_SPECIAL_DOOR;
+                break;
+            case HERO:
+                *(output++) = PIC_HERO;
+                break;
+            case GUARD:
+                *(output++) = PIC_GUARD;
+                break;
+            case THIEF:
+                *(output++) = PIC_THIEF;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
 void draw(){
     screen_clear();
-        // printf("%c[%d;%dH",27,19,1);
-    // printf("%c[%d;%dH",27,1,1);
     move_print(1);
     printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
@@ -399,6 +540,7 @@ void draw(){
         }
         printf("\n");
     }
+    update_vga();
 }
 
 void print_red(int x, int y, char* c) {
@@ -593,6 +735,7 @@ void update_defence(int delta) {
 
 void update_layer(int delta) {
     strcpy(map[layer-1][hero.y][hero.x], "  ");
+    raw_map[layer-1][hero.y][hero.x] = ROAD;
     layer += delta;
     char file_name[15];
     char tmp[2];
@@ -611,6 +754,7 @@ void update_layer(int delta) {
         hero.y = down_y[layer - 1];
     }
     print_green(hero.x, hero.y, "勇");
+    raw_map[layer-1][hero.y][hero.x] = HERO;
 }
 
 bool update_money(int delta) {
@@ -708,6 +852,7 @@ void meet_king(int x, int y) {
     if (layer == 3 && x == 5 && y == 9 && meet) {
         char c;
         print_yellow(x, y - 2, "魔");
+        raw_map[layer-1][y - 2][x] = DEVIL;
         draw();
         sleep(1500);
         print_conversation("魔王：欢迎来到魔塔，你是第一百位挑战者。你若能打败我所有的手下，我就与你一对一的决斗。\n现在，你必须接受我的安排！");
@@ -716,6 +861,10 @@ void meet_king(int x, int y) {
         print_blue(x + 1, y, "士");
         print_blue(x, y - 1, "士");
         print_blue(x, y + 1, "士");
+        raw_map[layer-1][y][x - 1] = GUARD;
+        raw_map[layer-1][y][x + 1] = GUARD;
+        raw_map[layer-1][y - 1][x] = GUARD;
+        raw_map[layer-1][y + 1][x] = GUARD;
         draw();
         sleep(1000);
         print_conversation("什么？");
@@ -736,6 +885,11 @@ void meet_king(int x, int y) {
         strcpy(map[layer-1][y][x+1], "  ");
         strcpy(map[layer-1][y-1][x], "  ");
         strcpy(map[layer-1][y+1][x], "  ");
+        raw_map[layer-1][y-2][x] = ROAD;
+        raw_map[layer-1][y][x-1] = ROAD;
+        raw_map[layer-1][y][x+1] = ROAD;
+        raw_map[layer-1][y-1][x] = ROAD;
+        raw_map[layer-1][y-1][x] = ROAD;
         sleep(1500);
         print_conversation("");
         sleep(2000);
@@ -745,6 +899,7 @@ void meet_king(int x, int y) {
         get_user_input();
         update_layer(-1);
         strcpy(map[layer-1][hero.y][hero.x], "  ");
+        raw_map[layer-1][hero.y][hero.x] = ROAD;
         hero.x = 3;
         hero.y = 8;
         hero.hp = 400;
@@ -754,6 +909,8 @@ void meet_king(int x, int y) {
         hero.has_sword = false;
         print_green(hero.x, hero.y, "勇");
         print_green(hero.x, hero.y - 1, "偷");
+        raw_map[layer-1][hero.y][hero.x] = HERO;
+        raw_map[layer-1][hero.y-1][hero.x] = THIEF;
         draw();
         sleep(2000);
         print_conversation("小偷：你清醒了吗？你到监狱时还处在昏迷中，魔法警卫把你扔到了我这个房间。\n但你很幸运，我刚完成逃跑的暗道你就清醒了，我们一起越狱吧。");
@@ -763,30 +920,46 @@ void meet_king(int x, int y) {
         get_user_input();
         strcpy(map[layer-1][hero.y-1][hero.x], "  ");
         strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
+        raw_map[layer-1][hero.y-1][hero.x] = ROAD;
+        raw_map[layer-1][hero.y-1][hero.x-1] = ROAD;
         print_green(hero.x - 1, hero.y - 1, "偷");
+        raw_map[layer-1][hero.y-1][hero.x-1] = THIEF;
         draw();
         sleep(500);
         strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
         strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
+        raw_map[layer-1][hero.y-1][hero.x-1] = ROAD;
+        raw_map[layer-1][hero.y-1][hero.x-2] = ROAD;
         print_green(hero.x - 2, hero.y - 1, "偷");
+        raw_map[layer-1][hero.y-1][hero.x-2] = THIEF;
         draw();
         sleep(500);
         strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y][hero.x-2], "  ");
+        raw_map[layer-1][hero.y-1][hero.x-2] = ROAD;
+        raw_map[layer-1][hero.y][hero.x-2] = ROAD;
         print_green(hero.x - 2, hero.y, "偷");
+        raw_map[layer-1][hero.y][hero.x-2] = THIEF;
         draw();
         sleep(500);
         strcpy(map[layer-1][hero.y][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
+        raw_map[layer-1][hero.y][hero.x-2] = ROAD;
+        raw_map[layer-1][hero.y+1][hero.x-2] = ROAD;
         print_green(hero.x - 2, hero.y + 1, "偷");
+        raw_map[layer-1][hero.y+1][hero.x-2] = THIEF;
         draw();
         sleep(500);
         strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
+        raw_map[layer-1][hero.y+1][hero.x-2] = ROAD;
+        raw_map[layer-1][hero.y+2][hero.x-2] = ROAD;
         print_green(hero.x - 2, hero.y + 2, "偷");
+        raw_map[layer-1][hero.y+2][hero.x-2] = THIEF;
         draw();
         sleep(500);
         strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
+        raw_map[layer-1][hero.y+2][hero.x-2] = ROAD;
         draw();
         sleep(500);
     }
@@ -939,17 +1112,22 @@ bool move() {
         hero.x = x_result;
         hero.y = y_result;
         strcpy(map[layer-1][y][x], "  ");
-        if (!ret && !new_layer)
+        raw_map[layer-1][y][x] = ROAD;
+        if (!ret && !new_layer) {
             print_green(x_result, y_result, "勇");
+            raw_map[layer-1][hero.y][hero.x] = HERO;
+        }
     }
     return ret;
 }
 
 int main() {
+    // (*ucore_status) = 1;
     screen_clear();
-    init_game();
+    // init_game();
     import();
     print_green(hero.x, hero.y, "勇");
+    raw_map[layer-1][hero.y][hero.x] = HERO;
     // screen_clear();
     draw();
     int input;
@@ -959,6 +1137,8 @@ int main() {
         if ((input = get_user_input()) == -1) {
             continue;
         }
+        if (input == 'q')
+            break;
         if (input == 0)
             move();
         else   
@@ -966,5 +1146,6 @@ int main() {
         draw();
         meet_king(hero.x, hero.y);
     }
+    // (*ucore_status) = 0;
     return 0;
 }
