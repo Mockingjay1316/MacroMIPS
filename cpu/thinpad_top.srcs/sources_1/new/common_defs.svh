@@ -130,6 +130,11 @@ typedef enum logic[2:0] {
     UART_RWAIT, UART_RREAD, UART_RACK
 } uart_rstate_t;
 
+typedef enum {
+    VGA_CLI, VGA_TOWER, VGA_PCLOGO,
+    VGA_SNAKE
+} vga_mode_t;
+
 typedef struct packed {
     logic[31:0]     addr;
     logic[4:0]      ctrl_signal;
