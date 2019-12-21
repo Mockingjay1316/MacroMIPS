@@ -80,7 +80,7 @@ module thinpad_top(
     output  wire       video_de            //行数据有效信号，用于区分消隐区
 );
 
-logic rst, peri_clk, bus_clk, main_clk, main_shift_clk;
+logic rst, peri_clk, bus_clk, main_clk, main_shift_clk, vga_clk;
 logic[`INST_WIDTH-1:0] instr, sram_instr, rom_instr;
 logic[`ADDR_WIDTH-1:0] pc, mem_addr, sram_pc, rom_pc;
 logic[`DATA_WIDTH-1:0] mem_wdata, sram_rdata, uart_rdata, reg_out, mem_rdata;
@@ -89,12 +89,13 @@ logic is_uart, mem_stall, sram_mem_stall;
 logic uart_hard_int;
 logic[5:0] hardware_int;
 logic data_not_ready;
-mem_control_info sram_ctrl, uart_ctrl, flash_ctrl;
-mem_data sram_data, uart_data, flash_data;
+mem_control_info sram_ctrl, uart_ctrl, flash_ctrl, vga_ctrl;
+mem_data sram_data, uart_data, flash_data, vga_data;
 
 assign hardware_int = {3'b000, uart_hard_int, 2'b00};        //打开了硬件中断
 assign uart_rdn = 1'b1;
 assign uart_wrn = 1'b1;
+assign vga_clk = bus_clk;
 
 main_pll pll (
     .clk_in1(clk_50M),
@@ -149,9 +150,11 @@ data_bus data_bus_r (
     .sram_ctrl,
     .uart_ctrl,
     .flash_ctrl,
+    .vga_ctrl,
     .sram_data,
     .uart_data,
-    .flash_data
+    .flash_data,
+    .vga_data
 );
 
 boot_rom boot_rom_r (
@@ -216,6 +219,31 @@ flash_controller flash_ctrl_r (
     .flash_oe_n,
     .flash_we_n,
     .flash_byte_n
+);
+
+// write only
+vga_controller vga_ctrl_r (
+    .main_clk(main_clk),
+    .peri_clk(peri_clk),
+    .main_shift_clk,
+    .vga_clk,
+    .rst(~rst),
+    .vga_en(vga_ctrl.enable),
+    .data_write_en(vga_ctrl.ctrl_signal[3]),
+    .load_from_mem(vga_ctrl.ctrl_signal[4]),
+    .is_data_read(vga_ctrl.ctrl_signal[2]),
+    .mem_byte_en(vga_ctrl.ctrl_signal[1]),
+    .mem_sign_ext(vga_ctrl.ctrl_signal[0]),
+    .data_addr(vga_ctrl.addr),
+    .data_write(vga_ctrl.wdata),
+
+    .video_red,
+    .video_green,
+    .video_blue,
+    .video_hsync,
+    .video_vsync,
+    .video_clk,
+    .video_de
 );
 /*
 logic ila_tri;
