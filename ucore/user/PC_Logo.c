@@ -21,7 +21,7 @@ int variable_value[1234][123],topv[1234];
 int tmp_variable[1234][123],lv[1234];
 int return_stack[1234],topr;
 int oper_stack[1234],topo,num_stack[1234],topn;
-int Mx,My,Map[1234][1234];
+int Mx,My,Map[800][600];
 
 int abs(int x)
 {   return x>0?x:-x;
@@ -184,6 +184,9 @@ void readAll() {
     }
     return;
 }
+void paint(int x,int y,int z)
+{	Map[x][y]=z;
+}
 void init()
 {	nx=ny=col=ln=len=l=topr=topo=topn=0,is_down=1,ang=90;
 	Mx=800,My=600;
@@ -195,14 +198,11 @@ void init()
 	memset(return_stack,0,sizeof(return_stack));
 	memset(oper_stack,0,sizeof(oper_stack));
 	memset(num_stack,0,sizeof(num_stack));
-	int i,j;for(i=0;i<1234;i++)for(j=0;j<1234;j++)Map[i][j]=255;
+	int i,j;for(i=0;i<Mx;i++)for(j=0;j<My;j++)paint(i,j,255);//Map[i][j]=255;
     printf("\e[1;1H\e[2J");                        //把输入移至第一行
     readAll();
 	com[--len]='\0';
 //printf("%c[%d;%dH",27,1,1);
-}
-void paint(int x,int y,int z)
-{	Map[x][y]=z;
 }
 void draw_line(int x0,int y0,int x1,int y1,int z)
 {	int i,x,y,dx,dy,e;
