@@ -21,7 +21,7 @@ int variable_value[1234][123],topv[1234];
 int tmp_variable[1234][123],lv[1234];
 int return_stack[1234],topr;
 int oper_stack[1234],topo,num_stack[1234],topn;
-int Mx,My,Map[1234][1234],img[1234][1234];
+int Mx,My,Map[1234][1234];
 
 int abs(int x)
 {   return x>0?x:-x;
@@ -145,15 +145,20 @@ void readAll() {
             flag=0;
         }
         else if (c >= ' ' && c < deleteKey && i < 100000 - 1) {
-            for(j=0;j<x;j++)com[i-j]=com[i-j-1];
-            com[i-x] = c;
-            i++;
-			printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
-            for(j=0;j<i;j++)printf("%c",com[j]);
-            printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
-		    for(j=0;j<i-x;j++)
-                if(com[j]=='\n')printf("\n");
-                else printf("%c",com[j]);
+            if(x==0) {
+				com[i++]=c;
+				printf("%c",com[i-1]);
+			} else {
+				for(j=0;j<x;j++)com[i-j]=com[i-j-1];
+				com[i-x] = c;
+				i++;
+				printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
+				for(j=0;j<i;j++)printf("%c",com[j]);
+				printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
+				for(j=0;j<i-x;j++)
+					if(com[j]=='\n')printf("\n");
+					else printf("%c",com[j]);
+			}
         }
         else if ((c == '\n' || c == '\r') && i < 100000 - 1) {
             printf("%c[%d;%dH",27,1,1);                    //把光标跳至第i行第j列
@@ -186,7 +191,7 @@ void init()
 	memset(return_stack,0,sizeof(return_stack));
 	memset(oper_stack,0,sizeof(oper_stack));
 	memset(num_stack,0,sizeof(num_stack));
-	int i,j;for(i=0;i<1234;i++)for(j=0;j<1234;j++)Map[i][j]=img[i][j]=255;
+	int i,j;for(i=0;i<1234;i++)for(j=0;j<1234;j++)Map[i][j]=255;
     printf("\e[1;1H\e[2J");                        //把输入移至第一行
     readAll();
 	com[--len]='\0';
@@ -194,9 +199,6 @@ void init()
 }
 void paint(int x,int y,int z)
 {	Map[x][y]=z;
-}
-void paint_img(int x,int y,int z)
-{	img[x][y]=z;
 }
 void draw_line(int x0,int y0,int x1,int y1,int z)
 {	int i,x,y,dx,dy,e;
@@ -219,49 +221,6 @@ void draw_line(int x0,int y0,int x1,int y1,int z)
 			if(e>=0)x+=x1>x0?1:-1,e-=2*dy;
 		}
 	}
-}
-void draw_line_img(int x0,int y0,int x1,int y1,int z)
-{	int i,x,y,dx,dy,e;
-	x0+=Mx>>1,y0+=My>>1,x1+=Mx>>1,y1+=My>>1;
-	if (abs(x1-x0)>=abs(y1-y0))
-	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dx;
-		x=x0,y=y0;
-		for(i=0;i<=dx;i++)
-		{	paint_img(x,y,z);
-			x+=x1>x0?1:-1,e+=2*dy;
-			if(e>=0)y+=y1>y0?1:-1,e-=2*dx;
-		}
-	}
-	else
-	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dy;
-		x=x0,y=y0;
-		for(i=0;i<=dy;i++)
-		{	paint_img(x,y,z);
-			y+=y1>y0?1:-1,e+=2*dx;
-			if(e>=0)x+=x1>x0?1:-1,e-=2*dy;
-		}
-	}
-}
-void reflesh()
-{	int i,j,siz=10,nx1,ny1,nx2,ny2,nx3,ny3;
-	//for(i=0;i<800;i++)
-	//	for(j=0;j<600;j++)
-	//		img[i][j]=Map[i][j];
-	nx1=(nx+siz*Cos[ang]+32768>>16);
-	ny1=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	nx2=(nx+siz*Cos[ang]+32768>>16);
-	ny2=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	nx3=(nx+siz*Cos[ang]+32768>>16);
-	ny3=(ny+siz*Sin[ang]+32768>>16);
-	ang=ang+120;
-	if(ang>=360)ang-=360;
-	draw_line_img(nx1,ny1,nx2,ny2,0);
-	draw_line_img(nx2,ny2,nx3,ny3,0);
-	draw_line_img(nx3,ny3,nx1,ny1,0);
 }
 void skip_space()							//skip_space space and enter
 {	while(l<len&&(com[l]==' '||com[l]=='\n'||com[l]=='\r'||com[l]=='\t'))l++;
@@ -479,7 +438,6 @@ void getcomm()
 			    ny+=(x>>8)*Sin[ang]>>8;
             }
 			if(is_down)draw_line(tmpx+32768>>16,tmpy+32768>>16,nx+32768>>16,ny+32768>>16,col);
-			reflesh();
 			return;
 		}
 		else if(com[l]=='b'&&com[l+1]=='k')
@@ -496,7 +454,6 @@ void getcomm()
 			    ny-=(x>>8)*Sin[ang]>>8;
             }
 			if(is_down)draw_line(tmpx+32768>>16,tmpy+32768>>16,nx+32768>>16,ny+32768>>16,col);
-			reflesh();
 			return;
 		}
 		else if(com[l]=='r'&&com[l+1]=='t')
@@ -506,7 +463,6 @@ void getcomm()
 			ang-=(x>>16);
 			while(ang<0)ang+=360;
 			while(ang>=360)ang-=360;
-			reflesh();
 			return;
 		}
 		else if(com[l]=='l'&&com[l+1]=='t')
@@ -516,7 +472,6 @@ void getcomm()
 			ang+=(x>>16);
 			while(ang<0)ang+=360;
 			while(ang>=360)ang-=360;
-			reflesh();
 			return;
 		}
 		else if(com[l]=='i'&&com[l+1]=='f')
