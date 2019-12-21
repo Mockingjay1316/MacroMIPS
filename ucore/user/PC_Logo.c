@@ -26,6 +26,24 @@ int Mx,My,Map[1234][1234],img[1234][1234];
 int abs(int x)
 {   return x>0?x:-x;
 }
+int getsign(int x)
+{	return x<0?1:0;
+}
+int division(int a, int b)//https://blog.csdn.net/ojshilu/article/details/11179911
+{	if(b==0)return 0;
+	int flag=1;
+	if(getsign(a)==getsign(b))flag=0;
+	a=abs(a);
+	b=abs(b);
+	int n=0;
+	a=a-b;
+	while(a>=0)
+	{	n=n+1;
+		a=a-b;
+	}
+	if(flag)n=-n;
+	return n;
+}
 void op()
 {	printf("\e[1;1H\e[2J");                        //把输入移至第一行
     int i,j,k,l;
@@ -35,7 +53,7 @@ void op()
 			for(k=0;k<10;k++)
 				for(l=0;l<10;l++)
 					tmp+=Map[i+k][j-l];
-			tmp/=100;
+			tmp=division(tmp,100);//tmp/=100;
 			if(tmp!=255)printf("#");
 			else printf(" ");
 		}
@@ -182,7 +200,7 @@ void paint_img(int x,int y,int z)
 }
 void draw_line(int x0,int y0,int x1,int y1,int z)
 {	int i,x,y,dx,dy,e;
-	x0+=Mx/2,y0+=My/2,x1+=Mx/2,y1+=My/2;
+	x0+=Mx>>1,y0+=My>>1,x1+=Mx>>1,y1+=My>>1;
 	if (abs(x1-x0)>=abs(y1-y0))
 	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dx;
 		x=x0,y=y0;
@@ -204,7 +222,7 @@ void draw_line(int x0,int y0,int x1,int y1,int z)
 }
 void draw_line_img(int x0,int y0,int x1,int y1,int z)
 {	int i,x,y,dx,dy,e;
-	x0+=Mx/2,y0+=My/2,x1+=Mx/2,y1+=My/2;
+	x0+=Mx>>1,y0+=My>>1,x1+=Mx>>1,y1+=My>>1;
 	if (abs(x1-x0)>=abs(y1-y0))
 	{	dx=abs(x1-x0),dy=abs(y1-y0),e=-dx;
 		x=x0,y=y0;
@@ -302,7 +320,7 @@ int getnumber()						//parse a int or variable(start at l)
 }
 int getres(int a,int x,int b)
 {	if(x==8)return (a>>8)*(b>>8);
-	if(x==9)return a/(b>>16);
+	if(x==9)return division(a,b>>16);//a/(b>>16);
 	if(x==16)return a+b;
 	if(x==17)return a-b;
 	if(x==24)return a>=b?1:0;
