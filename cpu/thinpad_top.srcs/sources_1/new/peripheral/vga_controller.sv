@@ -24,19 +24,32 @@ module vga_controller (
     output  logic       video_de            //行数据有效信号，用于区分消隐区
 );
 
+// 0x82000000 - 0x820752ff      frame buffer data
+// 0x82075300                   control reg
+// 0x82080000 - 0x8208012c      tower map
+
 vga_mode_t vga_mode;
 
 always @(posedge peri_clk) begin
     if (rst) begin
         vga_mode <= VGA_CLI;
     end
+    if (data_addr == 32'h82075300) begin        //写控制寄存器
+        case (data_write[7:0])
+            8'd0:       vga_mode <= VGA_CLI;
+            8'd1:       vga_mode <= VGA_TOWER;
+            default:    vga_mode <= VGA_CLI;
+        endcase
+    end
 end
 
 logic[11:0] hdata, vdata, wr_hdata, wr_vdata;
 logic[7:0] vga_out_data, wr_data;
-logic wr_en, cli_wr_en;
+logic wr_en, cli_wr_en, tower_wr_en;
 logic[11:0] cli_hdata, cli_vdata;
 logic[7:0] cli_data_out;
+logic[11:0] tower_hdata, tower_vdata;
+logic[7:0] tower_data_out;
 //assign video_red = hdata < 266 ? 3'b111 : 0; //红色竖条
 //assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0; //绿色竖条
 //assign video_blue = hdata >= 532 ? 2'b11 : 0; //蓝色竖条
@@ -46,14 +59,23 @@ assign video_green = vga_out_data[4:2];
 assign video_blue  = vga_out_data[1:0];
 
 always_comb begin
+    cli_wr_en   <= 1'b0;
+    tower_wr_en <= 1'b0;
     case(vga_mode)
         VGA_CLI: begin
             wr_en <= 1'b1;
             wr_hdata <= cli_hdata;
             wr_vdata <= cli_vdata;
             wr_data  <= cli_data_out;
-            cli_wr_en <= data_write_en;
-        end
+            cli_wr_en <= (data_write_en && data_addr == 32'hbfd003f8);
+            end
+        VGA_TOWER: begin
+            wr_en <= 1'b1;
+            wr_hdata <= tower_hdata;
+            wr_vdata <= tower_vdata;
+            wr_data  <= tower_data_out;
+            tower_wr_en <= (data_write_en && data_addr >= 32'h82080000 && data_addr < 32'h8208012c);
+            end
         default: begin end
     endcase
 end
@@ -88,6 +110,18 @@ cmd_buff cmd_buff_r (
     .cli_hdata,
     .cli_vdata,
     .data_out(cli_data_out)
+);
+
+gtower_buff gtower_buff_r (
+    .clk(main_shift_clk),
+    .rst,
+    .wr_clk(main_shift_clk),
+    .wr_en(tower_wr_en),
+    .wdata(data_write),
+    .waddr(data_addr),
+    .tower_hdata,
+    .tower_vdata,
+    .data_out(tower_data_out)
 );
 
 endmodule
