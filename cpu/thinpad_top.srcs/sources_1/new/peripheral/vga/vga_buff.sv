@@ -1,7 +1,7 @@
 `include "common_defs.svh"
 
 module vga_buff (
-    input   logic           clk,
+    input   logic           clk, r_clk,
     input   logic[11:0]     hdata, vdata,
     input   logic[11:0]     wr_hdata, wr_vdata,
     input   logic           wr_en,
@@ -12,7 +12,7 @@ module vga_buff (
 logic[19:0] rloc, wloc;
 assign rloc = hdata + 800 * vdata;
 assign wloc = wr_hdata + 800 * wr_vdata;
-
+/*
 logic[63:0] rdata, wdata, read_wdata;
 
 frame_buff f_buf (
@@ -48,5 +48,17 @@ always_comb begin
         3'b111: wdata[63:56] <= wr_data;
     endcase
 end
+*/
+
+blk_frame_buff f_buff (
+    .addra(wloc),
+    .clka(clk),
+    .dina(wr_data),
+    .ena(1'b1),
+    .wea(wr_en),
+    .addrb(rloc),
+    .clkb(r_clk),
+    .doutb(data_out)
+);
 
 endmodule
