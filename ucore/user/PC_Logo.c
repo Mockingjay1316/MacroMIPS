@@ -49,12 +49,16 @@ void op()
     int i,j,k,l;
     for(j=My-1;j>=0;j-=10){
 		for(i=0;i<Mx;i+=10)
-		{	int tmp=0;
+		{	int tmp=255;
 			for(k=0;k<10;k++)
 				for(l=0;l<10;l++)
-					tmp+=Map[i+k][j-l];
-			tmp=division(tmp,100);//tmp/=100;
-			if(tmp!=255)printf("#");
+					tmp=tmp<Map[i+k][j-l]?tmp:Map[i+k][j-l];
+			//tmp=division(tmp,100);//tmp/=100;
+			if(tmp==0)printf("#");
+			else if(tmp==1)printf("$");
+			else if(tmp==2)printf("&");
+			else if(tmp==3)printf("*");
+			else if(tmp==4)printf(".");
 			else printf(" ");
 		}
 		printf("\n");
@@ -535,6 +539,16 @@ void getcomm()
 			int x;
 			x=getexpr();
 			variable_value[tmp][topv[tmp]-1]=x;
+			return;
+		}
+	}
+	else if(tmp==5)
+	{	if(com[l]=='c'&&com[l+1]=='o'&&com[l+2]=='l'&&com[l+3]=='o'&&com[l+4]=='r')
+		{	l+=5;
+			skip_space();
+			int x;
+			x=getexpr();
+			col=(x>>16);
 			return;
 		}
 	}
