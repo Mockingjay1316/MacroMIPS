@@ -59,22 +59,20 @@ assign video_green = vga_out_data[4:2];
 assign video_blue  = vga_out_data[1:0];
 
 always_comb begin
-    cli_wr_en   <= 1'b0;
-    tower_wr_en <= 1'b0;
+    cli_wr_en <= (data_write_en && data_addr == 32'hbfd003f8);
+    tower_wr_en <= (data_write_en && data_addr >= 32'h82080000 && data_addr < 32'h8208012c);
     case(vga_mode)
         VGA_CLI: begin
             wr_en <= 1'b1;
             wr_hdata <= cli_hdata;
             wr_vdata <= cli_vdata;
             wr_data  <= cli_data_out;
-            cli_wr_en <= (data_write_en && data_addr == 32'hbfd003f8);
             end
         VGA_TOWER: begin
             wr_en <= 1'b1;
             wr_hdata <= tower_hdata;
             wr_vdata <= tower_vdata;
             wr_data  <= tower_data_out;
-            tower_wr_en <= (data_write_en && data_addr >= 32'h82080000 && data_addr < 32'h8208012c);
             end
         default: begin end
     endcase
