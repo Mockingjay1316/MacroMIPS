@@ -350,9 +350,13 @@ void init_monsters() {
 }
 
 void print_conversation(char* words) {
-    screen_clear();
-    move_print(11);
-    printf("%s", words);
+    // screen_clear();
+    // move_print(11);
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n%s", words);
+    printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    *ucore_status = 0;
+    get_user_input();
+    *ucore_status = 1;
 }
 
 void import() {
@@ -800,7 +804,7 @@ You cannot reach higher areas without defeating the leader of the area.");
         print_conversation("Merchant: In the shop, you better choose to increase your defense. \n\
 Increase your attack only if the attack is lower than the enemy's defense");
     }
-    get_user_input();
+    // get_user_input();
 }
 
 void talk_to_old_man() {
@@ -815,7 +819,7 @@ only when you defeat its guard, it will open automatically.");
         print_conversation("Old man: Talk to the merchant after you buy his goods. \n \
 He will tell you some important information.");
     }
-    get_user_input();
+    // get_user_input();
 }
 
 void use_prop(int id) {
@@ -829,8 +833,10 @@ void use_prop(int id) {
         if (layer > 1)
             update_layer(-1);
     } else if (id == '3') {       // 怪物手册
-        screen_clear();
-        move_print(5);
+        // screen_clear();
+        // move_print(5);
+        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        *ucore_status = 0;
         for (int i = 0; i < 5; ++i) {
             int hp_loss = compute_hp_loss(monsters[i]);
             Monster monster = monsters[i];
@@ -840,7 +846,10 @@ void use_prop(int id) {
             else
                 printf("Cannot attack.\n\n");
         }
+        printf("\n\n\n\n\n\n\n\n\n\n\n");
         get_user_input();
+        *ucore_status = 1;
+        
     }
 }
 
@@ -852,7 +861,7 @@ void meet_king(int x, int y) {
         sleep(500);
         print_conversation("THE DEVIL: Welcome to the Magic Tower, you are the 100th challenger. If you can defeat all my men, I will fight you one-on-one. \n\
 But now, YOU MUST OBEY MY ORDER!!!!!");
-        get_user_input();
+        // get_user_input();
         print_blue(x - 1, y, "士");
         print_blue(x + 1, y, "士");
         print_blue(x, y - 1, "士");
@@ -864,7 +873,7 @@ But now, YOU MUST OBEY MY ORDER!!!!!");
         draw();
         sleep(500);
         print_conversation("What?");
-        get_user_input();
+        // get_user_input();
         // char buf[10];
         // strcpy(buf, map[layer-1][y][x]);
         // print_yellow(x, y, "✦ ");
@@ -894,9 +903,9 @@ But now, YOU MUST OBEY MY ORDER!!!!!");
         print_conversation("");
         sleep(1000);
         print_conversation("........");
-        get_user_input();
+        // get_user_input();
         print_conversation("........Hey! WAKE UP!");
-        get_user_input();
+        // get_user_input();
         update_layer(-1);
         strcpy(map[layer-1][hero.y][hero.x], "  ");
         raw_map[layer-1][hero.y][hero.x] = ROAD;
@@ -916,11 +925,11 @@ But now, YOU MUST OBEY MY ORDER!!!!!");
         print_conversation("Thief: Are you awake? You were still in a coma when you arrived at the prison, \n\
 and the guard threw you into my room. But you are very lucky, \n\
 I just dug up a secret escape.. Let's escape together.");
-        get_user_input();
+        // get_user_input();
         print_conversation("Thief: Your sword and shield have been taken away by the guard. You must find your weapon first. \n\
 I know the sword is on the 5th floor and the shield is on the 9th floor. You better get them first. \n\
 I have something else to do now and can't help you, bye.");
-        get_user_input();
+        // get_user_input();
         strcpy(map[layer-1][hero.y-1][hero.x], "  ");
         strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
         raw_map[layer-1][hero.y-1][hero.x] = ROAD;
@@ -987,8 +996,8 @@ bool move() {
     case BAT:
         if (!battle(raw_map[layer-1][y_result][x_result])) {
             print_conversation("Insufficient hp\n");
-            get_user_input();
-            move_print(19);
+            // get_user_input();
+            // move_print(19);
             can_move = false;
         } else {
             ret = true;
@@ -1001,8 +1010,8 @@ bool move() {
     case YELLOW_GATE:
         if (!open_door(raw_map[layer-1][y_result][x_result])){
             print_conversation("Insufficient number of keys\n");
-            get_user_input();
-            move_print(19);
+            // get_user_input();
+            // move_print(19);
             can_move = false;
         } else {
             can_move = false;
@@ -1137,6 +1146,12 @@ int main() {
         }
         if (input == 'q')
             break;
+        if (input == 'e') {
+            *ucore_status = 0;
+            get_user_input();
+            *ucore_status = 1;
+            continue;
+        }
         if (input == 0)
             move();
         else if (input == '1' || input == '2' || input == '3')
