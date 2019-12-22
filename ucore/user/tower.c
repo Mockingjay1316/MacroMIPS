@@ -563,10 +563,7 @@ void update_vga() {
     }
 }
 
-void draw(){
-    update_vga();
-    screen_clear();
-    move_print(1);
+void print_info() {
     printf("HP:%d    Attack:%d    Defence:%d    Money:%d    Layer:%d\nYellow key:%d    Blue key:%d    Red key:%d\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
             hero.blue_key_num, hero.red_key_num);
@@ -578,6 +575,13 @@ void draw(){
         printf("Armor: Shield\n");
     else
         printf("Armor: None\n");
+}
+
+void draw(){
+    update_vga();
+    screen_clear();
+    move_print(1);
+    print_info();
     print_prop();
     // printf("\n");
     // for (int y = 0; y < BOARD_SIZE; ++y) {
@@ -1148,6 +1152,9 @@ int main() {
             break;
         if (input == 'e') {
             *ucore_status = 0;
+            printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            print_info();
+            printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             get_user_input();
             *ucore_status = 1;
             continue;
