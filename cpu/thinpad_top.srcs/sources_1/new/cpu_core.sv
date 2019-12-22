@@ -43,7 +43,7 @@ logic if_after_branch, id_after_branch, is_excep, is_eret, is_tlb_refill;
 logic[`DATA_WIDTH-1:0] id_operand1, id_operand2, ex_operand1, ex_operand2;
 alu_op_t id_alu_op, ex_alu_op;
 logic[`REGID_WIDTH-1:0] id_reg_waddr, ex_reg_waddr, mem_reg_waddr, wb_reg_waddr;
-logic id_reg_write_en, ex_reg_write_en, mem_reg_write_en, wb_reg_write_en;
+logic id_reg_write_en, ex_reg_write_en, mem_reg_write_en, mem_mem_reg_write_en, wb_reg_write_en;
 logic[`REGID_WIDTH-1:0] id_cp0_waddr, ex_cp0_waddr, mem_cp0_waddr, wb_cp0_waddr;
 logic[2:0] id_cp0_wsel, ex_cp0_wsel, mem_cp0_wsel, wb_cp0_wsel;
 logic id_cp0_write_en, ex_cp0_write_en, mem_cp0_write_en, wb_cp0_write_en;
@@ -279,7 +279,7 @@ ex_mem_reg ex_mem_reg_r (
     .ex_mem_ctrl_signal(ex_mem_ctrl_signal),
     .mem_alu_result(mem_alu_result),
     .mem_reg_waddr(mem_reg_waddr),
-    .mem_reg_write_en(mem_reg_write_en),
+    .mem_reg_write_en(mem_mem_reg_write_en),
     .mem_mem_data(mem_mem_data),
     .mem_cp0_waddr,
     .mem_cp0_write_en,
@@ -331,6 +331,7 @@ memory_unit mmu (
 assign mem_reg_wdata = mem_mem_ctrl_signal[4] ? mem_rdata : mem_alu_result;
 assign mem_ctrl_signal = (data_mmu_result.miss | ~data_mmu_result.valid) ? 5'b00000 : mem_mem_ctrl_signal;
 assign mem_wdata = mem_mem_data;
+assign mem_reg_write_en = ((data_mmu_result.miss | ~data_mmu_result.valid) & mem_mem_ctrl_signal[4]) ? 1'b0 : mem_mem_reg_write_en;
 
 always @(*) begin
     if (mem_addr >= 32'hbfd003f8) begin

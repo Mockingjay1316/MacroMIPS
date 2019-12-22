@@ -4,14 +4,15 @@ module vga_buff (
     input   logic           clk, r_clk,
     input   logic[11:0]     hdata, vdata,
     input   logic[11:0]     wr_hdata, wr_vdata,
-    input   logic           wr_en,
+    input   logic[19:0]     wloc_in,
+    input   logic           wr_en, loc_from_in,
     input   logic[7:0]      wr_data,
     output  logic[7:0]      data_out
 );
 
 logic[19:0] rloc, wloc;
 assign rloc = hdata + 800 * vdata;
-assign wloc = wr_hdata + 800 * wr_vdata;
+assign wloc = loc_from_in ? wloc_in : wr_hdata + 800 * wr_vdata;
 /*
 logic[63:0] rdata, wdata, read_wdata;
 
