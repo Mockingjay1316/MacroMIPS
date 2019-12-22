@@ -50,25 +50,29 @@ task judge(input integer fans, input integer cycle, input string out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
 	end else begin
-		//$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
+		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
 logic[4:0] reg_addr;
-logic[31:0] reg_data;
+logic[31:0] reg_data, write_data, cp0_wdata;
 logic[63:0] hilo;
-logic hilo_write_en;
+logic hilo_write_en, reg_write_en, cp0_write_en, mem_write_en;
+logic read_en;
+logic[4:0] cp0_waddr;
 
 assign reg_addr = cpu.wb_reg_waddr;
 assign reg_data = cpu.wb_reg_wdata;
+assign reg_write_en = cpu.reg_file_r.write_en;
+
 assign hilo = cpu.hilo_reg_r.hilo_op.hilo_wval;
 assign hilo_write_en = cpu.hilo_reg_r.hilo_op.hilo_write_en;
 
-logic write_en;
-logic read_en;
-logic[31:0] write_data;
+assign cp0_write_en = cpu.cp0_reg_r.write_en;
+assign cp0_wdata = cpu.cp0_reg_r.wdata;
+assign cp0_waddr = cpu.cp0_reg_r.waddr;
 
-assign write_en = mem_ctrl_signal[3];
+assign mem_write_en = mem_ctrl_signal[3];
 assign load_from_en = mem_ctrl_signal[4];
 
 
@@ -103,12 +107,17 @@ task unittest(
 			$sformat(out, "$hilo=0x%x%x", hilo[31:0], hilo[63:32]);
 			judge(fans, count, out);
 		end else begin
+		if(cp0_write_en)
+		begin 
+			$sformat(out, "cp%0d=0x%x", cp0_waddr, cp0_wdata);
+			judge(fans, count, out);
+		end else
 		if (reg_addr && reg_data)
 	    begin
 			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
 			judge(fans, count, out);
-		end
-		if(write_en) 
+		end else
+		if(mem_write_en) 
 		begin
 			$sformat(out, "[0x%x]=0x%x", mem_addr[15:0], mem_wdata);
 			judge(fans, count, out);
@@ -121,7 +130,7 @@ endtask
 
 initial begin
     rst = 1'b1;
-    unittest("inst_ori");
+    /*unittest("inst_ori");
 	rst = 1'b1;
 	unittest("inst_logic");
 	rst = 1'b1;
@@ -136,6 +145,8 @@ initial begin
 	unittest("inst_branch");
 	rst = 1'b1;
 	unittest("inst_jump");
+	rst = 1'b1;
+	unittest("cp0_test");*/
 	$finish;
 end
 endmodule
