@@ -38,6 +38,7 @@ always @(posedge peri_clk) begin
         case (data_write[7:0])
             8'd0:       vga_mode <= VGA_CLI;
             8'd1:       vga_mode <= VGA_TOWER;
+            8'd2:       vga_mode <= VGA_PCLOGO;
             default:    vga_mode <= VGA_CLI;
         endcase
     end
@@ -46,10 +47,12 @@ end
 logic[11:0] hdata, vdata, wr_hdata, wr_vdata;
 logic[7:0] vga_out_data, wr_data;
 logic wr_en, cli_wr_en, tower_wr_en;
+logic loc_from_in;
 logic[11:0] cli_hdata, cli_vdata;
 logic[7:0] cli_data_out;
 logic[11:0] tower_hdata, tower_vdata;
 logic[7:0] tower_data_out;
+logic[19:0] wloc_in;
 //assign video_red = hdata < 266 ? 3'b111 : 0; //红色竖条
 //assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0; //绿色竖条
 //assign video_blue = hdata >= 532 ? 2'b11 : 0; //蓝色竖条
@@ -61,6 +64,7 @@ assign video_blue  = vga_out_data[1:0];
 always_comb begin
     cli_wr_en <= (data_write_en && data_addr == 32'hbfd003f8);
     tower_wr_en <= (data_write_en && data_addr >= 32'h82080000 && data_addr < 32'h8208012c);
+    loc_from_in <= 1'b0;
     case(vga_mode)
         VGA_CLI: begin
             wr_en <= 1'b1;
@@ -73,6 +77,12 @@ always_comb begin
             wr_hdata <= tower_hdata;
             wr_vdata <= tower_vdata;
             wr_data  <= tower_data_out;
+            end
+        VGA_PCLOGO: begin
+            wr_en <= data_write_en && (data_addr >= 32'h82000000 && data_addr < 32'h82075300);
+            loc_from_in <= 1'b1;
+            wloc_in  <= data_addr[19:0];
+            wr_data  <= data_write[7:0];
             end
         default: begin end
     endcase
@@ -93,7 +103,9 @@ vga_buff v_buff (
     .hdata,
     .vdata,
     .data_out(vga_out_data),
+    .loc_from_in,
     .wr_en,
+    .wloc_in,
     .wr_hdata,
     .wr_vdata,
     .wr_data
