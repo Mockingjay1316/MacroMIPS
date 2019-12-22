@@ -50,7 +50,7 @@ start:
 	la	sp, _stack
 	la	gp, _gp
 
-	bal	shell			/* Get current execute address */
+	jal	shell			/* Get current execute address */
 	nop
 loop:
 	j loop

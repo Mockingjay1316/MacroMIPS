@@ -15,7 +15,7 @@ module sram_controller (
     output  logic       mem_stall,
 
     //BaseRAM信号
-    inout   wire[31:0] base_ram_data,      //BaseRAM数据，低8位与CPLD串口控制器共享
+    inout   wire[31:0]  base_ram_data,      //BaseRAM数据，低8位与CPLD串口控制器共享
     output  logic[19:0] base_ram_addr,      //BaseRAM地址
     output  logic[3:0]  base_ram_be_n,      //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
     output  logic       base_ram_ce_n,      //BaseRAM片选，低有效

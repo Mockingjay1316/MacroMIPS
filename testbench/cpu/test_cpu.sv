@@ -20,12 +20,10 @@ initial begin
     end
 end
 
-integer index = 0;
 initial begin
 #20;
 forever begin
-    index = pc[15:0]/4;
-    instr = inst_mem[index];
+    instr = inst_mem[pc[13:2]];
     #20;
     end
 end
@@ -43,18 +41,16 @@ cpu_core cpu(
     .mem_stall(mem_stall)
 );
 
-task judge(input integer fans, input integer cycle, input string out, input check_cyc);
-	string ans, out_with_cyc;
+task judge(input integer fans, input integer cycle, input string out);
+	string ans;
 	$fscanf(fans, "%s\n", ans);
-	$sformat(out_with_cyc, "[%0d]%s", cycle, out);
-	if(check_cyc) out = out_with_cyc;
 	if(out != ans && ans != "skip")
 	begin
 		$display("[%0d] %s", cycle, out);
 		$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
 	end else begin
-		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
+		//$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
@@ -77,15 +73,14 @@ assign load_from_en = mem_ctrl_signal[4];
 
 
 task unittest(
-	input [128*8 - 1:0] file_name,
-	input check_cyc,
-	input fpu
+	input [128*8 - 1:0] file_name
 );
+	//
 	integer i, fans, count, mem_index = 0;
 	integer begin_count = 0;
 	string ans, out, info;
 	for(i = 0; i < $size(inst_mem); i = i + 1)
-	inst_mem[i] = 32'h0;
+		inst_mem[i] = 32'h0;
 	begin
 		$readmemh({ `PATH_PREFIX1, file_name, ".mem" }, inst_mem);
 	end
@@ -106,41 +101,41 @@ task unittest(
 		if (hilo_write_en)
 		begin
 			$sformat(out, "$hilo=0x%x%x", hilo[31:0], hilo[63:32]);
-			judge(fans, count, out, check_cyc);
+			judge(fans, count, out);
 		end else begin
 		if (reg_addr && reg_data)
 	    begin
 			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
-			judge(fans, count, out, check_cyc);
+			judge(fans, count, out);
 		end
 		if(write_en) 
 		begin
 			$sformat(out, "[0x%x]=0x%x", mem_addr[15:0], mem_wdata);
-			judge(fans, count, out, check_cyc);
+			judge(fans, count, out);
 		end 
 		end
 		
 	end
-	$display("[OK] %0s\n", file_name);
+	$display("%0s pass!\n", file_name);
 endtask
 
 initial begin
     rst = 1'b1;
-    unittest("inst_ori",0,0);
+    unittest("inst_ori");
 	rst = 1'b1;
-	unittest("inst_logic", 0, 0);
+	unittest("inst_logic");
 	rst = 1'b1;
-	unittest("inst_ori", 0, 0);
+	unittest("inst_ori");
 	rst = 1'b1;
-	unittest("inst_arith", 0, 0);
+	unittest("inst_arith");
 	rst = 1'b1;
-	unittest("inst_shift", 0, 0);
+	unittest("inst_shift");
 	rst = 1'b1;
-	unittest("inst_multi", 0, 0);
+	unittest("inst_multi");
 	rst = 1'b1;
-	//unittest("inst_mem_aligned", 0, 0);
-	//rst = 1'b1;
-	//unittest("across_tlb1",0,0);
+	unittest("inst_branch");
+	rst = 1'b1;
+	unittest("inst_jump");
 	$finish;
 end
 endmodule

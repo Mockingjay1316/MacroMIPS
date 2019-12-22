@@ -9,7 +9,6 @@ _start:
 	la   $11, 0x2        # ans: $11=0x00000002
 	la   $12, 0x82       # ans: $12=0x00000082
 	# $10 = VPN2, $11 = FPN1, $12 = FPN2
-	mtc0 $10, $10       # entry_hi
 	mtc0 $11, $2        # entry_lo0
 	mtc0 $12, $3        # entry_lo1
 	mtc0 $0, $0         # index

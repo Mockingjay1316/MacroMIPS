@@ -4,77 +4,36 @@
 	.set nomacro
 	.set noat
 _start:
-	ori $1, $0, 0xf000  # ans: $1=0x0000f000
-	j   j1
-	nop
-	ori $1, $1, 0x00f0  # not reached
-	ori $1, $1, 0x000f  # not reached
+	ori $1, $0, 0x0001   # ans: $1=0x00000001
+	j 0x20 			     # ans: skip
+	ori $1, $0, 0x0002 	 # ans: $1=0x00000002
+	ori $1, $0, 0x1111 
+	ori $1, $0, 0x1100
 
-j1:
-	.org 0x20
-	ori $1, $1, 0x0010  # ans: $1=0x0000f010
-	ori $3, $0, 0x0005  # ans: $3=0x00000005
-	jal j_with_link31   # ans: skip
+.org 0x20 
+	ori $1, $0, 0x0003	 # ans: $1=0x00000003
+	jal 0x40             # ans: $31=0x8000002c
+	ori $1, $0, 0x0005   # ans: $1=0x00000005
+	ori $1, $0, 0x0006   
+	j 0x60 				
 	nop
-	jr  $5
-	nop
-	# ans: $2=0x00000001
+
+.org 0x40
+	jalr $2, $31 		 # ans: $2=0x80000048
+	or $1, $2, $0 		 # ans: $1=0x80000048
+	# ans: $1=0x00000006
 	# ans: skip
-	# ans: $2=0x00000003
-	# ans: $2=0x00000005
-
-j2:
-	bne $2, $3, j3
-	nop
-	bgezal $2, j3 # ans: skip
-	# ans: $2=0x80000000
-	nop
-	sra    $2, 0x1 # ans: $2=0xc0000000
-	bltzal $2, j3  # ans: skip
-	# ans: $2=0x80000000
-	nop
-	bgezal $2, j3 # ans: skip
-	nop
-	bgez $2, j4
-	ori $2, $0, 0x0000 # ans: $2=0x00000000
-	jr $31
-	nop
-	# ans: $2=0x00000000
-
-j4:
-	bltz $2, j3  # no jump
-	bne $2, $1, j4
-	ori $2, $1, 0x0000  # ans: $2=0x0000f010
-	# ans: $2=0x0000ff10
-
-	blez $2, j4
-	lui $2, 0x0000  # ans: $2=0x00000000
-	blez $2, j5
-	nop
-	ori $2, $2, 0xffac
-
-j5:
-	bgtz $2, j5
-	lui $2, 0x0fff  # ans: $2=0x0fff0000
-j6:
-	bgtz $2, j6
-	lui $2, 0x0000  # ans: $2=0x00000000
-	# ans: $2=0x00000000
-	lui $3, 0xffff # ans: $3=0xffff0000
-# [END]
+	ori $1, $0, 0x0004   
+	ori $1, $0, 0x000b   
+	j 0x80 
 	nop
 
-j3:
-	lui $2, 0x8000
-	jr $31
-	nop
+.org 0x60
+	ori $1, $0, 0x0009   # ans: $1=0x00000009
+	jr $2 				 # skip
+	ori $1, $0, 0x0008 	 # ans: $1=0x00000008
+	# ans: $1=0x00000004
+	# ans: $1=0x0000000b
 
-j_with_link31:
-	addi $2, $2, 0x0001
-	jalr $5, $31
-	nop
-	addi $2, $2, 0x0002
-	beq  $2, $3, j2
-	nop
-	jr  $5
+.org 0x80
 	nop

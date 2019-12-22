@@ -3,63 +3,62 @@ module tb;
 
 wire clk_50M, clk_11M0592;
 
-reg clock_btn = 0;         //BTN5手动时钟按钮开关，带消抖电路，按下时为1
-reg reset_btn = 0;         //BTN6手动复位按钮开关，带消抖电路，按下时为1
+reg clock_btn = 0;         //BTN5手动时钟按钮�?关，带消抖电路，按下时为1
+reg reset_btn = 0;         //BTN6手动复位按钮�?关，带消抖电路，按下时为1
 
 reg[3:0]  touch_btn;  //BTN1~BTN4，按钮开关，按下时为1
-reg[31:0] dip_sw;     //32位拨码开关，拨到“ON”时为1
+reg[31:0] dip_sw;     //32位拨码开关，拨到“ON”时�?1
 
 wire[15:0] leds;       //16位LED，输出时1点亮
 wire[7:0]  dpy0;       //数码管低位信号，包括小数点，输出1点亮
 wire[7:0]  dpy1;       //数码管高位信号，包括小数点，输出1点亮
 
-wire txd;  //直连串口发送端
-logic rxd;  //直连串口接收端
+wire txd;  //直连串口发�?�端
+logic rxd;  //直连串口接收�?
 
-wire[31:0] base_ram_data; //BaseRAM数据，低8位与CPLD串口控制器共享
+wire[31:0] base_ram_data; //BaseRAM数据，低8位与CPLD串口控制器共�?
 wire[19:0] base_ram_addr; //BaseRAM地址
-wire[3:0] base_ram_be_n;  //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
-wire base_ram_ce_n;       //BaseRAM片选，低有效
-wire base_ram_oe_n;       //BaseRAM读使能，低有效
-wire base_ram_we_n;       //BaseRAM写使能，低有效
+wire[3:0] base_ram_be_n;  //BaseRAM字节使能，低有效。如果不使用字节使能，请保持�?0
+wire base_ram_ce_n;       //BaseRAM片�?�，低有�?
+wire base_ram_oe_n;       //BaseRAM读使能，低有�?
+wire base_ram_we_n;       //BaseRAM写使能，低有�?
 
 wire[31:0] ext_ram_data; //ExtRAM数据
 wire[19:0] ext_ram_addr; //ExtRAM地址
-wire[3:0] ext_ram_be_n;  //ExtRAM字节使能，低有效。如果不使用字节使能，请保持为0
-wire ext_ram_ce_n;       //ExtRAM片选，低有效
-wire ext_ram_oe_n;       //ExtRAM读使能，低有效
-wire ext_ram_we_n;       //ExtRAM写使能，低有效
+wire[3:0] ext_ram_be_n;  //ExtRAM字节使能，低有效。如果不使用字节使能，请保持�?0
+wire ext_ram_ce_n;       //ExtRAM片�?�，低有�?
+wire ext_ram_oe_n;       //ExtRAM读使能，低有�?
+wire ext_ram_we_n;       //ExtRAM写使能，低有�?
 
-wire [22:0]flash_a;      //Flash地址，a0仅在8bit模式有效，16bit模式无意义
+wire [22:0]flash_a;      //Flash地址，a0仅在8bit模式有效�?16bit模式无意�?
 wire [15:0]flash_d;      //Flash数据
 wire flash_rp_n;         //Flash复位信号，低有效
-wire flash_vpen;         //Flash写保护信号，低电平时不能擦除、烧写
-wire flash_ce_n;         //Flash片选信号，低有效
-wire flash_oe_n;         //Flash读使能信号，低有效
-wire flash_we_n;         //Flash写使能信号，低有效
-wire flash_byte_n;       //Flash 8bit模式选择，低有效。在使用flash的16位模式时请设为1
+wire flash_vpen;         //Flash写保护信号，低电平时不能擦除、烧�?
+wire flash_ce_n;         //Flash片�?�信号，低有�?
+wire flash_oe_n;         //Flash读使能信号，低有�?
+wire flash_we_n;         //Flash写使能信号，低有�?
+wire flash_byte_n;       //Flash 8bit模式选择，低有效。在使用flash�?16位模式时请设�?1
 
-wire uart_rdn;           //读串口信号，低有效
-wire uart_wrn;           //写串口信号，低有效
-wire uart_dataready;     //串口数据准备好
-wire uart_tbre;          //发送数据标志
-wire uart_tsre;          //数据发送完毕标志
+wire uart_rdn;           //读串口信号，低有�?
+wire uart_wrn;           //写串口信号，低有�?
+wire uart_dataready;     //串口数据准备�?
+wire uart_tbre;          //发�?�数据标�?
+wire uart_tsre;          //数据发�?�完毕标�?
 
-//Windows需要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
-parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\ucore-thumips\\obj\\ucore-kernel-initrd.bin"; //BaseRAM初始化文件，请修改为实际的绝对路径
-//parameter BASE_RAM_INIT_FILE = "D:\\Coding\\Computer_Arch\\MarcoMips\\cpu\\thinpad_top.srcs\\sim_1\\kernel_y_y_n.bin";
-parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";    //ExtRAM初始化文件，请修改为实际的绝对路径
-parameter FLASH_INIT_FILE = "/tmp/kernel.elf";    //Flash初始化文件，请修改为实际的绝对路径
+//Windows�?要注意路径分隔符的转义，例如"D:\\foo\\bar.bin"
+parameter BASE_RAM_INIT_FILE = "Z:\\Desktop\\MarcoMips\\testbench\\cpu\\longxing_testcase\\perf_test\\obj\\bitcount\\main.bin"; //BaseRAM初始化文件，请修改为实际的绝对路�?
+parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";    //ExtRAM初始化文件，请修改为实际的绝对路�?
+parameter FLASH_INIT_FILE = "/tmp/kernel.elf";    //Flash初始化文件，请修改为实际的绝对路�?
 
 //assign rxd = 1'b1; //idle state
 logic ext_uart_busy, ext_uart_start;
 logic[7:0] ext_uart_tx;
-async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发送模块，9600无检验位
+async_transmitter #(.ClkFrequency(50000000),.Baud(9600)) //发�?�模块，9600无检验位
     ext_uart_t(
         .clk(dut.peri_clk),                                 //外部时钟信号
         .TxD(rxd),                                      //串行信号输出
-        .TxD_busy(ext_uart_busy),                       //发送器忙状态指示
-        .TxD_start(ext_uart_start),                     //开始发送信号
+        .TxD_busy(ext_uart_busy),                       //发�?�器忙状态指�?
+        .TxD_start(ext_uart_start),                     //�?始发送信�?
         .TxD_data(ext_uart_tx)                          //待发送的数据
     );
 
@@ -74,7 +73,7 @@ initial begin
         #100; //等待100ns
         clock_btn = 0; //松开手工时钟按钮
     end
-    // 模拟PC通过串口发送字符
+    // 模拟PC通过串口发�?�字�?
     cpld.pc_send_byte(8'h32);
     #10000;
     cpld.pc_send_byte(8'h33);
@@ -90,7 +89,7 @@ initial begin
     ext_uart_start <= 1'b0;
 end
 
-// 待测试用户设计
+// 待测试用户设�?
 thinpad_top dut(
     .clk_50M(clk_50M),
     .clk_11M0592(clk_11M0592),
@@ -129,7 +128,7 @@ thinpad_top dut(
     .flash_byte_n(flash_byte_n),
     .flash_we_n(flash_we_n)
 );
-// 时钟源
+// 时钟�?
 clock osc(
     .clk_11M0592(clk_11M0592),
     .clk_50M    (clk_50M)
@@ -201,7 +200,7 @@ initial begin
     $stop;
 end
 
-// 从文件加载 BaseRAM
+// 从文件加�? BaseRAM
 initial begin 
     reg [31:0] tmp_array[0:1048575];
     integer n_File_ID, n_Init_Size;
@@ -224,7 +223,7 @@ initial begin
     end
 end
 
-// 从文件加载 ExtRAM
+// 从文件加�? ExtRAM
 initial begin 
     reg [31:0] tmp_array[0:1048575];
     integer n_File_ID, n_Init_Size;
