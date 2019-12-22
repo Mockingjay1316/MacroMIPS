@@ -81,6 +81,41 @@
 #define PIC_YELLOW_GATE     31
 #define PIC_YELLOW_KEY      32
 
+// #define PIC_PAD             0
+// #define PIC_BAR             1
+// #define PIC_BAT             2
+// #define PIC_BLUE_BOTTLE     3
+// #define PIC_BLUE_GATE       4
+// #define PIC_BLUE_GEM        5
+// #define PIC_BLUE_KEY        6
+// #define PIC_DEVIL           7
+// #define PIC_DOWN_STAIR      8
+// #define PIC_GENERAL         9
+// #define PIC_GUARD           10
+// #define PIC_HERO            11
+// #define PIC_OLDMAN          12
+// #define PIC_RED_BOTTLE      13
+// #define PIC_RED_GATE        14
+// #define PIC_RED_GEM         15
+// #define PIC_RED_KEY         16
+// #define PIC_ROAD            17
+// #define PIC_SHIELD          18
+// #define PIC_SHOPMAN         19
+// #define PIC_SHOP_LEFT       20
+// #define PIC_SHOP_MID        21
+// #define PIC_SHOP_RIGHT      22
+// #define PIC_SKELETON        23
+// #define PIC_SLIME           24
+// #define PIC_SPECIAL_DOOR    25
+// #define PIC_SWORD           26
+// #define PIC_THIEF           27
+// #define PIC_UPDOWN          28
+// #define PIC_UP_STAIR        29
+// #define PIC_WALL            30
+// #define PIC_WIZARD          31
+// #define PIC_YELLOW_GATE     32
+// #define PIC_YELLOW_KEY      33
+
 // 道具
 #define UP_LAYER            0       // 快速上楼
 #define DOWN_LAYER          1       // 快速下楼
@@ -131,7 +166,7 @@ typedef struct Monster {
 }Monster;
 
 char map[9][BOARD_SIZE][BOARD_SIZE][MAX_SEQ_SIZE];
-char raw_map[9][BOARD_SIZE][BOARD_SIZE];
+char raw_map[9][15][20];
 bool has_prop[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 bool map_has_load[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 bool layer_visited[9] = {1, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -145,8 +180,8 @@ Hero hero = {6, 11, 0, 0, 1000, 100, 100, 4, 0, 0, 0, 1, 1};
 int layer = 1;
 int shop_cost = 20;
 bool meet = true;   // 是否要遇到大魔王
-int *ucore_status;
-int *vga_output;
+int *ucore_status = 0x82075300;
+int *vga_output = 0x82080000;
 
 void move_print(int line) {
     printf("%c[%d;%dH",27,line,1);
@@ -410,106 +445,110 @@ void print_prop() {
 }
 
 void update_vga() {
-    int *output = vga_output;
-    for (int y = 0; y < BOARD_SIZE; ++y) {
-        for (int x = 0; x < BOARD_SIZE; ++x) {
+    char *output = vga_output;
+    for (int y = 0; y < 15; ++y) {
+        for (int x = 0; x < 20; ++x) {
+            if (y >= BOARD_SIZE || x >= BOARD_SIZE) {
+                *(int*)(output++) = PIC_BAR;
+                continue;
+            }
             switch (raw_map[layer-1][y][x])
             {
             case WALL:
             case FAKE_WALL:
-                *(output++) = PIC_WALL;
+                *(int*)(output++) = PIC_WALL;
                 break;
             case BLUE_BOTTLE:
-                *(output++) = PIC_BLUE_BOTTLE;
+                *(int*)(output++) = PIC_BLUE_BOTTLE;
                 break;
             case RED_BOTTLE:
-                *(output++) = PIC_RED_BOTTLE;
+                *(int*)(output++) = PIC_RED_BOTTLE;
                 break;
             case RED_GATE:
-                *(output++) = PIC_RED_GATE;
+                *(int*)(output++) = PIC_RED_GATE;
                 break;
             case BLUE_GATE:
-                *(output++) = PIC_BLUE_GATE;
+                *(int*)(output++) = PIC_BLUE_GATE;
                 break;
             case YELLOW_GATE:
-                *(output++) = PIC_YELLOW_GATE;
+                *(int*)(output++) = PIC_YELLOW_GATE;
                 break;
             case YELLOW_KEY:
-                *(output++) = PIC_YELLOW_KEY;
+                *(int*)(output++) = PIC_YELLOW_KEY;
                 break;
             case BLUE_KEY:
-                *(output++) = PIC_BLUE_KEY;
+                *(int*)(output++) = PIC_BLUE_KEY;
                 break;
             case RED_KEY:
-                *(output++) = PIC_RED_KEY;
+                *(int*)(output++) = PIC_RED_KEY;
                 break;
             case BLUE_GEM:
-                *(output++) = PIC_BLUE_GEM;
+                *(int*)(output++) = PIC_BLUE_GEM;
                 break;
             case RED_GEM:
-                *(output++) = PIC_RED_GEM;
+                *(int*)(output++) = PIC_RED_GEM;
                 break;
             case SLIME:
-                *(output++) = PIC_SLIME;
+                *(int*)(output++) = PIC_SLIME;
                 break;
             case BAT:
-                *(output++) = PIC_BAT;
+                *(int*)(output++) = PIC_BAT;
                 break;
             case SKELETON:
-                *(output++) = PIC_SKELETON;
+                *(int*)(output++) = PIC_SKELETON;
                 break;
             case SKELETON_GENERAL:
-                *(output++) = PIC_GENERAL;
+                *(int*)(output++) = PIC_GENERAL;
                 break;
             case WIZARD:
-                *(output++) = PIC_WIZARD;
+                *(int*)(output++) = PIC_WIZARD;
                 break;
             case DEVIL:
-                *(output++) = PIC_DEVIL;
+                *(int*)(output++) = PIC_DEVIL;
                 break;
             case ROAD:
-                *(output++) = PIC_ROAD;
+                *(int*)(output++) = PIC_ROAD;
                 break;
             case UP_STAIR:
-                *(output++) = PIC_UP_STAIR;
+                *(int*)(output++) = PIC_UP_STAIR;
                 break;
             case DOWN_STAIR:
-                *(output++) = PIC_DOWN_STAIR;
+                *(int*)(output++) = PIC_DOWN_STAIR;
                 break;
             case SHOP:
-                *(output++) = PIC_SHOP_LEFT;
-                *(output++) = PIC_SHOP_MID;
-                *(output++) = PIC_SHOP_RIGHT;
+                *(int*)(output++) = PIC_SHOP_LEFT;
+                *(int*)(output++) = PIC_SHOP_MID;
+                *(int*)(output++) = PIC_SHOP_RIGHT;
                 break;
             case OLD_MAN:
-                *(output++) = PIC_OLDMAN;
+                *(int*)(output++) = PIC_OLDMAN;
                 break;
             case SHOP_MAN:
-                *(output++) = PIC_SHOPMAN;
+                *(int*)(output++) = PIC_SHOPMAN;
                 break;
             case SWORD:
-                *(output++) = PIC_SWORD;
+                *(int*)(output++) = PIC_SWORD;
                 break;
             case SHIELD:
-                *(output++) = PIC_SHIELD;
+                *(int*)(output++) = PIC_SHIELD;
                 break;
             case UPDOWN:
-                *(output++) = PIC_UPDOWN;
+                *(int*)(output++) = PIC_UPDOWN;
                 break;
             case BAR:
-                *(output++) = PIC_BAR;
+                *(int*)(output++) = PIC_BAR;
                 break;
             case SPECIAL_GATE:
-                *(output++) = PIC_SPECIAL_DOOR;
+                *(int*)(output++) = PIC_SPECIAL_DOOR;
                 break;
             case HERO:
-                *(output++) = PIC_HERO;
+                *(int*)(output++) = PIC_HERO;
                 break;
             case GUARD:
-                *(output++) = PIC_GUARD;
+                *(int*)(output++) = PIC_GUARD;
                 break;
             case THIEF:
-                *(output++) = PIC_THIEF;
+                *(int*)(output++) = PIC_THIEF;
                 break;
             default:
                 break;
@@ -1122,7 +1161,7 @@ bool move() {
 }
 
 int main() {
-    // (*ucore_status) = 1;
+    (*ucore_status) = 1;
     screen_clear();
     // init_game();
     import();
@@ -1146,6 +1185,6 @@ int main() {
         draw();
         meet_king(hero.x, hero.y);
     }
-    // (*ucore_status) = 0;
+    (*ucore_status) = 0;
     return 0;
 }
