@@ -190,7 +190,6 @@ void move_print(int line) {
 
 void screen_clear() {
     printf("\e[1;1H\e[2J");
-    // printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 }
 
 // 如果是wasd，返回0，否则返回字符unicode编码
@@ -1138,11 +1137,6 @@ int main() {
         }
         if (input == 'q')
             break;
-        // if (input == 'e') {
-        //     *ucore_status = 0;
-        //     get_user_input();
-        //     *ucore_status = 1;
-        // }
         if (input == 0)
             move();
         else if (input == '1' || input == '2' || input == '3')
