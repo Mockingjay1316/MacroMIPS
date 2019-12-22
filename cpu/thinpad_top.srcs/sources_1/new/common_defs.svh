@@ -132,7 +132,7 @@ typedef enum logic[2:0] {
 
 typedef enum {
     VGA_CLI, VGA_TOWER, VGA_PCLOGO,
-    VGA_SNAKE
+    VGA_SNAKE, VGA_V4030, VGA_V10075
 } vga_mode_t;
 
 typedef struct packed {
