@@ -191,6 +191,43 @@ void screen_clear() {
     printf("\e[1;1H\e[2J");
 }
 
+// 如果是wasd，返回0，否则返回字符unicode编码
+int get_user_input() {
+    char c;
+    int ret;
+    int flag = -1;
+    if ((ret = read(0, &c, sizeof(char))) < 0) {
+        return flag;
+    }
+    switch (c)
+    {
+        case 'w':
+            flag = 0;
+            hero.y_direction = -1;
+            hero.x_direction = 0;
+            break;
+        case 's':
+            flag = 0;
+            hero.y_direction = 1;
+            hero.x_direction = 0;
+            break;
+        case 'a':
+            flag = 0;
+            hero.x_direction = -1;
+            hero.y_direction = 0;
+            break;
+        case 'd':
+            flag = 0;
+            hero.x_direction = 1;
+            hero.y_direction = 0;
+            break;
+        default:
+            flag = c;
+            break;
+    }
+    return flag;
+}
+
 void init_game() {
     int pid = fork();
     if (pid == 0) {
@@ -284,31 +321,31 @@ void init_monsters() {
     monsters[MONSTER_SLIME].attack = 18;
     monsters[MONSTER_SLIME].defence = 1;
     monsters[MONSTER_SLIME].money = 2;
-    strcpy(monsters[MONSTER_SLIME].name, "史莱姆");
+    strcpy(monsters[MONSTER_SLIME].name, "Slime");
 
     monsters[MONSTER_BAT].hp = 35;
     monsters[MONSTER_BAT].attack = 38;
     monsters[MONSTER_BAT].defence = 3;
     monsters[MONSTER_BAT].money = 3;
-    strcpy(monsters[MONSTER_BAT].name, "小蝙蝠");
+    strcpy(monsters[MONSTER_BAT].name, "Bat");
 
     monsters[MONSTER_SKELETON].hp = 50;
     monsters[MONSTER_SKELETON].attack = 42;
     monsters[MONSTER_SKELETON].defence = 6;
     monsters[MONSTER_SKELETON].money = 6;
-    strcpy(monsters[MONSTER_SKELETON].name, "骷髅人");
+    strcpy(monsters[MONSTER_SKELETON].name, "Skeleton");
 
     monsters[MONSTER_SKELETON_GENERAL].hp = 55;
     monsters[MONSTER_SKELETON_GENERAL].attack = 52;
     monsters[MONSTER_SKELETON_GENERAL].defence = 12;
     monsters[MONSTER_SKELETON_GENERAL].money = 8;
-    strcpy(monsters[MONSTER_SKELETON_GENERAL].name, "骷髅战士");
+    strcpy(monsters[MONSTER_SKELETON_GENERAL].name, "Skeleton Warrior");
 
     monsters[MONSTER_WIZARD].hp = 60;
     monsters[MONSTER_WIZARD].attack = 32;
     monsters[MONSTER_WIZARD].defence = 8;
     monsters[MONSTER_WIZARD].money = 5;
-    strcpy(monsters[MONSTER_WIZARD].name, "初级法师");
+    strcpy(monsters[MONSTER_WIZARD].name, "Wizard");
 }
 
 void print_conversation(char* words) {
@@ -318,11 +355,6 @@ void print_conversation(char* words) {
 }
 
 void import() {
-    // FILE* file = fopen(file_name, "r");
-    // int file = open(file_name, O_RDONLY);
-    // char buffer[BOARD_SIZE - 1];
-    // if (file >= 0) {
-    int ret;
     for (int i = 0; i < BOARD_SIZE; ++i) {
         strcpy(map[layer-1][i][0], "██");
         strcpy(map[layer-1][0][i], "██");
@@ -333,114 +365,80 @@ void import() {
         raw_map[layer-1][BOARD_SIZE-1][i] = WALL;
         raw_map[layer-1][i][BOARD_SIZE-1] = WALL;
     }
-    int y = 0;
-    // while ((ret = read(file, buffer, sizeof(buffer))) != 0) {
-    // while((ret = fread(buffer, sizeof(char), BOARD_SIZE-1, file)) != 0) {
-        // printf("%d\n", y);
-    int *output = vga_output;
     for (int y = 0; y < BOARD_SIZE - 2; ++y) 
         for (int x = 0; x < BOARD_SIZE - 2; ++x) {  
             char curr = maps[layer - 1][y * (BOARD_SIZE - 2) + x];
             raw_map[layer-1][y + 1][x + 1] = curr;
             if (WALL == curr || FAKE_WALL == curr) {        // 墙壁或假墙壁
                 strcpy(map[layer-1][y + 1][x + 1], "██");
-                // *(output++) = PIC_WALL;
             } else if (BLUE_BOTTLE == curr) {                    // 蓝血瓶
                 print_blue(x + 1, y + 1, "血");
-                // *(output++) = PIC_BLUE_BOTTLE
             } else if (RED_BOTTLE == curr) {                     // 红血瓶
                 print_red(x + 1, y + 1, "血");
-                // *(output++) = PIC_RED_BOTTLE;
             } else if (RED_GATE == curr) {                       // 红门
                 print_red(x + 1, y + 1, "〓");
-                // *(output++) = PIC_RED_GATE;
             } else if (BLUE_GATE == curr) {                      // 蓝门
                 print_blue(x + 1, y + 1, "〓");
-                // *(output++) = PIC_BLUE_GATE;
             } else if (YELLOW_GATE == curr) {                    // 黄门
                 print_yellow(x + 1, y + 1, "〓");
-                // *(output++) = PIC_YELLOW_GATE;
             } else if (SPECIAL_GATE == curr) {                   // 特殊门
                 print_green(x + 1, y + 1, "〓");
-                // *(output++) = PIC_SPECIAL_DOOR;
             } else if (YELLOW_KEY == curr) {                     // 黄钥匙
                 print_yellow(x + 1, y + 1, "♀ ");
-                // *(output++) = PIC_YELLOW_KEY;
             } else if (BLUE_KEY == curr) {                       // 蓝钥匙
                 print_blue(x + 1, y + 1, "♀ ");
-                // *(output++) = PIC_BLUE_KEY;
             } else if (RED_KEY == curr) {                        // 红钥匙
                 print_red(x + 1, y + 1, "♀ ");
-                // *(output++) = PIC_RED_KEY;
             } else if (BLUE_GEM == curr) {                       // 蓝宝石
                 print_blue(x + 1, y + 1, "◆ ");
-                // *(output++) = PIC_BLUE_GEM;
             } else if (RED_GEM == curr) {                        // 红宝石
                 print_red(x + 1, y + 1, "◆ ");
-                // *(output++) = PIC_RED_GEM;
             } else if (SLIME == curr) {                          // 史莱姆
                 strcpy(map[layer-1][y + 1][x + 1], "史");
-                // *(output++) = PIC_SLIME;
             } else if (BAT == curr) {                            // 蝙蝠
                 strcpy(map[layer-1][y + 1][x + 1], "蝠");
-                // *(output++) = PIC_BAT;
             } else if (SKELETON == curr) {                       // 骷髅
                 strcpy(map[layer-1][y + 1][x + 1], "骷");
-                // *(output++) = PIC_SKELETON;
             } else if (SKELETON_GENERAL == curr) {               // 骷髅将军
                 strcpy(map[layer-1][y + 1][x + 1], "军");
-                // *(output++) = PIC_GENERAL;
             } else if (WIZARD == curr) {                         // 法师
                 strcpy(map[layer-1][y + 1][x + 1], "法");
-                // *(output++) = PIC_WIZARD;
             } else if (ROAD == curr) {                           // 道路
                 strcpy(map[layer-1][y + 1][x + 1], "  ");
-                // *(output++) = PIC_ROAD;
             } else if (UP_STAIR == curr) {                       // 上楼梯
                 strcpy(map[layer-1][y + 1][x + 1], "↑ ");
-                // *(output++) = PIC_UP_STAIR;
             } else if (DOWN_STAIR == curr) {                     // 下楼梯
                 strcpy(map[layer-1][y + 1][x + 1], "↓ ");
-                // *(output++) = PIC_DOWN_STAIR;
             } else if (SHOP == curr) {
                 print_green(x + 1, y + 1, "大");
                 print_green(x + 2, y + 1, "商");
                 print_green(x + 3, y + 1, "店");
-                // *(output++) = PIC_SHOP_LEFT;
-                // *(output++) = PIC_SHOP_MID;
-                // *(output++) = PIC_SHOP_RIGHT;
                 x += 2;
             } else if (SWORD == curr) {
                 print_green(x + 1, y + 1, "⚔ ");
-                // *(output++) = PIC_SWORD;
             } else if (SHIELD == curr) {
                 print_green(x + 1, y + 1, "⍟ ");
-                // *(output++) = PIC_SHIELD;
             } else if (OLD_MAN == curr) {
                 print_green(x + 1, y + 1, "老");
-                // *(output++) = PIC_OLDMAN;
             } else if (SHOP_MAN == curr) {
                 print_green(x + 1, y + 1, "商");
-                // *(output++) = PIC_SHOPMAN;
             } else if (UPDOWN == curr) {
                 print_green(x + 1, y + 1, "⇅ ");
-                // *(output++) = PIC_UPDOWN;
             } else if (BAR == curr) {
                 strcpy(map[layer-1][y+1][x+1], "栅");
-                // *(output++) = PIC_BAR;
             }
         }
     map_has_load[layer - 1] = true;
 }
 
 void print_prop() {
-    printf("道具: ");
+    printf("Props: ");
     if (has_prop[0])
-        printf("1.上升一层\t");
+        printf("1.Go upstairs\t");
     if (has_prop[1])
-        printf("2.下降一层\t");
+        printf("2.Go downstairs\t");
     if (has_prop[2])
-        printf("3.怪物手册\t");
+        printf("3.Monster manual\t");
     printf("\n");
 }
 
@@ -558,28 +556,28 @@ void update_vga() {
 }
 
 void draw(){
+    update_vga();
     screen_clear();
     move_print(1);
-    printf("HP:%d    攻击力:%d    防御力:%d    金钱:%d    层数:%d\n黄钥匙:%d    蓝钥匙:%d    红钥匙:%d\n", 
+    printf("HP:%d    Attack:%d    Defence:%d    Money:%d    Layer:%d\nYellow key:%d    Blue key:%d    Red key:%d\n", 
             hero.hp, hero.attack, hero.defence, hero.money, layer, hero.yellow_key_num,
             hero.blue_key_num, hero.red_key_num);
     if (hero.has_sword)
-        printf("武器: 剑    ");
+        printf("Weapon: sword    ");
     else
-        printf("武器: 无    ");
+        printf("Weapon: None    ");
     if (hero.has_shield)
-        printf("防器: 盾\n");
+        printf("Armor: Shield\n");
     else
-        printf("防器: 无\n");
+        printf("Armor: None\n");
     print_prop();
-    printf("\n");
-    for (int y = 0; y < BOARD_SIZE; ++y) {
-        for (int x = 0; x < BOARD_SIZE; ++x) {
-            printf("%s", map[layer-1][y][x]);
-        }
-        printf("\n");
-    }
-    update_vga();
+    // printf("\n");
+    // for (int y = 0; y < BOARD_SIZE; ++y) {
+    //     for (int x = 0; x < BOARD_SIZE; ++x) {
+    //         printf("%s", map[layer-1][y][x]);
+    //     }
+    //     printf("\n");
+    // }
 }
 
 void print_red(int x, int y, char* c) {
@@ -618,59 +616,16 @@ void print_green(int x, int y, char* c) {
     strcpy(map[layer-1][y][x], buf);
 } 
 
-
-// 如果是wasd，返回0，否则返回字符unicode编码
-int get_user_input() {
-    char c;
-    int ret;
-    int flag = -1;
-    if ((ret = read(0, &c, sizeof(char))) < 0) {
-        return flag;
-    }
-    switch (c)
-    {
-        case 'w':
-            flag = 0;
-            hero.y_direction = -1;
-            hero.x_direction = 0;
-            break;
-        case 's':
-            flag = 0;
-            hero.y_direction = 1;
-            hero.x_direction = 0;
-            break;
-        case 'a':
-            flag = 0;
-            hero.x_direction = -1;
-            hero.y_direction = 0;
-            break;
-        case 'd':
-            flag = 0;
-            hero.x_direction = 1;
-            hero.y_direction = 0;
-            break;
-        default:
-            flag = c;
-            break;
-    }
-    return flag;
-}
-
 int compute_hp_loss(Monster monster) {
     if (hero.attack <= monster.defence)     // 如果英雄的攻击没办法破防，就没办法打
         return -1;
     if (hero.defence >= monster.attack) {     // 如果怪物的攻击没办法破放，无伤通过
-        // update_money(monster.money);
-        // return true;
         return 0;
     }
-    // int round_hero = 0;
-    // int round_monster = 0;
     int hero_hp = hero.hp;
     int monster_hp = monster.hp;
     while (1) {
         if (monster_hp > (hero.attack - monster.defence)) {
-            // ++round_monster;
             monster_hp -= (hero.attack - monster.defence);
         } else {
             return hero.hp - hero_hp;
@@ -681,12 +636,7 @@ int compute_hp_loss(Monster monster) {
         } else {
             return -1;
         }
-        // int round_hero = hero.hp / (monster.attack - hero.defence);     // 英雄死亡所需回合
-        // int round_monster = monster.hp / (hero.attack - monster.defence);    // 怪物死亡所需回合
     }
-    // if (round_hero <= round_monster)      // 如果英雄先死，不能打
-    //     return -1;
-    // return round_monster * (monster.attack - hero.defence);
 }
 
 // 可以战斗，且战斗完毕返回true;无法战斗返回false
@@ -776,13 +726,7 @@ void update_layer(int delta) {
     strcpy(map[layer-1][hero.y][hero.x], "  ");
     raw_map[layer-1][hero.y][hero.x] = ROAD;
     layer += delta;
-    char file_name[15];
-    char tmp[2];
-    tmp[0] = '0' + layer;
-    tmp[1] = '\0';
     if (!map_has_load[layer - 1]) {
-        // strcat("map_", tmp, file_name);
-        // strcat(file_name, ".txt", file_name);
         import();
     }
     if (delta > 0) {
@@ -805,35 +749,38 @@ bool update_money(int delta) {
 }
 
 void buy() {
-    printf("你若给我%d个金币，我就帮你提升以下一种能力。\n", shop_cost);
-    printf("1. 攻击力+2\n");
-    printf("2. 防御力+4\n");
-    printf("3. HP+100\n");
+    printf("If you give me %d coins, I will help you improve one of the following capabilities.\n", shop_cost);
+    printf("1. Attack +2\n");
+    printf("2. Defence +4\n");
+    printf("3. HP +100\n");
     int ret;
     while ((ret = get_user_input()) != 0) {
         bool success = false;
         switch (ret)
         {
             case '1':
-                if ((success = update_money(-shop_cost)) == true)
+                if ((success = update_money(-shop_cost)) == true) {
                     shop_cost *= 2;
                     update_attack(2);
+                }
                 break;
             case '2':
-                if ((success = update_money(-shop_cost)) == true)
+                if ((success = update_money(-shop_cost)) == true) {
                     shop_cost *= 2;
                     update_defence(4);
+                }
                 break;
             case '3':
-                if ((success = update_money(-shop_cost)) == true)
+                if ((success = update_money(-shop_cost)) == true) {
                     shop_cost *= 2;
                     update_hp(100);
+                }
                 break;
             default:
                 break;
         }
         if (!success) {
-            printf("金钱不足\n");
+            printf("Insufficient money\n");
             get_user_input();
         }
         draw();
@@ -843,30 +790,34 @@ void buy() {
 
 void talk_to_shop_man() {
     if (layer == 6) {
-        print_conversation("商人：魔塔一共50层，每一层为一个区域。\n如果不打败此区域的头目就不能到更高的地方。");
+        print_conversation("Merchant: The magic tower has a total of 50 floors, and each floor is an area. \n\
+You cannot reach higher areas without defeating the leader of the area.");
     } else if (layer == 7) {
-        print_conversation("商人：在商店里你最好选择提升防御，只有在\n攻击力低于敌人的防御力时才提升攻击力");
+        print_conversation("Merchant: In the shop, you better choose to increase your defense. \n\
+Increase your attack only if the attack is lower than the enemy's defense");
     }
     get_user_input();
 }
 
 void talk_to_old_man() {
     if (layer == 3) {
-        print_conversation("老者：我可以给你怪物手册，你可以用快捷键3去使用它。\n它能预测出当前楼层各类怪物对你的伤害");
+        print_conversation("Old man: I can give you a monster manual, you can use shortcut key 3 to use it. \n\
+It can predict the power of various monsters on the current floor to you");
         has_prop[MANUAL] = true;
     } else if (layer == 4) {
-        print_conversation("老者：有些门不能用钥匙打开，只有当你打败它的守卫后\n才会自动打开。");
+        print_conversation("Old man: Some doors cannot be opened with keys, \n\
+only when you defeat its guard, it will open automatically.");
     } else if (layer == 6) {
-        print_conversation("老者：你购买了礼物后再与商人对话，\n他会告诉你一些重要的消息。");
+        print_conversation("Old man: Talk to the merchant after you buy his goods. \n \
+He will tell you some important information.");
     }
     get_user_input();
 }
 
 void use_prop(int id) {
+    // printf("id:%c\n", id);
     if (!has_prop[id - '1'])
         return;
-    screen_clear();
-    move_print(5);
     if (id == '1') {              // 快速上楼
         if (layer < 9 && layer_visited[layer])
             update_layer(1);
@@ -874,14 +825,16 @@ void use_prop(int id) {
         if (layer > 1)
             update_layer(-1);
     } else if (id == '3') {       // 怪物手册
+        screen_clear();
+        move_print(5);
         for (int i = 0; i < 5; ++i) {
             int hp_loss = compute_hp_loss(monsters[i]);
             Monster monster = monsters[i];
-            printf("%s HP:%d 攻击:%d 防御:%d 金钱:%d\n", monster.name, monster.hp, monster.attack, monster.defence, monster.money);
+            printf("%s HP:%d Attack:%d Defence:%d Money:%d\n", monster.name, monster.hp, monster.attack, monster.defence, monster.money);
             if (hp_loss >= 0)
-                printf("攻击它将损失%dHP\n\n", hp_loss);
+                printf("You will loss %dHP if you attack it.\n\n", hp_loss);
             else
-                printf("无法进行攻击\n\n");
+                printf("Cannot attack.\n\n");
         }
         get_user_input();
     }
@@ -889,12 +842,12 @@ void use_prop(int id) {
 
 void meet_king(int x, int y) {
     if (layer == 3 && x == 5 && y == 9 && meet) {
-        char c;
         print_yellow(x, y - 2, "魔");
         raw_map[layer-1][y - 2][x] = DEVIL;
         draw();
-        sleep(1500);
-        print_conversation("魔王：欢迎来到魔塔，你是第一百位挑战者。你若能打败我所有的手下，我就与你一对一的决斗。\n现在，你必须接受我的安排！");
+        sleep(500);
+        print_conversation("THE DEVIL: Welcome to the Magic Tower, you are the 100th challenger. If you can defeat all my men, I will fight you one-on-one. \n\
+But now, YOU MUST OBEY MY ORDER!!!!!");
         get_user_input();
         print_blue(x - 1, y, "士");
         print_blue(x + 1, y, "士");
@@ -905,19 +858,19 @@ void meet_king(int x, int y) {
         raw_map[layer-1][y - 1][x] = GUARD;
         raw_map[layer-1][y + 1][x] = GUARD;
         draw();
-        sleep(1000);
-        print_conversation("什么？");
+        sleep(500);
+        print_conversation("What?");
         get_user_input();
-        char buf[10];
-        strcpy(buf, map[layer-1][y][x]);
-        print_yellow(x, y, "✦ ");
-        draw();
-        sleep(500);
-        strcpy(map[layer-1][y][x], buf);
-        draw();
-        sleep(500);
-        print_yellow(x, y, "✦ ");
-        draw();
+        // char buf[10];
+        // strcpy(buf, map[layer-1][y][x]);
+        // print_yellow(x, y, "✦ ");
+        // draw();
+        // sleep(500);
+        // strcpy(map[layer-1][y][x], buf);
+        // draw();
+        // sleep(500);
+        // print_yellow(x, y, "✦ ");
+        // draw();
         meet = false;
         strcpy(map[layer-1][y-2][x], "  ");
         strcpy(map[layer-1][y][x-1], "  ");
@@ -928,13 +881,17 @@ void meet_king(int x, int y) {
         raw_map[layer-1][y][x-1] = ROAD;
         raw_map[layer-1][y][x+1] = ROAD;
         raw_map[layer-1][y-1][x] = ROAD;
-        raw_map[layer-1][y-1][x] = ROAD;
-        sleep(1500);
+        raw_map[layer-1][y+1][x] = ROAD;
+        sleep(500);
+        memset(raw_map[layer-1], BAR, 15*20);
+        map_has_load[layer-1] = false;
+        layer_visited[layer-1] = false;
+        draw();
         print_conversation("");
-        sleep(2000);
+        sleep(1000);
         print_conversation("........");
         get_user_input();
-        print_conversation("........喂！醒醒！");
+        print_conversation("........Hey! WAKE UP!");
         get_user_input();
         update_layer(-1);
         strcpy(map[layer-1][hero.y][hero.x], "  ");
@@ -951,11 +908,14 @@ void meet_king(int x, int y) {
         raw_map[layer-1][hero.y][hero.x] = HERO;
         raw_map[layer-1][hero.y-1][hero.x] = THIEF;
         draw();
-        sleep(2000);
-        print_conversation("小偷：你清醒了吗？你到监狱时还处在昏迷中，魔法警卫把你扔到了我这个房间。\n但你很幸运，我刚完成逃跑的暗道你就清醒了，我们一起越狱吧。");
+        sleep(1000);
+        print_conversation("Thief: Are you awake? You were still in a coma when you arrived at the prison, \n\
+and the guard threw you into my room. But you are very lucky, \n\
+I just dug up a secret escape.. Let's escape together.");
         get_user_input();
-        // sleep(500);
-        print_conversation("小偷：你的剑和盾被警卫拿走了，你必须先找到武器。我知道铁剑在5楼，铁盾在9楼，你最好先取到他们。\n我现在有事要做没法帮你，再见。");
+        print_conversation("Thief: Your sword and shield have been taken away by the guard. You must find your weapon first. \n\
+I know the sword is on the 5th floor and the shield is on the 9th floor. You better get them first. \n\
+I have something else to do now and can't help you, bye.");
         get_user_input();
         strcpy(map[layer-1][hero.y-1][hero.x], "  ");
         strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
@@ -964,7 +924,7 @@ void meet_king(int x, int y) {
         print_green(hero.x - 1, hero.y - 1, "偷");
         raw_map[layer-1][hero.y-1][hero.x-1] = THIEF;
         draw();
-        sleep(500);
+        sleep(250);
         strcpy(map[layer-1][hero.y-1][hero.x-1], "  ");
         strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
         raw_map[layer-1][hero.y-1][hero.x-1] = ROAD;
@@ -972,7 +932,7 @@ void meet_king(int x, int y) {
         print_green(hero.x - 2, hero.y - 1, "偷");
         raw_map[layer-1][hero.y-1][hero.x-2] = THIEF;
         draw();
-        sleep(500);
+        sleep(250);
         strcpy(map[layer-1][hero.y-1][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y][hero.x-2], "  ");
         raw_map[layer-1][hero.y-1][hero.x-2] = ROAD;
@@ -980,7 +940,7 @@ void meet_king(int x, int y) {
         print_green(hero.x - 2, hero.y, "偷");
         raw_map[layer-1][hero.y][hero.x-2] = THIEF;
         draw();
-        sleep(500);
+        sleep(250);
         strcpy(map[layer-1][hero.y][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
         raw_map[layer-1][hero.y][hero.x-2] = ROAD;
@@ -988,7 +948,7 @@ void meet_king(int x, int y) {
         print_green(hero.x - 2, hero.y + 1, "偷");
         raw_map[layer-1][hero.y+1][hero.x-2] = THIEF;
         draw();
-        sleep(500);
+        sleep(250);
         strcpy(map[layer-1][hero.y+1][hero.x-2], "  ");
         strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
         raw_map[layer-1][hero.y+1][hero.x-2] = ROAD;
@@ -996,11 +956,11 @@ void meet_king(int x, int y) {
         print_green(hero.x - 2, hero.y + 2, "偷");
         raw_map[layer-1][hero.y+2][hero.x-2] = THIEF;
         draw();
-        sleep(500);
+        sleep(250);
         strcpy(map[layer-1][hero.y+2][hero.x-2], "  ");
         raw_map[layer-1][hero.y+2][hero.x-2] = ROAD;
         draw();
-        sleep(500);
+        sleep(250);
     }
 }
 
@@ -1014,7 +974,6 @@ bool move() {
     bool update = false;
     bool ret = false;
     bool new_layer = false;
-    // meet_king(x_result, y_result);
     switch (raw_map[layer-1][y_result][x_result])
     {
     case SLIME:
@@ -1023,10 +982,9 @@ bool move() {
     case WIZARD:
     case BAT:
         if (!battle(raw_map[layer-1][y_result][x_result])) {
-            print_conversation("血量不足，与其战斗将会死亡\n");
+            print_conversation("Insufficient hp\n");
             get_user_input();
             move_print(19);
-            // printf("%c[%d;%dH",27,19,1);
             can_move = false;
         } else {
             ret = true;
@@ -1038,8 +996,7 @@ bool move() {
     case BLUE_GATE:
     case YELLOW_GATE:
         if (!open_door(raw_map[layer-1][y_result][x_result])){
-            // printf("\n钥匙数量不足              \n");
-            print_conversation("钥匙数量不足\n");
+            print_conversation("Insufficient number of keys\n");
             get_user_input();
             move_print(19);
             can_move = false;
@@ -1119,7 +1076,7 @@ bool move() {
         can_move = false;
         break;
     case SPECIAL_GATE:
-        print_conversation("你需要打败两个守卫才能打开门");
+        print_conversation("You need to defeat two guards to open the door");
         can_move = false;
         break;
     default:
@@ -1133,18 +1090,18 @@ bool move() {
         strcpy(map[layer-1][y_result][x_result], "  ");
         raw_map[layer-1][y_result][x_result] = ROAD;
         if (ret) {
-            char buf[10];
-            strcpy(buf, map[layer-1][y_result][x_result]);
-            print_yellow(x_result, y_result, "✦ ");
-            draw();
-            sleep(150);
-            strcpy(map[layer-1][y_result][x_result], buf);
-            draw();
-            sleep(150);
-            print_yellow(x_result, y_result, "✦ ");
-            draw();
-            sleep(150);
-            print_green(x_result, y_result, "  ");
+            // char buf[10];
+            // strcpy(buf, map[layer-1][y_result][x_result]);
+            // print_yellow(x_result, y_result, "✦ ");
+            // draw();
+            // sleep(150);
+            // strcpy(map[layer-1][y_result][x_result], buf);
+            // draw();
+            // sleep(150);
+            // print_yellow(x_result, y_result, "✦ ");
+            // draw();
+            // sleep(150);
+            // print_green(x_result, y_result, "  ");
         }
     }
     if (can_move && !new_layer) {
@@ -1167,12 +1124,10 @@ int main() {
     import();
     print_green(hero.x, hero.y, "勇");
     raw_map[layer-1][hero.y][hero.x] = HERO;
-    // screen_clear();
     draw();
     int input;
     init_monsters();
     while(1) {
-        // printf("Pos\n");
         if ((input = get_user_input()) == -1) {
             continue;
         }
@@ -1180,7 +1135,7 @@ int main() {
             break;
         if (input == 0)
             move();
-        else   
+        else if (input == '1' || input == '2' || input == '3')
             use_prop(input);
         draw();
         meet_king(hero.x, hero.y);
