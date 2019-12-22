@@ -46,75 +46,76 @@
 #define HERO                '*'
 #define GUARD               '$'
 #define THIEF               '%'
+#define PAD                 '-'
 
-#define PIC_BAR             0
-#define PIC_BAT             1
-#define PIC_BLUE_BOTTLE     2
-#define PIC_BLUE_GATE       3
-#define PIC_BLUE_GEM        4
-#define PIC_BLUE_KEY        5
-#define PIC_DEVIL           6
-#define PIC_DOWN_STAIR      7
-#define PIC_GENERAL         8
-#define PIC_GUARD           9
-#define PIC_HERO            10
-#define PIC_OLDMAN          11
-#define PIC_RED_BOTTLE      12
-#define PIC_RED_GATE        13
-#define PIC_RED_GEM         14
-#define PIC_RED_KEY         15
-#define PIC_ROAD            16
-#define PIC_SHIELD          17
-#define PIC_SHOPMAN         18
-#define PIC_SHOP_LEFT       19
-#define PIC_SHOP_MID        20
-#define PIC_SHOP_RIGHT      21
-#define PIC_SKELETON        22
-#define PIC_SLIME           23
-#define PIC_SPECIAL_DOOR    24
-#define PIC_SWORD           25
-#define PIC_THIEF           26
-#define PIC_UPDOWN          27
-#define PIC_UP_STAIR        28
-#define PIC_WALL            29
-#define PIC_WIZARD          30
-#define PIC_YELLOW_GATE     31
-#define PIC_YELLOW_KEY      32
+// #define PIC_BAR             0
+// #define PIC_BAT             1
+// #define PIC_BLUE_BOTTLE     2
+// #define PIC_BLUE_GATE       3
+// #define PIC_BLUE_GEM        4
+// #define PIC_BLUE_KEY        5
+// #define PIC_DEVIL           6
+// #define PIC_DOWN_STAIR      7
+// #define PIC_GENERAL         8
+// #define PIC_GUARD           9
+// #define PIC_HERO            10
+// #define PIC_OLDMAN          11
+// #define PIC_RED_BOTTLE      12
+// #define PIC_RED_GATE        13
+// #define PIC_RED_GEM         14
+// #define PIC_RED_KEY         15
+// #define PIC_ROAD            16
+// #define PIC_SHIELD          17
+// #define PIC_SHOPMAN         18
+// #define PIC_SHOP_LEFT       19
+// #define PIC_SHOP_MID        20
+// #define PIC_SHOP_RIGHT      21
+// #define PIC_SKELETON        22
+// #define PIC_SLIME           23
+// #define PIC_SPECIAL_DOOR    24
+// #define PIC_SWORD           25
+// #define PIC_THIEF           26
+// #define PIC_UPDOWN          27
+// #define PIC_UP_STAIR        28
+// #define PIC_WALL            29
+// #define PIC_WIZARD          30
+// #define PIC_YELLOW_GATE     31
+// #define PIC_YELLOW_KEY      32
 
-// #define PIC_PAD             0
-// #define PIC_BAR             1
-// #define PIC_BAT             2
-// #define PIC_BLUE_BOTTLE     3
-// #define PIC_BLUE_GATE       4
-// #define PIC_BLUE_GEM        5
-// #define PIC_BLUE_KEY        6
-// #define PIC_DEVIL           7
-// #define PIC_DOWN_STAIR      8
-// #define PIC_GENERAL         9
-// #define PIC_GUARD           10
-// #define PIC_HERO            11
-// #define PIC_OLDMAN          12
-// #define PIC_RED_BOTTLE      13
-// #define PIC_RED_GATE        14
-// #define PIC_RED_GEM         15
-// #define PIC_RED_KEY         16
-// #define PIC_ROAD            17
-// #define PIC_SHIELD          18
-// #define PIC_SHOPMAN         19
-// #define PIC_SHOP_LEFT       20
-// #define PIC_SHOP_MID        21
-// #define PIC_SHOP_RIGHT      22
-// #define PIC_SKELETON        23
-// #define PIC_SLIME           24
-// #define PIC_SPECIAL_DOOR    25
-// #define PIC_SWORD           26
-// #define PIC_THIEF           27
-// #define PIC_UPDOWN          28
-// #define PIC_UP_STAIR        29
-// #define PIC_WALL            30
-// #define PIC_WIZARD          31
-// #define PIC_YELLOW_GATE     32
-// #define PIC_YELLOW_KEY      33
+#define PIC_PAD             0
+#define PIC_BAR             1
+#define PIC_BAT             2
+#define PIC_BLUE_BOTTLE     3
+#define PIC_BLUE_GATE       4
+#define PIC_BLUE_GEM        5
+#define PIC_BLUE_KEY        6
+#define PIC_DEVIL           7
+#define PIC_DOWN_STAIR      8
+#define PIC_GENERAL         9
+#define PIC_GUARD           10
+#define PIC_HERO            11
+#define PIC_OLDMAN          12
+#define PIC_RED_BOTTLE      13
+#define PIC_RED_GATE        14
+#define PIC_RED_GEM         15
+#define PIC_RED_KEY         16
+#define PIC_ROAD            17
+#define PIC_SHIELD          18
+#define PIC_SHOPMAN         19
+#define PIC_SHOP_LEFT       20
+#define PIC_SHOP_MID        21
+#define PIC_SHOP_RIGHT      22
+#define PIC_SKELETON        23
+#define PIC_SLIME           24
+#define PIC_SPECIAL_DOOR    25
+#define PIC_SWORD           26
+#define PIC_THIEF           27
+#define PIC_UPDOWN          28
+#define PIC_UP_STAIR        29
+#define PIC_WALL            30
+#define PIC_WIZARD          31
+#define PIC_YELLOW_GATE     32
+#define PIC_YELLOW_KEY      33
 
 // 道具
 #define UP_LAYER            0       // 快速上楼
@@ -189,6 +190,7 @@ void move_print(int line) {
 
 void screen_clear() {
     printf("\e[1;1H\e[2J");
+    // printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 }
 
 // 如果是wasd，返回0，否则返回字符unicode编码
@@ -447,7 +449,7 @@ void update_vga() {
     for (int y = 0; y < 15; ++y) {
         for (int x = 0; x < 20; ++x) {
             if (y >= BOARD_SIZE || x >= BOARD_SIZE) {
-                *(int*)(output++) = PIC_BAR;
+                *(int*)(output++) = PIC_PAD;
                 continue;
             }
             switch (raw_map[layer-1][y][x])
@@ -547,6 +549,9 @@ void update_vga() {
                 break;
             case THIEF:
                 *(int*)(output++) = PIC_THIEF;
+                break;
+            case PAD:
+                *(int*)(output++) = PIC_PAD;
                 break;
             default:
                 break;
@@ -883,7 +888,7 @@ But now, YOU MUST OBEY MY ORDER!!!!!");
         raw_map[layer-1][y-1][x] = ROAD;
         raw_map[layer-1][y+1][x] = ROAD;
         sleep(500);
-        memset(raw_map[layer-1], BAR, 15*20);
+        memset(raw_map[layer-1], PAD, 15*20);
         map_has_load[layer-1] = false;
         layer_visited[layer-1] = false;
         draw();
@@ -1133,6 +1138,11 @@ int main() {
         }
         if (input == 'q')
             break;
+        // if (input == 'e') {
+        //     *ucore_status = 0;
+        //     get_user_input();
+        //     *ucore_status = 1;
+        // }
         if (input == 0)
             move();
         else if (input == '1' || input == '2' || input == '3')
