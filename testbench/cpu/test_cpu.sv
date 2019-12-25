@@ -5,13 +5,36 @@ module test_cpu();
 
 logic rst, mem_stall;
 logic clk_50M;
-logic[`INST_WIDTH-1:0] instr;
-logic[`ADDR_WIDTH-1:0] pc, mem_addr;
-logic[`DATA_WIDTH-1:0] mem_wdata, mem_rdata;
+logic[31:0] instr;
+logic[31:0] pc, mem_addr;
+logic[31:0] mem_wdata, mem_rdata;
 logic[4:0] mem_ctrl_signal;
 
-logic [`INST_WIDTH - 1:0] inst_mem[4095:0];
 
+
+logic [31:0] inst_mem[4095:0];
+logic [31:0] data_mem[4095:0];
+
+logic[4:0] reg_addr;
+logic[31:0] reg_data, write_data, cp0_wdata;
+logic[63:0] hilo;
+logic hilo_write_en, reg_write_en, cp0_write_en, mem_write_en, wb_reg_write_en;
+logic read_en;
+logic[4:0] cp0_waddr;
+
+assign mem_write_en = mem_ctrl_signal[3];
+assign load_from_en = mem_ctrl_signal[4];
+
+assign reg_addr = cpu.wb_reg_waddr;
+assign reg_data = cpu.wb_reg_wdata;
+assign reg_write_en = cpu.reg_file_r.write_en;
+
+assign hilo = cpu.hilo_reg_r.hilo_op.hilo_wval;
+assign hilo_write_en = cpu.hilo_reg_r.hilo_op.hilo_write_en;
+
+assign cp0_write_en = cpu.cp0_reg_r.write_en;
+assign cp0_wdata = cpu.cp0_reg_r.wdata;
+assign cp0_waddr = cpu.cp0_reg_r.waddr;
 initial begin
     clk_50M = 1'b0; # 10;
     clk_50M = 1'b1; # 10;
@@ -20,6 +43,14 @@ initial begin
     end
 end
 
+always @(posedge clk_50M)
+begin
+	if(mem_write_en) begin
+		data_mem[mem_addr[15:2]] <= mem_wdata;
+	end
+	if(load_from_en)
+		mem_rdata = data_mem[mem_addr[15:2]];
+end
 initial begin
 #20;
 forever begin
@@ -47,33 +78,16 @@ task judge(input integer fans, input integer cycle, input string out);
 	if(out != ans && ans != "skip")
 	begin
 		$display("[%0d] %s", cycle, out);
-		$display("[Error] Expected: %0s, Got: %0s", ans, out);
+		//$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
 	end else begin
 		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
-logic[4:0] reg_addr;
-logic[31:0] reg_data, write_data, cp0_wdata;
-logic[63:0] hilo;
-logic hilo_write_en, reg_write_en, cp0_write_en, mem_write_en;
-logic read_en;
-logic[4:0] cp0_waddr;
 
-assign reg_addr = cpu.wb_reg_waddr;
-assign reg_data = cpu.wb_reg_wdata;
-assign reg_write_en = cpu.reg_file_r.write_en;
 
-assign hilo = cpu.hilo_reg_r.hilo_op.hilo_wval;
-assign hilo_write_en = cpu.hilo_reg_r.hilo_op.hilo_write_en;
 
-assign cp0_write_en = cpu.cp0_reg_r.write_en;
-assign cp0_wdata = cpu.cp0_reg_r.wdata;
-assign cp0_waddr = cpu.cp0_reg_r.waddr;
-
-assign mem_write_en = mem_ctrl_signal[3];
-assign load_from_en = mem_ctrl_signal[4];
 
 
 task unittest(
@@ -85,6 +99,8 @@ task unittest(
 	string ans, out, info;
 	for(i = 0; i < $size(inst_mem); i = i + 1)
 		inst_mem[i] = 32'h0;
+	for(i = 0; i < $size(data_mem); i = i + 1)
+		data_mem[i] = 32'h0;
 	begin
 		$readmemh({ `PATH_PREFIX1, file_name, ".mem" }, inst_mem);
 	end
@@ -112,16 +128,16 @@ task unittest(
 			$sformat(out, "cp%0d=0x%x", cp0_waddr, cp0_wdata);
 			judge(fans, count, out);
 		end else
-		if (reg_addr && reg_data)
+		if (reg_write_en && reg_addr && reg_data)
 	    begin
 			$sformat(out, "$%0d=0x%x", reg_addr, reg_data);
 			judge(fans, count, out);
-		end else
+		end
 		if(mem_write_en) 
 		begin
 			$sformat(out, "[0x%x]=0x%x", mem_addr[15:0], mem_wdata);
 			judge(fans, count, out);
-		end 
+		end
 		end
 		
 	end
@@ -130,7 +146,7 @@ endtask
 
 initial begin
     rst = 1'b1;
-    /*unittest("inst_ori");
+    unittest("inst_ori");
 	rst = 1'b1;
 	unittest("inst_logic");
 	rst = 1'b1;
@@ -142,11 +158,13 @@ initial begin
 	rst = 1'b1;
 	unittest("inst_multi");
 	rst = 1'b1;
+	unittest("cp0_test");
+	rst = 1'b1;
+	unittest("inst_ls");
+	rst = 1'b1;
 	unittest("inst_branch");
 	rst = 1'b1;
 	unittest("inst_jump");
-	rst = 1'b1;
-	unittest("cp0_test");*/
 	$finish;
 end
 endmodule
