@@ -78,10 +78,10 @@ task judge(input integer fans, input integer cycle, input string out);
 	if(out != ans && ans != "skip")
 	begin
 		$display("[%0d] %s", cycle, out);
-		//$display("[Error] Expected: %0s, Got: %0s", ans, out);
+		$display("[Error] Expected: %0s, Got: %0s", ans, out);
 		//$stop;
 	end else begin
-		$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
+		//$display("[%0d] %s [%s]", cycle, out, ans == "skip" ? "skip" : "pass");
 	end
 endtask
 
